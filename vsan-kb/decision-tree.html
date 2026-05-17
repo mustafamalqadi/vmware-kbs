@@ -329,7 +329,7 @@
         <h1>vSAN Troubleshooting <span>Decision Tree</span></h1>
         <div class="header-badges">
             <span class="badge badge-tree">Interactive Diagnosis</span>
-            <span class="badge badge-phase">70 KB Entries</span>
+            <span class="badge badge-phase">84 KB Entries</span>
         </div>
     </div>
 </header>
@@ -439,14 +439,14 @@ const tree = {
         question: "What area is affected?",
         stepNum: 1,
         choices: [
-            { id: "storage",     icon: "&#128190;", title: "Storage / Disk",              desc: "Disk groups, objects, capacity, NVMe, checksum errors",             count: 15 },
-            { id: "network",     icon: "&#127760;", title: "Network / Connectivity",      desc: "VMkernel, MTU, partition, split brain, NIC teaming, firewall",      count: 10 },
-            { id: "performance", icon: "&#9889;",   title: "Performance",                 desc: "Latency, congestion, resync, IOPS, esxtop counters",               count: 10 },
-            { id: "cluster",     icon: "&#128421;", title: "Cluster / Host",              desc: "Host join, maintenance mode, witness, PSOD, isolation, HA",         count: 10 },
-            { id: "data_prot",   icon: "&#128737;", title: "Data Protection & Recovery",  desc: "Snapshots, vCenter recovery, stretched cluster failover",           count: 7  },
+            { id: "storage",     icon: "&#128190;", title: "Storage / Disk",              desc: "Disk groups, objects, capacity, NVMe, checksum errors",             count: 19 },
+            { id: "network",     icon: "&#127760;", title: "Network / Connectivity",      desc: "VMkernel, MTU, partition, split brain, NIC teaming, firewall",      count: 11 },
+            { id: "performance", icon: "&#9889;",   title: "Performance",                 desc: "Latency, congestion, resync, IOPS, esxtop counters",               count: 11 },
+            { id: "cluster",     icon: "&#128421;", title: "Cluster / Host",              desc: "Host join, maintenance mode, witness, PSOD, isolation, HA",         count: 16 },
+            { id: "data_prot",   icon: "&#128737;", title: "Data Protection & Recovery",  desc: "Snapshots, vCenter recovery, stretched cluster failover",           count: 8  },
             { id: "upgrade",     icon: "&#128259;", title: "Upgrade / Lifecycle",          desc: "Upgrade failures, vLCM, firmware, OSA\u2192ESA migration",         count: 7  },
             { id: "encryption",  icon: "&#128274;", title: "Encryption / Security",       desc: "KMS keys, key rotation, certificates, SPBM policies",              count: 4  },
-            { id: "vcf",         icon: "&#127970;", title: "VCF / SDDC",                  desc: "SDDC Manager, workload domains, NSX-T, Aria, HCI Mesh",            count: 9  }
+            { id: "vcf",         icon: "&#127970;", title: "VCF / SDDC",                  desc: "SDDC Manager, workload domains, NSX-T, Aria, HCI Mesh",            count: 10 }
         ]
     },
 
@@ -466,7 +466,11 @@ const tree = {
             { id: "trim_unmap",      icon: "&#128993;", title: "TRIM / UNMAP not reclaiming",         desc: "Deleted data not freeing capacity, thin disks growing",       result: true },
             { id: "file_svc",        icon: "&#128308;", title: "File services failure",               desc: "vSAN file services not mounting or reporting errors",         result: true },
             { id: "dedup_comp",      icon: "&#128993;", title: "Dedup & compression issues",          desc: "Unexpected dedup ratios, compression stalling rebuilds",      result: true },
-            { id: "spbm",            icon: "&#128993;", title: "Storage policy mismatch",             desc: "SPBM shows non-compliant, policy not applying correctly",     result: true }
+            { id: "spbm",            icon: "&#128993;", title: "Storage policy mismatch",             desc: "SPBM shows non-compliant, policy not applying correctly",     result: true },
+            { id: "orphan_objects",  icon: "&#128308;", title: "Orphaned / stale objects",            desc: "Ghost objects consuming capacity after VM deletions",         result: true },
+            { id: "dom_owner",       icon: "&#128308;", title: "DOM owner unreachable",               desc: "Object inaccessible because owner host is down/partitioned",  result: true },
+            { id: "component_limit", icon: "&#128308;", title: "Component count limit exceeded",      desc: "Host hit max component count, blocking deployments",          result: true },
+            { id: "hba_passthrough", icon: "&#128993;", title: "HBA / controller passthrough mode",   desc: "Storage controller not in JBOD mode for vSAN",                result: true }
         ]
     },
 
@@ -484,7 +488,8 @@ const tree = {
             { id: "rdma",        icon: "&#128993;", title: "RDMA / RoCE v2 issues",         desc: "PFC / ECN misconfigured, RDMA not initializing",       result: true },
             { id: "stretched_net", icon: "&#128993;", title: "Stretched cluster networking", desc: "Inter-site latency, witness connectivity, ISL sizing",  result: true },
             { id: "firewall",    icon: "&#128308;", title: "Firewall / ports blocked",      desc: "Hosts can't communicate on vSAN ports (2233, 12321\u2026)",  result: true },
-            { id: "25_100gbe",   icon: "&#128993;", title: "25/100 GbE design for ESA",     desc: "NIC selection, switch config for high-bandwidth ESA",   result: true }
+            { id: "25_100gbe",   icon: "&#128993;", title: "25/100 GbE design for ESA",     desc: "NIC selection, switch config for high-bandwidth ESA",   result: true },
+            { id: "ntp_drift",   icon: "&#128308;", title: "NTP clock drift breaks CMMDS",  desc: "Time desync causes phantom partitions and membership issues",  result: true }
         ]
     },
 
@@ -502,7 +507,8 @@ const tree = {
             { id: "esa_perf",      icon: "&#128993;", title: "ESA-specific performance",    desc: "ESA not delivering expected throughput, tuning needed",       result: true },
             { id: "resync_throttle", icon: "&#128993;", title: "Resync throttle balancing",  desc: "Resync consuming too much bandwidth / need to tune",         result: true },
             { id: "capacity_plan", icon: "&#128993;", title: "Capacity planning & sizing",  desc: "Right-sizing clusters, slack space, growth projections",      result: true },
-            { id: "readynode",     icon: "&#128993;", title: "ReadyNode hardware selection", desc: "Picking the right ReadyNode config for workload profile",    result: true }
+            { id: "readynode",     icon: "&#128993;", title: "ReadyNode hardware selection", desc: "Picking the right ReadyNode config for workload profile",    result: true },
+            { id: "rebalance",     icon: "&#128993;", title: "Proactive rebalance",           desc: "Trigger and tune capacity rebalancing across hosts/disks",   result: true }
         ]
     },
 
@@ -520,7 +526,13 @@ const tree = {
             { id: "shutdown_seq",  icon: "&#128993;", title: "Cluster shutdown / startup",    desc: "Correct sequence for powering down and restarting vSAN",    result: true },
             { id: "fault_domain",  icon: "&#128308;", title: "Fault domain misconfiguration", desc: "Objects violating FTT because of incorrect FD layout",     result: true },
             { id: "witness_res",   icon: "&#128308;", title: "Witness resource exhaustion",   desc: "Witness appliance OOM, CPU saturated, objects degraded",    result: true },
-            { id: "stretched_fail",icon: "&#128308;", title: "Stretched cluster site failure", desc: "Entire preferred or secondary site went down",             result: true }
+            { id: "stretched_fail",icon: "&#128308;", title: "Stretched cluster site failure", desc: "Entire preferred or secondary site went down",             result: true },
+            { id: "health_service", icon: "&#128308;", title: "Health service crash / stale data",  desc: "vSAN health checks not running or showing stale results",  result: true },
+            { id: "clomd_failure",  icon: "&#128308;", title: "CLOMD failure — no repairs",         desc: "CLOMD daemon crashed, objects not repairing",              result: true },
+            { id: "support_bundle", icon: "&#128993;", title: "Support bundle collection",          desc: "Proper diagnostic bundle collection for VMware SR",        result: true },
+            { id: "boot_device",    icon: "&#128308;", title: "Boot device failure (USB/SD)",       desc: "ESXi boot media worn out, host lost configuration",        result: true },
+            { id: "max_limits",     icon: "&#128993;", title: "Max configuration limits",           desc: "vSAN scalability limits — hosts, components, policies",    result: true },
+            { id: "datastore_gone", icon: "&#128308;", title: "vSAN datastore not visible",         desc: "Datastore disappeared after reboot or network outage",     result: true }
         ]
     },
 
@@ -535,7 +547,8 @@ const tree = {
             { id: "raid_policy",     icon: "&#128993;", title: "RAID-5/6 erasure coding (ESA)", desc: "ESA RAID policy design, rebuild impact, FTT choices",    result: true },
             { id: "esa_arch",        icon: "&#128993;", title: "ESA vs OSA architecture",       desc: "Understanding architectural differences for decisions",   result: true },
             { id: "osa_to_esa",      icon: "&#128993;", title: "OSA \u2192 ESA migration planning",  desc: "Planning and executing migration from OSA to ESA",       result: true },
-            { id: "esa_dedup",       icon: "&#128993;", title: "ESA dedup & compression",       desc: "ESA-specific dedup/compression tuning and issues",       result: true }
+            { id: "esa_dedup",       icon: "&#128993;", title: "ESA dedup & compression",       desc: "ESA-specific dedup/compression tuning and issues",       result: true },
+            { id: "backup_vadp",     icon: "&#128993;", title: "Backup integration (VADP/CBT)",    desc: "Backup failures due to CBT issues or snapshot problems", result: true }
         ]
     },
 
@@ -579,7 +592,8 @@ const tree = {
             { id: "mgmt_recovery",  icon: "&#128308;", title: "Management domain recovery",   desc: "Management domain vSAN failure, SDDC recovery",             result: true },
             { id: "hci_mesh_vcf",   icon: "&#128993;", title: "HCI Mesh cross-domain",        desc: "HCI Mesh between workload domains in VCF",                  result: true },
             { id: "hci_mesh_gen",   icon: "&#128993;", title: "HCI Mesh general config",      desc: "Non-VCF HCI Mesh setup and troubleshooting",                result: true },
-            { id: "iscsi_target",   icon: "&#128993;", title: "iSCSI target service",          desc: "vSAN iSCSI target configuration or failure",                result: true }
+            { id: "iscsi_target",   icon: "&#128993;", title: "iSCSI target service",          desc: "vSAN iSCSI target configuration or failure",                result: true },
+            { id: "drs_conflict",   icon: "&#128993;", title: "DRS + vSAN conflict",              desc: "DRS migrations conflicting with vSAN data locality",       result: true }
         ]
     }
 };
@@ -676,7 +690,23 @@ const results = {
     mgmt_recovery:  { kbs: [{ n:38, t:"Management Domain vSAN Recovery",      ty:"break", f:"phase4.html", sum:"Management domain vSAN failure is catastrophic \u2014 vCenter, SDDC Manager, NSX all run here. Follow recovery runbook precisely." }] },
     hci_mesh_vcf:   { kbs: [{ n:39, t:"HCI Mesh Cross-Domain in VCF",         ty:"fix",   f:"phase4.html", sum:"Sharing vSAN capacity across VCF workload domains via HCI Mesh \u2014 prerequisites, configuration, and bandwidth considerations." }] },
     hci_mesh_gen:   { kbs: [{ n:13, t:"HCI Mesh Configuration",               ty:"fix",   f:"phase2.html", sum:"General HCI Mesh setup \u2014 mounting remote datastores, network requirements, compatibility matrix, and performance expectations." }] },
-    iscsi_target:   { kbs: [{ n:20, t:"iSCSI Target Service",                 ty:"fix",   f:"phase2.html", sum:"vSAN iSCSI target configuration for physical workloads \u2014 LUN creation, network binding, multipath, and CHAP authentication." }] }
+    iscsi_target:   { kbs: [{ n:20, t:"iSCSI Target Service",                 ty:"fix",   f:"phase2.html", sum:"vSAN iSCSI target configuration for physical workloads \u2014 LUN creation, network binding, multipath, and CHAP authentication." }] },
+
+    // ── New KB Entries (71–84) ──
+    orphan_objects:  { kbs: [{ n:72, t:"Stale / Orphaned Objects Consuming Capacity",  ty:"break", f:"phase1.html", sum:"Deleted VMs leave behind orphaned components that silently consume 5\u201315% of cluster capacity. Identify with RVC obj_status_report and clean up via vSphere Client." }] },
+    dom_owner:       { kbs: [{ n:77, t:"DOM Owner Unreachable \u2014 Objects Inaccessible", ty:"break", f:"phase5.html", sum:"DOM owner host down or partitioned \u2014 objects inaccessible despite healthy data components. Wait for automatic re-election (60\u2013140s) or restart CLOMD." }] },
+    component_limit: { kbs: [{ n:78, t:"Component Count Limit Exceeded",               ty:"break", f:"phase6.html", sum:"Host reached 9,000 component limit (OSA). Reduce snapshots, clean orphans, lower FTT, or add hosts. ESA supports 14,000+." }] },
+    hba_passthrough: { kbs: [{ n:84, t:"HBA / Controller Passthrough (JBOD) Mode",     ty:"fix",   f:"phase4.html", sum:"vSAN requires direct disk access \u2014 RAID mode causes hidden write amplification and wrong SMART data. Switch controller to HBA/JBOD mode." }] },
+    ntp_drift:       { kbs: [{ n:81, t:"NTP Clock Drift Breaks CMMDS",                 ty:"break", f:"phase7.html", sum:"Clock drift >2 min causes CMMDS phantom partitions. Fix NTP on all hosts, use external NTP sources, never host NTP on vSAN itself." }] },
+    rebalance:       { kbs: [{ n:79, t:"vSAN Proactive Rebalance",                     ty:"fix",   f:"phase6.html", sum:"Trigger and tune capacity rebalancing when distribution is skewed >30% between disks. Run during off-peak hours." }] },
+    health_service:  { kbs: [{ n:71, t:"vSAN Health Service Crash / Stale Data",        ty:"break", f:"phase1.html", sum:"Health checks show stale data or don't run. Restart vsanmgmtd on vCenter/ESXi. Reset stats.db if corrupted." }] },
+    clomd_failure:   { kbs: [{ n:73, t:"CLOMD Failure \u2014 Objects Not Repairing",    ty:"break", f:"phase2.html", sum:"CLOMD daemon crash prevents vSAN from repairing degraded objects. Restart clomd service. If stuck, restart all vSAN services or reboot host." }] },
+    support_bundle:  { kbs: [{ n:74, t:"vSAN Support Bundle Collection",                ty:"fix",   f:"phase2.html", sum:"Collect vSAN-specific bundles from all hosts and vCenter immediately after incidents. Use vm-support --group vsan or vSphere Client export." }] },
+    boot_device:     { kbs: [{ n:75, t:"ESXi Host Boot Device Failure (USB/SD)",        ty:"break", f:"phase3.html", sum:"USB/SD boot media fails from write wear. Replace with enterprise SSD/M.2, reinstall ESXi, restore config, reclaim disk groups." }] },
+    max_limits:      { kbs: [{ n:80, t:"vSAN Max Configuration Limits Reference",       ty:"fix",   f:"phase6.html", sum:"Key limits: 64 hosts/cluster, 9,000 components/host (OSA), 14,000+ (ESA), 5 disk groups, 62TB max object. Check configmax.broadcom.com." }] },
+    datastore_gone:  { kbs: [{ n:82, t:"vSAN Datastore Not Visible After Reboot",       ty:"break", f:"phase7.html", sum:"vSAN datastore missing after reboot. Verify VMkernel vSAN tag, rejoin cluster with esxcli vsan cluster join, re-register VMs." }] },
+    drs_conflict:    { kbs: [{ n:83, t:"DRS + vSAN Conflict Resolution",                ty:"fix",   f:"phase4.html", sum:"DRS vMotion conflicts with vSAN data locality. Set DRS to Partially Automated, increase migration threshold, separate traffic." }] },
+    backup_vadp:     { kbs: [{ n:76, t:"vSAN + Backup Integration (VADP/CBT)",          ty:"fix",   f:"phase3.html", sum:"Backup failures from CBT bugs or snapshot overload. Reset CBT, limit concurrent snapshots to 2\u20133, use HotAdd transport mode." }] }
 };
 
 // ═══════════════════════════════════════════════════════════════════

@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Performance &amp; Capacity Issues</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">13</div><div class="stat-label">Performance &amp; Capacity Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">6</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">7</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 6</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1736,6 +1736,265 @@ esxcli vsan debug object list
         <div class="alert alert-success">
             <span class="alert-icon">&#10003;</span>
             <span><strong>Best Practice:</strong> Enable TRIM/UNMAP in all guest OS templates before deployment. Use thin-provisioned VMDKs as default. For ESA, this is automatic. For OSA, schedule weekly <code class="inline">fstrim</code> (Linux) or <code class="inline">Optimize-Volume -ReTrim</code> (Windows) via cron/scheduled task to ensure continuous space reclamation.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #78: Component Count Limit Exceeded       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-78" data-type="break" data-severity="high" data-keywords="component limit 9000 maximum exceeded object placement failure new VM provision">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">78</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Component Count Limit Exceeded</div>
+            <div class="kb-entry-subtitle">Host reaches maximum component count, blocking new VM deployments and policy compliance</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Component Limit</span>
+                <span class="tag">Scaling</span>
+                <span class="tag">Capacity</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Each ESXi host has a maximum component count (9,000 for standard, higher for ESA). When exceeded, new VM provisioning fails, storage policy compliance breaks, and resync operations stall. The error messages are often vague and misleading.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>New VM deployment: <strong>"Insufficient resources to satisfy vSAN policy"</strong></li>
+                    <li>vSAN Health: <strong>"Component metadata health"</strong> warning</li>
+                    <li>Clone/snapshot operations fail on specific hosts</li>
+                    <li>vSAN resync stalls without clear error messages</li>
+                    <li>esxtop shows high CLOMD CPU usage</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Too many VMs with FTT=2 or RAID-6 (triple component count)</li>
+                    <li>Excessive snapshots creating additional objects per VM</li>
+                    <li>Uneven distribution — some hosts have more components than others</li>
+                    <li>Small cluster (3-4 hosts) with too many VMs</li>
+                    <li>Witness components counted against witness appliance limit</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check per-host component count</strong></p>
+                    <pre><code># From each ESXi host:
+esxcli vsan debug object list | wc -l
+
+# More precise count:
+esxcli vsan debug disk list
+# "Components" column shows count per disk
+
+# Maximum limits:
+# OSA: 9,000 components per host
+# ESA: 14,000+ components per host (varies by build)
+# Witness: 45,000 witness components per appliance (large)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Reduce component count</strong></p>
+                    <pre><code># Quick wins:
+# 1. Delete stale snapshots (each snapshot = additional components)
+# 2. Remove orphaned objects (see KB #72)
+# 3. Consolidate small VMs or migrate some to another cluster
+
+# Reduce FTT where appropriate:
+# VMs with FTT=2 RAID-1 create 3x components vs FTT=1
+# Evaluate if all VMs truly need the higher protection level</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Scale out the cluster</strong></p>
+                    <pre><code># Adding hosts distributes components more evenly
+# After adding a host, vSAN automatically rebalances components
+# Monitor rebalance:
+esxcli vsan debug resync summary
+
+# For long-term planning:
+# Calculate: (Total VMs x avg components per VM) / number of hosts
+# Keep each host below 70% of max component count</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #79: vSAN Proactive Rebalance             -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-79" data-type="fix" data-severity="medium" data-keywords="rebalance proactive automatic manual capacity distribution uneven skew threshold">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">79</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Proactive Rebalance</div>
+            <div class="kb-entry-subtitle">Trigger and tune capacity rebalancing when data is unevenly distributed across hosts or disks</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Rebalance</span>
+                <span class="tag">Capacity</span>
+                <span class="tag">Operations</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">When to Rebalance</div>
+        <p>vSAN automatically rebalances when capacity variance exceeds 30% between disks. After replacing a disk group, adding hosts, or completing large VM migrations, capacity distribution can become skewed. Manual rebalance ensures even wear and optimal performance.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current capacity distribution</strong></p>
+                    <pre><code># Per-disk usage across the cluster:
+esxcli vsan debug disk list
+# Compare "Used" percentages — if variance > 30%, rebalance is needed
+
+# vSAN Health check:
+# Cluster → Monitor → vSAN → Health → Capacity
+# "Disk usage on a vSAN cluster" test shows distribution</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Rebalance Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable proactive rebalance</strong></p>
+                    <pre><code># From vSphere Client (7.0+):
+# Cluster → Configure → vSAN → Services → Proactive Rebalance → Enable
+
+# Or via esxcli on any cluster host:
+esxcli vsan debug disk rebalance
+# This triggers an immediate one-time rebalance
+
+# To set the automatic threshold (default 30%):
+# Advanced settings on cluster → VSAN.ProactiveRebalanceThreshold = 25</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Monitor rebalance progress</strong></p>
+                    <pre><code># Rebalance shows as resync activity:
+esxcli vsan debug resync summary
+
+# Track in vSphere Client:
+# Cluster → Monitor → vSAN → Resyncing Objects
+# Filter by "Rebalance" type
+
+# Rebalance uses the same throttle as repair resync
+# To speed up (at cost of VM performance):
+# Set VSAN.ResyncThrottleThreshold higher (e.g., 80)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-info">
+                        <span class="alert-icon">&#128712;</span>
+                        <span><strong>Tip:</strong> Run rebalance during off-peak hours. Rebalance consumes the same I/O budget as repair resync, so it impacts VM performance. In ESA, rebalance is more efficient due to the single-tier architecture.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #80: vSAN Max Configuration Limits        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-80" data-type="fix" data-severity="medium" data-keywords="maximum limits configuration scalability hosts components disk groups objects VMs per cluster">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">80</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Maximum Configuration Limits Reference</div>
+            <div class="kb-entry-subtitle">Key scalability limits for vSAN clusters — hosts, components, disk groups, objects, and more</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Limits</span>
+                <span class="tag">Scalability</span>
+                <span class="tag">Reference</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">vSAN 8.0 Maximums (ESA &amp; OSA)</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Cluster Limits</div>
+                <ul>
+                    <li><strong>Hosts per cluster:</strong> 64 (ESA &amp; OSA)</li>
+                    <li><strong>Minimum hosts:</strong> 3 (standard), 2 (stretched + witness)</li>
+                    <li><strong>Disk groups per host (OSA):</strong> 5</li>
+                    <li><strong>Disks per disk group (OSA):</strong> 1 cache + 7 capacity</li>
+                    <li><strong>Storage pools per host (ESA):</strong> 1</li>
+                    <li><strong>NVMe devices per pool (ESA):</strong> 24</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">Component Limits</div>
+                <ul>
+                    <li><strong>Components per host (OSA):</strong> 9,000</li>
+                    <li><strong>Components per host (ESA):</strong> 14,000+</li>
+                    <li><strong>Witness components (large):</strong> 45,000</li>
+                    <li><strong>Witness components (medium):</strong> 10,000</li>
+                    <li><strong>Object size maximum:</strong> 62 TB</li>
+                    <li><strong>VMDK max per VM:</strong> 64 (vSphere limit)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Policy Limits</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">FTT / FTM</div>
+                <ul>
+                    <li><strong>FTT max (RAID-1):</strong> 3 (requires 7 hosts)</li>
+                    <li><strong>FTT max (RAID-5):</strong> 1 (requires 4 hosts)</li>
+                    <li><strong>FTT max (RAID-6):</strong> 2 (requires 6 hosts)</li>
+                    <li><strong>Stripe width max:</strong> 12</li>
+                    <li><strong>IOPS limit range:</strong> 0 (unlimited) to 2^31</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Network</div>
+                <ul>
+                    <li><strong>vSAN VMkernel per host:</strong> 2 (one per stack)</li>
+                    <li><strong>Inter-site latency (stretched):</strong> &le;5ms RTT</li>
+                    <li><strong>Witness bandwidth:</strong> min 100 Mbps</li>
+                    <li><strong>vSAN data bandwidth:</strong> min 10 Gbps (25G+ for ESA)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Always verify:</strong> Check the <a href="https://configmax.broadcom.com/" target="_blank" rel="noopener" style="color:var(--accent-light)">Broadcom Configuration Maximums tool</a> for your exact vSAN build. Limits change between releases and update versions.</span>
         </div>
     </div>
 </div>

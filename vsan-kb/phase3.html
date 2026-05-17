@@ -248,8 +248,8 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">DR &amp; Recovery Issues</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">12</div><div class="stat-label">DR &amp; Recovery Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">7</div><div class="stat-label">Break Scenarios</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 3</div><div class="stat-label">Current Phase</div></div>
 </div>
@@ -1642,6 +1642,205 @@ esxcli system maintenanceMode set -e false
         <div class="alert alert-success">
             <span class="alert-icon">&#10004;</span>
             <span><strong>VMware KB Reference:</strong> KB 2108574 — "Configuring fault domains in vSAN". Fault domains are ESSENTIAL for production vSAN clusters spanning multiple racks. Without them, vSAN cannot guarantee physical separation of replicas across failure boundaries. Always configure before going live.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #75: Host Boot Device Failure (USB/SD)    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-75" data-type="break" data-severity="critical" data-keywords="boot device USB SD card failure wear ESXi OSDATA partition host down">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">75</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Host Boot Device Failure (USB / SD Card)</div>
+            <div class="kb-entry-subtitle">ESXi boot media fails due to write wear, causing host to lose configuration and drop from cluster</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Boot Device</span>
+                <span class="tag">USB/SD</span>
+                <span class="tag">Host Failure</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Host goes offline, removing its disk groups from the vSAN cluster. Objects lose a replica. If using USB/SD boot (deprecated in vSphere 8), write wear causes failures every 12–36 months. VMware officially deprecated USB/SD boot in ESXi 7.0u3+.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host shows <strong>"Not Responding"</strong> in vCenter</li>
+                    <li>Console shows read-only filesystem or boot failure</li>
+                    <li>PSOD with <code class="inline">Cannot open /bootbank</code> errors</li>
+                    <li>ESXi boots to DCUI but shows missing VMFS-L partitions</li>
+                    <li>Host lost all local configuration (networking, vSAN config)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>USB flash drive write wear exhaustion (limited write cycles)</li>
+                    <li>SD card degradation from constant OSDATA partition writes</li>
+                    <li>vSphere 7+ increased boot device write load (tools, logs, traces)</li>
+                    <li>Power surge corrupted boot media</li>
+                    <li>Cheap/non-enterprise USB drives not rated for server use</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Replace boot device and reinstall ESXi</strong></p>
+                    <pre><code># If USB/SD failed completely:
+# 1. Replace with a new enterprise SSD/NVMe (recommended) or M.2 boot device
+# 2. Install ESXi fresh from ISO
+# 3. Apply the SAME build/patch level as other cluster hosts
+
+# After install, reconfigure:
+esxcli network vswitch standard list
+esxcli vsan storage tag add --tag capacityFlash -d naa.xxx  # if needed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Restore host configuration from backup</strong></p>
+                    <pre><code># If you backed up host config (best practice):
+vim-cmd hostsvc/firmware/restore_config /tmp/configBundle-hostname.tgz
+
+# If no backup exists, reconfigure manually:
+# - Set management VMkernel IP
+# - Tag vSAN VMkernel
+# - Configure NTP, DNS, syslog
+# - Add host back to vCenter and cluster</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Reclaim vSAN disk groups</strong></p>
+                    <pre><code># After host rejoins the cluster, existing vSAN disks should be auto-detected
+# If not, manually re-add the disk group:
+esxcli vsan storage list
+# Verify existing disks show with vSAN partition
+
+# If disks show but aren't claimed:
+esxcli vsan storage add -s naa.CACHE_SSD -d naa.CAPACITY_1 -d naa.CAPACITY_2</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-info">
+                        <span class="alert-icon">&#128712;</span>
+                        <span><strong>Migration path:</strong> Move from USB/SD to an enterprise M.2 SATA/NVMe or BOSS card. In vSphere 8, configure the OSDATA partition on a dedicated persistent device. See VMware KB 85685 for supported boot devices.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #76: vSAN + Backup (VADP/CBT) Integration -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-76" data-type="fix" data-severity="high" data-keywords="backup VADP CBT changed block tracking snapshot Veeam Commvault Avamar restore">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">76</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN + Backup Integration (VADP / CBT)</div>
+            <div class="kb-entry-subtitle">Backup failures on vSAN due to Changed Block Tracking issues, snapshot problems, or VADP timeouts</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Backup</span>
+                <span class="tag">VADP</span>
+                <span class="tag">CBT</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Backup jobs fail with <strong>"Cannot create snapshot"</strong> errors</li>
+                    <li>CBT returns incorrect change data causing corrupt restores</li>
+                    <li>Backup takes full instead of incremental (CBT reset)</li>
+                    <li>Snapshot consolidation fails after backup completion</li>
+                    <li>Backup proxy timeout connecting to vSAN datastore</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>CBT bug in specific ESXi builds (check VMware KB 2136854)</li>
+                    <li>Too many concurrent backup snapshots on same host</li>
+                    <li>vSAN object I/O timeout during snapshot quiesce</li>
+                    <li>Backup proxy on different network than vSAN VMkernel</li>
+                    <li>stun/unstun operations failing due to vSAN congestion</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Reset CBT for affected VMs</strong></p>
+                    <pre><code># Power off the VM (or use hot-add if supported):
+# Edit VM Settings → Options → Advanced → Configuration Parameters
+# Set: ctkEnabled = FALSE
+# Remove all ctk files from the VM's folder
+# Re-enable: ctkEnabled = TRUE
+
+# PowerCLI bulk reset for all VMs:
+Get-VM | ForEach-Object {
+    $snap = New-Snapshot -VM $_ -Name "CBT-Reset" -Memory:$false -Quiesce:$false
+    Remove-Snapshot -Snapshot $snap -Confirm:$false
+}
+# This forces CBT to recalculate from scratch</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Limit concurrent backup snapshots</strong></p>
+                    <pre><code># In your backup software (Veeam, Commvault, etc.):
+# Reduce concurrent tasks per host to 2-3 (not 5+)
+# vSAN must create/commit snapshots which involves I/O
+
+# Set backup window during low-I/O periods
+# Avoid running backups during vSAN resync operations
+
+# For Veeam specifically:
+# Set "Limit maximum concurrent snapshots per datastore" = 2</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Use vSAN 8 native snapshots (ESA) for better backup performance</strong></p>
+                    <pre><code># ESA native snapshots don't have the performance penalty of OSA redo logs
+# If on ESA, configure backup software to use native snapshot API
+# This eliminates most snapshot-related backup failures
+
+# Verify native snapshots are active:
+esxcli vsan debug object list --filter-type snapshot</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always use HotAdd transport mode for backup proxies on vSAN. Place backup proxy VMs on the vSAN cluster itself. Maintain at least 25% free capacity for snapshot overhead during backup windows.</span>
         </div>
     </div>
 </div>

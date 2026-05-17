@@ -248,8 +248,8 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Networking Issues</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">12</div><div class="stat-label">Networking Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">7</div><div class="stat-label">Break Scenarios</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 7</div><div class="stat-label">Current Phase</div></div>
 </div>
@@ -1711,6 +1711,217 @@ esxtop
         <div class="alert alert-success">
             <span class="alert-icon">&#10003;</span>
             <span><strong>Summary:</strong> For ESA clusters: 25GbE is the minimum, 100GbE is optimal. Use spine-leaf topology with dual ToR for redundancy. Always validate MTU 9000 end-to-end. If your ESA cluster shows congestion but NVMe latency is low, the network is your bottleneck — upgrade to higher-speed NICs or add more bandwidth.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #81: NTP Clock Drift Breaks CMMDS         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-81" data-type="break" data-severity="critical" data-keywords="NTP time sync clock drift CMMDS partition node membership timeout cluster split">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">81</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NTP Clock Drift Breaks vSAN CMMDS</div>
+            <div class="kb-entry-subtitle">Time synchronization failure between hosts causes CMMDS cluster membership issues and phantom partitions</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">NTP</span>
+                <span class="tag">CMMDS</span>
+                <span class="tag">Time Sync</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> CMMDS (Cluster Monitoring, Membership, and Directory Services) relies on synchronized clocks. Clock drift &gt;2 minutes between hosts causes CMMDS to think hosts are unreachable, triggering phantom network partitions. Objects degrade for no apparent network reason.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Network partition"</strong> despite working connectivity</li>
+                    <li>Hosts appear to leave/rejoin the cluster randomly</li>
+                    <li>Objects intermittently go inaccessible then recover</li>
+                    <li>CMMDS logs show <strong>heartbeat timeout</strong> for specific hosts</li>
+                    <li>vSAN Health: <strong>"Time is not synchronized"</strong> alarm</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NTP server unreachable (firewall, DNS failure, or NTP server down)</li>
+                    <li>Hosts configured with different NTP sources drifting apart</li>
+                    <li>VM-based NTP server on vSAN itself (circular dependency)</li>
+                    <li>BIOS/hardware clock drift on specific server model</li>
+                    <li>NTP service not set to start on boot after ESXi upgrade</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check time sync status on all hosts</strong></p>
+                    <pre><code># On each ESXi host:
+esxcli system time get
+esxcli network firewall ruleset list --ruleset-id ntpClient
+
+# Check NTP daemon status:
+/etc/init.d/ntpd status
+
+# Compare time across all hosts (run from vCenter via PowerCLI):
+Get-VMHost | Select Name, @{N="Time";E={(Get-View $_.Id).ConfigManager |
+    ForEach-Object { (Get-View $_.DateTimeSystem).QueryDateTime() }}} | Sort Time</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Fix NTP configuration on all hosts</strong></p>
+                    <pre><code># Set NTP server (use at least 2 external/infrastructure NTP sources):
+esxcli system ntp set --server=ntp1.corp.local --server=ntp2.corp.local
+esxcli system ntp set --enabled=true
+
+# Restart NTP service:
+/etc/init.d/ntpd restart
+
+# Force immediate sync (if drift is large):
+/etc/init.d/ntpd stop
+esxcli system time set --hour=HH --min=MM --sec=SS  # set manually first
+/etc/init.d/ntpd start
+
+# Set NTP to start on boot:
+chkconfig ntpd on</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify CMMDS recovers after time fix</strong></p>
+                    <pre><code># After syncing time, verify cluster membership:
+esxcli vsan cluster get
+# All hosts should show the SAME "Sub-Cluster Master UUID"
+# and "Sub-Cluster Member Count" should equal total hosts
+
+# If partition persists, restart vSAN clustering on the affected host:
+esxcli vsan cluster leave
+esxcli vsan cluster join -c &lt;cluster-uuid&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Never</strong> place your NTP server VM on the vSAN datastore itself. If vSAN goes down, NTP goes down, creating a circular dependency that prevents recovery. Use physical NTP appliances or external NTP pools.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #82: vSAN Datastore Not Visible           -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-82" data-type="break" data-severity="high" data-keywords="datastore not visible missing disappeared inventory mount unmounted reboot">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">82</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Datastore Not Visible After Reboot</div>
+            <div class="kb-entry-subtitle">vSAN datastore disappears from host inventory after reboot or network outage</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Datastore</span>
+                <span class="tag">Visibility</span>
+                <span class="tag">Mount</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs show as "Inaccessible" in vCenter. The vSAN datastore is missing from the datastore browser. Data is NOT lost — it's still on the physical disks — but the host can't see the vSAN cluster.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN datastore <strong>missing</strong> from Datastores tab in vCenter</li>
+                    <li>VMs show as <strong>"Inaccessible"</strong> or <strong>"Invalid"</strong></li>
+                    <li><code class="inline">esxcli vsan cluster get</code> shows <strong>"Cluster not configured"</strong></li>
+                    <li>vSAN Health not available for this host</li>
+                    <li>Disk groups exist but vSAN is not using them</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vSAN VMkernel adapter lost its vSAN traffic tag during reboot</li>
+                    <li>vSAN service didn't start on boot (startup dependency failure)</li>
+                    <li>Host was removed from cluster in vCenter while offline</li>
+                    <li>Boot device corruption lost vSAN configuration</li>
+                    <li>Network config changed preventing vSAN cluster communication</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify vSAN VMkernel tagging</strong></p>
+                    <pre><code># Check if VMkernel has vSAN traffic enabled:
+esxcli vsan network list
+# Should show vmk interface with "VsanVmknicUuid"
+
+# If empty, re-tag the VMkernel:
+esxcli vsan network ipv4 add -i vmk1
+# (use the correct vmk interface for your setup)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Rejoin the vSAN cluster</strong></p>
+                    <pre><code># Get the cluster UUID from a working host:
+# On a healthy host: esxcli vsan cluster get → note "Sub-Cluster UUID"
+
+# On the affected host:
+esxcli vsan cluster join -c &lt;cluster-uuid&gt;
+
+# Verify:
+esxcli vsan cluster get
+# Should now show cluster membership
+
+# Refresh vCenter:
+# Right-click host → Connection → Reconnect</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify datastore reappears and VMs recover</strong></p>
+                    <pre><code># After rejoining, vSAN datastore should appear within 1-2 minutes
+# Verify disk groups are claimed:
+esxcli vsan storage list
+
+# If VMs still show "Inaccessible":
+# Right-click VM → Remove from Inventory (don't delete!)
+# Then: Datastore → Browse → find .vmx → Register VM</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
         </div>
     </div>
 </div>

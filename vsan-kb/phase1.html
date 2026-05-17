@@ -509,11 +509,11 @@
 <!-- ═══════════ STATS ═══════════ -->
 <div class="stats-bar">
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-value" style="color:var(--accent-light)">12</div>
         <div class="stat-label">Total Issues</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-value" style="color:var(--danger-light)">7</div>
         <div class="stat-label">Break Scenarios</div>
     </div>
     <div class="stat-card">
@@ -1799,6 +1799,249 @@ vsan.obj_status_report /dc/computers/cluster-name --filter-type orphan
 # Right-click VM → Migrate → Change storage only
 # Select a non-vSAN datastore (local/NFS/iSCSI) → Finish
 # Repeat for largest VMs until sufficient vSAN space is freed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #71: vSAN Health Service Failure          -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-71" data-type="break" data-severity="high" data-keywords="health service crash stale data health check not running database corrupt vcenter">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">71</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Health Service Crash / Stale Health Data</div>
+            <div class="kb-entry-subtitle">Health checks show stale or incorrect data, health service not running, or health DB corrupted</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Health Service</span>
+                <span class="tag">Monitoring</span>
+                <span class="tag">Operations</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Without a functioning health service, administrators lose visibility into cluster health. Real problems go undetected. Stale data can mislead troubleshooting, causing admins to chase phantom issues.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health shows <strong>"Last checked: X days ago"</strong> or never updates</li>
+                    <li>Health checks return <strong>"Unknown"</strong> or blank results</li>
+                    <li>"Retest" button does nothing or spins indefinitely</li>
+                    <li>vCenter logs: <code class="inline">VsanVcClusterHealthSystem error</code></li>
+                    <li>vSAN Performance Service shows no data after a specific date</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vSAN health DB corruption (stats.db on vCenter appliance)</li>
+                    <li>vCenter VMODL version mismatch after partial upgrade</li>
+                    <li>vsanmgmtd service crashed and didn't restart</li>
+                    <li>Disk space full on vCenter appliance blocking DB writes</li>
+                    <li>ESXi host running mismatched vSAN build version</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vSAN health service status on vCenter</strong></p>
+                    <pre><code># SSH to vCenter Appliance:
+vmon-cli --status vsanmgmtd
+# Should return "RUNNING"
+
+# Check the service logs:
+tail -200 /var/log/vmware/vsanmgmtd/vsanmgmtd.log | grep -i "error\|exception\|fail"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check health service on each ESXi host</strong></p>
+                    <pre><code># SSH to ESXi:
+/etc/init.d/vsanmgmtd status
+# Should return "vsanmgmtd is running"
+
+# Check per-host health:
+esxcli vsan health cluster list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart vSAN health service on vCenter</strong></p>
+                    <pre><code># SSH to vCenter:
+vmon-cli --restart vsanmgmtd
+
+# Wait 2-3 minutes, then retest health in vSphere Client
+# If still stale, restart the entire vSAN management stack:
+vmon-cli --restart vsanmgmtd
+vmon-cli --restart vpxd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reset health DB if corrupted</strong></p>
+                    <pre><code># On vCenter appliance — backup first:
+cp /storage/vsanmgmt/statsdb/stats.db /storage/vsanmgmt/statsdb/stats.db.bak
+
+# Remove corrupted DB (service will recreate it):
+rm /storage/vsanmgmt/statsdb/stats.db
+vmon-cli --restart vsanmgmtd
+
+# Historical data will be lost but health checks resume immediately</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Removing stats.db deletes all historical performance data. Only do this after confirming the DB is corrupted. Always back up first.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Restart vSAN health on individual ESXi hosts</strong></p>
+                    <pre><code># SSH to the affected ESXi host:
+/etc/init.d/vsanmgmtd restart
+
+# Verify:
+/etc/init.d/vsanmgmtd status
+esxcli vsan health cluster list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Prevention:</strong> Monitor vCenter disk space (health DB can grow large). After vCenter upgrades, always verify vSAN health service is running. Set up Skyline Health alerts for proactive notification of health service issues.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #72: Stale / Orphaned Objects             -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-72" data-type="break" data-severity="high" data-keywords="orphan orphaned stale objects inaccessible capacity wasted ghost components stranded">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">72</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Stale / Orphaned vSAN Objects Consuming Capacity</div>
+            <div class="kb-entry-subtitle">Deleted VMs leave behind orphaned components that silently consume datastore space</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Orphan Objects</span>
+                <span class="tag">Capacity</span>
+                <span class="tag">Cleanup</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Orphaned objects can consume 5–15% of cluster capacity over time. They are invisible in the vSphere Client VM inventory but occupy real disk space. Clusters slowly run out of capacity with no apparent cause.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN capacity usage higher than sum of all VM sizes</li>
+                    <li>Capacity doesn't decrease after deleting large VMs</li>
+                    <li>vSAN Health: <strong>"Invalid state objects"</strong> or orphan warnings</li>
+                    <li>RVC shows objects with no associated VM</li>
+                    <li>Maintenance mode pre-check references unknown objects</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VM deleted from inventory but storage objects not fully cleaned up</li>
+                    <li>Failed snapshot consolidation leaving orphaned delta disks</li>
+                    <li>Interrupted Storage vMotion leaving partial copies</li>
+                    <li>CLOMD crash during object deletion sequence</li>
+                    <li>Template conversion failure leaving duplicate objects</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify orphaned objects</strong></p>
+                    <pre><code># RVC (Ruby vSphere Console) from vCenter:
+rvc administrator@vsphere.local@localhost
+vsan.obj_status_report /dc/computers/cluster-name
+
+# Look for "Orphaned" or "Inaccessible" objects
+# Note the object UUIDs for cleanup</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check total orphan capacity waste</strong></p>
+                    <pre><code># From ESXi:
+esxcli vsan debug object list | grep -c "orphan"
+
+# Python script from vCenter (PyVmomi):
+# Use vsan.QueryObjectIdentities() to enumerate all objects
+# Cross-reference with VM inventory to find orphans</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Safe orphan cleanup via vSphere Client</strong></p>
+                    <pre><code># vSphere Client (8.0u2+):
+# Cluster → Monitor → vSAN → Health → Data
+# "Invalid state objects" test shows orphans
+# Use "Repair" action which safely deletes confirmed orphans
+
+# Alternatively from RVC:
+vsan.purge_inaccessible_vswp_objects /dc/computers/cluster-name</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Critical:</strong> Never delete objects manually with <code class="inline">objtool</code> unless directed by VMware/Broadcom Support. Deleting the wrong object causes permanent data loss for running VMs.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Prevent future orphans</strong></p>
+                    <pre><code># Ensure proper VM deletion workflow:
+# 1. Power off VM
+# 2. Right-click → "Delete from Disk" (not "Remove from Inventory")
+# 3. Verify vSAN object count decreased
+
+# After snapshot operations, always verify consolidation:
+# VM → Snapshots → Consolidate if "Consolidation needed" appears</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
                 </div>
             </div>
         </div>

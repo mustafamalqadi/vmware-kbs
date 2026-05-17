@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">ESA-Specific Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">11</div><div class="stat-label">ESA-Specific Issues</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">6</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 5</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1590,6 +1590,112 @@ vmkping -I vmk1 -d -s 8972 &lt;other-host-vSAN-IP&gt;
         <div class="alert alert-success">
             <span class="alert-icon">&#10003;</span>
             <span><strong>Key Insight:</strong> ESA's biggest performance advantage over OSA is the elimination of the write buffer (cache tier) bottleneck. In OSA, a single cache SSD could saturate at 50-100K IOPS. In ESA, writes are distributed across all NVMe devices in the storage pool, providing linear scalability.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #77: DOM Owner Unreachable                -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-77" data-type="break" data-severity="critical" data-keywords="DOM owner unreachable distributed object manager component placement inaccessible timeout">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">77</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">DOM Owner Unreachable — Objects Inaccessible</div>
+            <div class="kb-entry-subtitle">DOM owner host is down or network-partitioned, making objects inaccessible even though data components are healthy</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">DOM</span>
+                <span class="tag">Object Owner</span>
+                <span class="tag">Accessibility</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Every vSAN object has a DOM owner host that coordinates I/O. If that host becomes unreachable, the object is inaccessible — even if ALL data components are perfectly healthy on other hosts. VMs freeze until DOM ownership is re-elected (typically 60–140 seconds).</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs pause/freeze for 60+ seconds during host failure</li>
+                    <li>vSAN Health: <strong>"Objects with DOM owner unreachable"</strong></li>
+                    <li><code class="inline">esxcli vsan debug object list</code> shows owner on failed host</li>
+                    <li>VM I/O latency spikes to &gt;5000ms before recovery</li>
+                    <li>After recovery, some objects remain in "Reduced availability"</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>ESXi host crash (PSOD or hardware failure)</li>
+                    <li>Network partition isolating the DOM owner host</li>
+                    <li>Host reboot without proper maintenance mode</li>
+                    <li>vSAN VMkernel interface failure on the owner host</li>
+                    <li>Bug preventing DOM ownership re-election</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify objects with unreachable owners</strong></p>
+                    <pre><code># From a healthy ESXi host:
+esxcli vsan debug object health summary
+# Look for "Objects with unreachable owner" count
+
+# Detailed list:
+esxcli vsan debug object list | grep -A5 "DOM Owner"
+# Cross-reference owner UUID with host UUIDs:
+esxcli vsan cluster get</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Wait for automatic DOM re-election (preferred)</strong></p>
+                    <pre><code># vSAN automatically re-elects DOM owners when a host becomes unreachable
+# Default timeout: 60 seconds for absent components, up to 140 seconds total
+# Monitor progress:
+watch -n 5 'esxcli vsan debug object health summary'
+
+# Objects should transition from "unreachable owner" back to "Healthy"
+# VMs will auto-resume I/O after re-election completes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>If re-election is stuck — force repair</strong></p>
+                    <pre><code># From RVC on vCenter:
+vsan.obj_status_report /dc/computers/cluster-name --filter-incomplete
+# Identify stuck objects
+
+# Force object repair (re-creates missing components):
+# vSphere Client → Cluster → Monitor → vSAN → Resyncing Objects
+# If no resync is happening for stuck objects, restart CLOMD on the
+# host that should be the new owner:
+/etc/init.d/clomd restart</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Architecture note:</strong> DOM owner is typically the host where the VM is running (client host). You can influence this with <code class="inline">vsan.dom.owner.forceWarmCache</code> advanced setting. In vSAN 8, DOM ownership tracking is improved for faster failover.</span>
         </div>
     </div>
 </div>

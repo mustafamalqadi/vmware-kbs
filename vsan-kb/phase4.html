@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">VCF &amp; Lifecycle Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">12</div><div class="stat-label">VCF &amp; Lifecycle Issues</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">7</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 4</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1542,6 +1542,184 @@ esxcli vsan health cluster list | grep -i "encrypt"
         <div class="alert alert-warning">
             <span class="alert-icon">&#9888;</span>
             <span><strong>Critical:</strong> NEVER let VMCA root certificate expire in a VCF environment. Plan rotation at least 6 months before expiry. An expired VMCA root certificate requires full certificate infrastructure rebuild — a multi-day recovery effort.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #83: DRS + vSAN Conflict Resolution       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-83" data-type="fix" data-severity="high" data-keywords="DRS vMotion conflict migration storage redistribution overload locality data movement">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">83</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">DRS + vSAN Conflict Resolution</div>
+            <div class="kb-entry-subtitle">DRS vMotion migrations conflicting with vSAN data locality and resync operations</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">DRS</span>
+                <span class="tag">vMotion</span>
+                <span class="tag">Conflict</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">The Problem</div>
+        <p>DRS optimizes compute by migrating VMs between hosts. vSAN optimizes storage by keeping data components distributed. When DRS moves a VM away from its DOM owner or data locality, vSAN performance can degrade due to remote reads. During maintenance mode, DRS evacuates VMs faster than vSAN can evacuate data, causing cascading issues.</p>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs experience increased latency after DRS migration</li>
+                    <li>vSAN resync traffic spikes after DRS rebalance cycles</li>
+                    <li>Maintenance mode takes excessively long (DRS + vSAN competing)</li>
+                    <li>DRS alerts: <strong>"Cannot evacuate host — vSAN constraint"</strong></li>
+                    <li>Network congestion from combined vMotion + vSAN resync traffic</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Best Practices</div>
+                <ul>
+                    <li>Set DRS to <strong>"Partially Automated"</strong> for vSAN clusters</li>
+                    <li>Increase DRS migration threshold to reduce unnecessary moves</li>
+                    <li>Separate vMotion and vSAN traffic on different NICs</li>
+                    <li>Use VM-Host affinity rules for latency-sensitive workloads</li>
+                    <li>Schedule DRS and vSAN rebalance at different maintenance windows</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Tuning Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Optimize DRS for vSAN</strong></p>
+                    <pre><code># vSphere Client → Cluster → Configure → vSphere DRS
+# Set Automation Level: "Partially Automated" (recommended for vSAN)
+# Set Migration Threshold: Conservative (3 out of 5)
+
+# Advanced settings to consider:
+# TryBalanceVmsPerHost = 1  (helps distribute VMs evenly)
+# PercentIdleMBInMemDemand = 25  (reduce sensitivity)
+
+# For vSAN specifically, ensure:
+# "VM Overrides" for critical VMs → set to "Manual" to prevent DRS moving them</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Separate traffic during maintenance</strong></p>
+                    <pre><code># Before host maintenance:
+# 1. Put DRS in manual mode temporarily
+# 2. Manually vMotion VMs off the host in controlled batches
+# 3. Wait for vSAN to begin data evacuation
+# 4. Monitor resync progress before proceeding
+
+# This prevents DRS from flooding the network with vMotions
+# while vSAN is simultaneously trying to resync data
+
+# After maintenance, re-enable DRS automation level</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #84: HBA / Controller Passthrough Mode    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-84" data-type="fix" data-severity="high" data-keywords="HBA controller passthrough JBOD RAID mode SAS SATA NVMe direct disk access firmware">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">84</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HBA / Controller Passthrough (JBOD) Mode for vSAN</div>
+            <div class="kb-entry-subtitle">Storage controllers must be in passthrough/JBOD mode — RAID mode causes silent performance degradation and failures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">HBA</span>
+                <span class="tag">Passthrough</span>
+                <span class="tag">Hardware</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN requires direct access to individual disks. If the storage controller is in RAID mode (even RAID-0 per disk), vSAN cannot properly manage the disks. This causes: incorrect SMART data, hidden write amplification, cache bypass, and eventual disk group failures that are extremely difficult to diagnose.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Disk performance far below HCL specifications</li>
+                    <li>SMART data returns <strong>all zeros</strong> or incorrect values</li>
+                    <li>Unexplained disk group failures not matching hardware health</li>
+                    <li>vSAN Health: <strong>"Controller driver not recommended"</strong></li>
+                    <li>Write cache destage extremely slow despite healthy SSD</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Controller shipped in RAID mode by default from vendor</li>
+                    <li>Firmware update reverted controller to RAID mode</li>
+                    <li>Wrong controller model — some don't support passthrough</li>
+                    <li>BIOS setting overriding controller mode after reboot</li>
+                    <li>Mixed-mode controller (some ports RAID, some passthrough)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Verification &amp; Fix</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current controller mode</strong></p>
+                    <pre><code># From ESXi:
+esxcli storage core adapter list
+# Look for the HBA type — should show "SAS" not "RAID"
+
+# Check with storcli/perccli (Dell) or sasicli (HPE):
+/opt/lsi/storcli/storcli64 /c0 show
+# "Topology" should show "JBOD" not "RAID0" or "RAID1"
+
+# vSAN HCL check:
+esxcli vsan storage list
+# Verify controller model matches vSAN HCL entry for "passthrough" mode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Switch controller to passthrough/JBOD mode</strong></p>
+                    <pre><code># ⚠ WARNING: This requires host downtime and may erase controller config
+# 1. Put host in maintenance mode (ensure accessibility)
+# 2. Reboot into controller BIOS/UEFI (usually Ctrl+R or F2 at POST)
+# 3. Change mode from "RAID" to "HBA" or "JBOD" or "Passthrough"
+# 4. Save and reboot
+
+# For Dell PERC controllers (via lifecycle controller):
+# System Setup → Device Settings → RAID Controller → Convert to HBA mode
+
+# After reboot, verify ESXi sees individual disks:
+esxcli storage core device list | grep -c "naa."
+# Should show individual disks, not virtual drives</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Always check the vSAN HCL first.</strong> Not all controllers support passthrough mode. Some require specific firmware versions. The vSAN HCL lists the exact controller model + firmware + driver combination required. Using an unsupported controller voids VMware support.</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

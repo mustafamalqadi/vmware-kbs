@@ -287,15 +287,15 @@
 <!-- ═══════════ STATS ═══════════ -->
 <div class="stats-bar">
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-value" style="color:var(--accent-light)">12</div>
         <div class="stat-label">Day-2 Issues</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--danger-light)">4</div>
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
         <div class="stat-label">Break Scenarios</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--success-light)">6</div>
+        <div class="stat-value" style="color:var(--success-light)">7</div>
         <div class="stat-label">Fix Procedures</div>
     </div>
     <div class="stat-card">
@@ -1665,6 +1665,198 @@ cat /etc/iscsi/iscsid.conf | grep -i "chap"
 
 
 42 — "Configuring vSAN iSCSI target service". The iSCSI target service supports automatic failover to another host in the cluster if the home host fails. Ensure at least 2 hosts are available for iSCSI target HA.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #73: CLOMD Failure                        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-73" data-type="break" data-severity="critical" data-keywords="CLOMD crash object repair placement configuration management daemon stuck degraded">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">73</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">CLOMD Failure — Objects Not Repairing</div>
+            <div class="kb-entry-subtitle">CLOMD daemon crash or hang prevents vSAN from repairing degraded objects</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">CLOMD</span>
+                <span class="tag">Object Repair</span>
+                <span class="tag">Daemon</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> CLOMD (Cluster Level Object Manager Daemon) controls object placement and repair. If it fails, degraded objects remain in reduced redundancy indefinitely, increasing data loss risk with each additional failure.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Objects stay in <strong>"Degraded"</strong> state for hours with no resync</li>
+                    <li>New VM provisioning fails: <strong>"Cannot satisfy storage policy"</strong></li>
+                    <li>vmkernel.log: <code class="inline">CLOMD: ClomdProcessNodeConfig failed</code></li>
+                    <li>vSAN health shows object issues but no repair activity</li>
+                    <li>Resync dashboard shows 0 bytes resyncing despite degraded objects</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>CLOMD service crashed on the object owner host</li>
+                    <li>Memory pressure on ESXi host causing CLOMD OOM</li>
+                    <li>Corrupt CLOM configuration after unclean host restart</li>
+                    <li>Bug in specific ESXi build (check VMware KB database)</li>
+                    <li>Excessive number of objects overwhelming CLOMD queue</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check CLOMD status</strong></p>
+                    <pre><code># On each ESXi host in the cluster:
+/etc/init.d/clomd status
+# Should return "clomd is running"
+
+# Check CLOMD logs:
+grep -i "clomd\|CLOM" /var/log/vmkernel.log | tail -50
+
+# Check for crash traces:
+ls -la /var/core/clomd*</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check object repair queue</strong></p>
+                    <pre><code># From RVC:
+vsan.obj_status_report /dc/computers/cluster-name
+# Look for objects with "Needs repair" state
+
+# Check repair timer:
+esxcli vsan debug object health summary</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart CLOMD on the affected host</strong></p>
+                    <pre><code># SSH to the affected ESXi host:
+/etc/init.d/clomd restart
+
+# Wait 5 minutes, then verify repair starts:
+esxcli vsan debug resync summary
+# Should show non-zero "Total Bytes To Resync"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>If CLOMD won't start — restart all vSAN services</strong></p>
+                    <pre><code># Full vSAN service restart on the affected host:
+/etc/init.d/vsanmgmtd restart
+/etc/init.d/clomd restart
+/etc/init.d/vsand restart
+
+# If still failing, put host in maintenance mode (ensure accessibility)
+# Reboot the host and let vSAN re-initialize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Rebooting an ESXi host removes it from the vSAN cluster temporarily. Ensure the cluster can tolerate this (check object health first). Use "Ensure accessibility" maintenance mode.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #74: vSAN Support Bundle Collection       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-74" data-type="fix" data-severity="medium" data-keywords="support bundle log collection vm-support diagnostic SR GSS troubleshooting export">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">74</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Support Bundle Collection Best Practices</div>
+            <div class="kb-entry-subtitle">Properly collect diagnostic bundles for VMware/Broadcom support escalation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Support</span>
+                <span class="tag">Diagnostics</span>
+                <span class="tag">Logs</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">When to Collect</div>
+        <p>Collect support bundles <strong>as soon as possible after an incident</strong>. ESXi logs rotate — waiting 24+ hours may lose critical evidence. Always collect from ALL hosts in the cluster, plus vCenter.</p>
+
+        <div class="section-label">Collection Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Collect vSAN-specific bundle from ESXi</strong></p>
+                    <pre><code># SSH to each ESXi host — use the vSAN-specific group:
+vm-support --group vsan -w /tmp/
+
+# This collects vSAN-specific logs (smaller, faster):
+# - vsantraces
+# - CLOMD/DOM/LSOM logs
+# - vSAN object health data
+# - esxcli vsan debug output</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Collect from vCenter Appliance</strong></p>
+                    <pre><code># vCenter Appliance (VAMI):
+# https://vcenter:5480 → Support → Create Support Bundle
+
+# Or via CLI:
+# SSH to vCenter:
+cd /usr/lib/vmware-vsan/bin/
+./vc-support.sh
+
+# Collect vsanmgmtd logs separately if needed:
+tar czf /tmp/vsan-vc-logs.tar.gz /var/log/vmware/vsanmgmtd/</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Collect via vSphere Client (easiest method)</strong></p>
+                    <pre><code># vSphere Client → Cluster → Monitor → vSAN → Support
+# Click "Export vSAN Support Bundle"
+# This collects from ALL hosts + vCenter in one operation
+# Select the time range around the incident
+
+# For PSOD, also collect:
+# /var/core/ — core dump files
+# zdump (vmkernel crash dump from the PSOD host)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Tips:</strong> Attach all bundles to your VMware/Broadcom SR (Service Request). Include a timeline of events and any screenshots of errors. For Severity 1 issues, call GSS support directly after uploading bundles.</span>
         </div>
     </div>
 </div>
