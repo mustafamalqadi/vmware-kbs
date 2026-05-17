@@ -41,7 +41,7 @@
             border-bottom: 1px solid var(--border);
             padding: 2rem 0;
             position: sticky; top: 0; z-index: 100;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         }
         .header-inner {
             max-width: 1400px; margin: 0 auto; padding: 0 2rem;
@@ -72,16 +72,18 @@
             padding: 0.4rem 0.9rem; border-radius: 6px;
             border: 1px solid var(--border); background: var(--bg-secondary);
             color: var(--text-secondary); text-decoration: none;
-            font-size: 0.78rem; font-weight: 500; transition: all 0.2s;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
         }
         .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
         .phase-nav a.active { background: rgba(88,166,255,0.08); border-color: var(--accent); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(210,153,34,0.25); color: var(--warning-light); }
         .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
         .search-bar input {
             width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
             border-radius: 12px; border: 1px solid var(--border);
             background: var(--bg-secondary); color: var(--text-primary);
-            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 1rem; outline: none; transition: border-color 0.2s;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: 1rem center;
         }
@@ -106,8 +108,8 @@
         .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
         .kb-entry {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            border-radius: 10px; margin-bottom: 1.25rem; overflow: hidden;
+            transition: border-color 0.2s;
         }
         .kb-entry:hover { border-color: rgba(88,166,255,0.35); }
         .kb-entry-header {
@@ -197,9 +199,15 @@
         .step-content { flex: 1; }
         .step-content p { margin-bottom: 0.3rem; }
         .footer {
-            text-align: center; padding: 2rem; color: var(--text-muted);
-            font-size: 0.8rem; border-top: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
         }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
         @media (max-width: 600px) {
             .header-inner { flex-direction: column; align-items: flex-start; }
             .header h1 { font-size: 1.3rem; }
@@ -224,15 +232,15 @@
 </header>
 
 <nav class="phase-nav">
-    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
-    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
-    <a href="phase2.html">Phase 2 — Day-2 Operations</a>
-    <a href="phase3.html">Phase 3 — DR &amp; Data Protection</a>
-    <a href="phase4.html">Phase 4 — VCF Integration</a>
-    <a href="phase5.html" class="active">Phase 5 — ESA Deep Dive</a>
-    <a href="phase6.html">Phase 6 — Performance &amp; Capacity</a>
-    <a href="phase7.html">Phase 7 — Networking</a>
-    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(210,153,34,0.25);background:rgba(210,153,34,0.06);">&#9881; Decision Tree</a>
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html" class="active">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
 </nav>
 
 <div class="search-bar">
@@ -1590,7 +1598,7 @@ vmkping -I vmk1 -d -s 8972 &lt;other-host-vSAN-IP&gt;
 
 <footer class="footer">
     <p>VMware vSAN Knowledge Base &mdash; Phase 5: ESA Deep Dive</p>
-    <p style="margin-top:0.3rem;"> <a href="phase4.html" style="color:var(--text-secondary);text-decoration:none;">&larr; Phase 4</a> | <a href="index.html" style="color:var(--text-secondary);text-decoration:none;">Dashboard</a> | <a href="phase6.html" style="color:var(--text-secondary);text-decoration:none;">Phase 6 &rarr;</a> | <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:none;">Portal</a></p>
+    <p style="margin-top:0.3rem;"> <a href="phase4.html">&larr; Phase 4</a> | <a href="index.html">Dashboard</a> | <a href="phase6.html">Phase 6</a> | <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
     <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
 </footer>
 
