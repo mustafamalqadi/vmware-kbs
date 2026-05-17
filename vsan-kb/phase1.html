@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VMware vSAN Knowledge Base — Fix &amp; Break</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0f1923;
@@ -27,9 +30,9 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.7;
@@ -37,13 +40,14 @@
 
         /* ── Header ── */
         .header {
-            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            background: linear-gradient(180deg, #101d2b 0%, var(--bg-primary) 100%);
             border-bottom: 1px solid var(--border);
-            padding: 2.5rem 0;
+            padding: 2rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         .header-inner {
             max-width: 1400px;
@@ -56,17 +60,14 @@
             gap: 1rem;
         }
         .header h1 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
         }
         .header h1 span {
-            font-weight: 300;
-            opacity: 0.7;
-            -webkit-text-fill-color: var(--text-secondary);
+            font-weight: 400;
+            color: var(--text-secondary);
         }
         .header-badges {
             display: flex;
@@ -77,11 +78,11 @@
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            padding: 0.35rem 0.85rem;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
         }
         .badge-break {
             background: rgba(230,57,70,0.15);
@@ -121,7 +122,6 @@
         }
         .search-bar input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
         }
         .search-bar input::placeholder { color: var(--text-muted); }
 
@@ -142,7 +142,7 @@
             text-align: center;
         }
         .stat-card .stat-value {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
         }
         .stat-card .stat-label {
@@ -190,14 +190,13 @@
         .kb-entry {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
             overflow: hidden;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s;
         }
         .kb-entry:hover {
-            border-color: var(--accent);
-            box-shadow: var(--shadow);
+            border-color: rgba(0,180,216,0.4);
         }
         .kb-entry-header {
             display: flex;
@@ -211,14 +210,14 @@
 
         .kb-number {
             flex-shrink: 0;
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 1.1rem;
+            font-weight: 700;
+            font-size: 1rem;
         }
         .kb-number.break-num {
             background: rgba(230,57,70,0.15);
@@ -233,7 +232,7 @@
 
         .kb-entry-title-block { flex: 1; }
         .kb-entry-title {
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             font-weight: 600;
             margin-bottom: 0.3rem;
         }
@@ -437,11 +436,35 @@
 
         /* ── Footer ── */
         .footer {
-            text-align: center;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
             padding: 2rem;
             color: var(--text-muted);
-            font-size: 0.8rem;
-            border-top: 1px solid var(--border);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(0,180,216,.4); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(0,180,216,0.1); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
         }
 
         /* ── Responsive ── */
@@ -466,17 +489,17 @@
     </div>
 </header>
 
-<!-- ═══════════ SEARCH ═══════════ -->
-<nav style="max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;">
-    <a href="index.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--warning-light);text-decoration:none;font-size:0.82rem;font-weight:600;">&#9776; Dashboard</a>
-    <a href="phase1.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--accent);background:rgba(0,180,216,0.15);color:var(--accent-light);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 1 — Top 10 Common Issues</a>
-    <a href="phase2.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 2 — Day-2 Operations</a>
-    <a href="phase3.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 3 — DR &amp; Data Protection</a>
-    <a href="phase4.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 4 — VCF Integration</a>
-    <a href="phase5.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 5 — ESA Deep Dive</a>
-    <a href="phase6.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 6 — Performance &amp; Capacity</a>
-    <a href="phase7.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 7 — Networking</a>
-    <a href="decision-tree.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);color:var(--warning-light);text-decoration:none;font-size:0.82rem;font-weight:600;">&#9881; Decision Tree</a>
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">← Dashboard</a>
+    <a href="phase1.html" class="active">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
 </nav>
 
 <div class="search-bar">
@@ -1787,7 +1810,8 @@ vsan.obj_status_report /dc/computers/cluster-name --filter-type orphan
 <!-- ═══════════ FOOTER ═══════════ -->
 <footer class="footer">
     <p>VMware vSAN Knowledge Base &mdash; Phase 1: Top 10 Common Fix &amp; Break Issues</p>
-    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; Next: Phase 2 — Advanced Troubleshooting &amp; Day-2 Operations</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase2.html">Next: Phase 2 →</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
 </footer>
 
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
