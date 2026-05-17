@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Phase 5: ESA Deep Dive</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .search-bar input {
+            width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 1rem center;
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .stats-bar {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+        }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-tabs { max-width: 1400px; margin: 0 auto; padding: 0 2rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-tab {
+            padding: 0.55rem 1.2rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+        .kb-entry {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+        .kb-entry-header {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.5rem 1.75rem; cursor: pointer; user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+        .kb-number {
+            flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .kb-number.break-num { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
+        .kb-number.fix-num { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .kb-entry-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+        .kb-entry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2); font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+        .kb-chevron { flex-shrink: 0; width: 24px; height: 24px; margin-top: 0.5rem; transition: transform 0.3s; color: var(--text-muted); }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+        .kb-entry-body { display: none; padding: 0 1.75rem 1.75rem; border-top: 1px solid var(--border); }
+        .kb-entry.open .kb-entry-body { display: block; }
+        .section-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-muted); margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .kb-entry-body p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .kb-entry-body ul, .kb-entry-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .kb-entry-body li { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .kb-entry-body li strong { color: var(--text-primary); }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto;
+            margin: 0.75rem 0; position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; color: var(--accent-light); line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+            font-size: 0.85rem; color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.3rem 0.6rem; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 5px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+        .alert {
+            padding: 0.85rem 1.1rem; border-radius: 8px; margin: 0.75rem 0;
+            font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.25); color: var(--danger-light); }
+        .alert-warning { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.25); color: var(--warning-light); }
+        .alert-success { background: rgba(46,196,182,0.08); border: 1px solid rgba(46,196,182,0.25); color: var(--success-light); }
+        .alert-info { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent-light); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0.75rem 0; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.15rem; }
+        .info-box-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-number {
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+        .footer {
+            text-align: center; padding: 2rem; color: var(--text-muted);
+            font-size: 0.8rem; border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 5 — ESA Deep Dive</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html">Phase 4 — VCF Integration</a>
+    <a href="phase5.html" class="active">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html">Phase 7 — Networking</a>
+    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);">&#9881; Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search ESA, NVMe, single-tier, OSA migration, storage pool, snapshots, RAID-5/6..." oninput="filterEntries()">
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">ESA-Specific Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 5</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #41: ESA vs OSA — Architecture Overview       -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA OSA architecture single-tier flat pool NVMe comparison original express storage overview">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">41</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA vs OSA — Architecture Differences &amp; Decision Criteria</div>
+            <div class="kb-entry-subtitle">Understanding the Express Storage Architecture single-tier design vs. the Original Storage Architecture cache+capacity model</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESA</span>
+                <span class="tag">OSA</span>
+                <span class="tag">Architecture</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSAN 8 introduced ESA (Express Storage Architecture) — a completely redesigned storage stack that eliminates the cache tier. All NVMe devices participate in a single flat storage pool. This is a fundamental departure from OSA (Original Storage Architecture) where a dedicated cache SSD fronts capacity devices.</span>
+        </div>
+
+        <div class="section-label">Architecture Comparison</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title orange">OSA — Original Storage Architecture</div>
+                <ul>
+                    <li><strong>Disk Groups:</strong> 1 cache SSD + up to 7 capacity devices per group</li>
+                    <li><strong>Cache Tier:</strong> 70% read cache + 30% write buffer</li>
+                    <li><strong>Media Types:</strong> SSD cache + HDD or SSD capacity</li>
+                    <li><strong>RAID:</strong> RAID-1 mirroring or RAID-5/6 erasure coding at <strong>object level</strong></li>
+                    <li><strong>Dedup/Compress:</strong> All-flash required, post-process</li>
+                    <li><strong>Single Point of Failure:</strong> Cache disk loss = entire disk group lost</li>
+                    <li><strong>Max disks per host:</strong> 5 disk groups × 8 devices = 40</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">ESA — Express Storage Architecture</div>
+                <ul>
+                    <li><strong>Storage Pool:</strong> All NVMe devices in a single flat pool — no disk groups</li>
+                    <li><strong>No Cache Tier:</strong> Log-structured object manager handles writes directly</li>
+                    <li><strong>Media Types:</strong> NVMe only (TLC or QLC NVMe SSDs on HCL)</li>
+                    <li><strong>RAID:</strong> RAID-5/6 erasure coding at <strong>per-object-stripe level</strong> — far more efficient</li>
+                    <li><strong>Dedup/Compress:</strong> Always-on, real-time, inline — no performance penalty</li>
+                    <li><strong>No SPOF:</strong> Single NVMe loss does NOT lose a disk group — just reduces pool capacity</li>
+                    <li><strong>Native Snapshots:</strong> Efficient block-level snapshots replace legacy redo logs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Verification Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Determine current cluster architecture (ESA or OSA)</strong></p>
+<pre><code># From ESXi Shell on any cluster host:
+esxcli vsan cluster get
+# Look for "vSAN ESA Enabled: true" or "vSAN ESA Enabled: false"
+
+# Check storage pool (ESA) vs. disk groups (OSA):
+esxcli vsan storage list
+# ESA: Shows "Storage Pool" entries
+# OSA: Shows "Disk Group" entries with Cache Tier and Capacity Tier
+
+# In vSphere Client:
+# Cluster &gt; Configure &gt; vSAN &gt; Disk Management
+# ESA shows "Storage Pool" with all NVMe in flat list
+# OSA shows "Disk Groups" with Cache + Capacity hierarchy</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify NVMe devices meet ESA requirements</strong></p>
+<pre><code># List all NVMe devices:
+esxcli nvme device list
+
+# Check device model against vSAN HCL:
+esxcli nvme device get -A &lt;vmhbaX&gt;
+# Note: Model Number, Firmware Revision, Capacity
+
+# Verify NVMe driver version:
+esxcli software vib list | grep -i nvme
+
+# ESA minimum requirements:
+#   - All storage devices must be NVMe (no SAS/SATA)
+#   - Minimum 4 NVMe devices per host (2 minimum for testing only)
+#   - ESXi 8.0+ with vSAN 8 license
+#   - Devices must be on the vSAN ESA HCL (separate from OSA HCL)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Key Decision:</strong> ESA requires ALL NVMe and ESXi 8.0+. You cannot mix OSA and ESA hosts in the same cluster. Migration from OSA to ESA requires building a new cluster and migrating workloads (no in-place conversion).</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #42: ESA NVMe Device Failure — Recovery       -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="ESA NVMe failure device drop storage pool degraded device lost disk error">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">42</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA NVMe Device Failure — Storage Pool Degradation &amp; Recovery</div>
+            <div class="kb-entry-subtitle">An NVMe device fails in an ESA cluster — understanding impact, automatic recovery, and replacement procedures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">ESA</span>
+                <span class="tag">NVMe Failure</span>
+                <span class="tag">Storage Pool</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Unlike OSA (where a cache disk failure kills the entire disk group), an ESA NVMe failure only reduces the storage pool capacity on that host. Objects with components on the failed device are rebuilt from redundant copies. However, if multiple devices fail simultaneously, data loss is possible.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Impact Assessment</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Physical disk health — Device error"</strong></li>
+                    <li>Storage pool shows reduced capacity on affected host</li>
+                    <li>vSphere Client: disk icon shows <strong>red warning</strong> in Disk Management</li>
+                    <li>ESXi <code class="inline">vmkernel.log</code>: <strong>"NVMe device naa.xxx has been marked as permanently failed"</strong></li>
+                    <li>Automatic resync starts immediately — objects rebuild on remaining devices</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">ESA Advantage Over OSA</div>
+                <ul>
+                    <li><strong>No disk group loss:</strong> Only the failed NVMe is affected — other devices continue operating</li>
+                    <li><strong>Faster rebuild:</strong> ESA's log-structured engine resyncs at higher throughput</li>
+                    <li><strong>RAID-5/6 efficiency:</strong> Erasure coding per stripe means less data to reconstruct</li>
+                    <li><strong>No cache starvation:</strong> No cache tier means no cascading performance impact</li>
+                    <li><strong>Hot-plug support:</strong> Replace NVMe without host reboot (if hardware supports)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify the failed device</strong></p>
+<pre><code># List storage pool devices and their health:
+esxcli vsan storage list
+
+# Look for device with Status: "Error" or "Permanent Loss"
+# Note the device NAA ID and slot location
+
+# Get detailed NVMe device info:
+esxcli nvme device list
+# Cross-reference the failed NAA with physical slot number
+
+# Check SMART health data (if device still responds):
+esxcli nvme device log smart get -A &lt;vmhbaX&gt;
+# Look for: Percentage Used, Available Spare, Media Errors</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Monitor automatic resync progress</strong></p>
+<pre><code># Check resync status:
+esxcli vsan health cluster list | grep -i "resync"
+
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# Shows: Objects to sync, Bytes remaining, ETA
+
+# Monitor resync impact on performance:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; Cluster
+# Watch "Resync Read Latency" and "Resync Write Latency"
+
+# The resync rate can be tuned (but usually not needed for ESA):
+# vSphere Client &gt; Cluster &gt; Configure &gt; vSAN &gt; Services
+# "Resync throttle" — default is balanced</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Remove the failed device from the storage pool</strong></p>
+<pre><code># In vSphere Client:
+# Host &gt; Configure &gt; vSAN &gt; Disk Management
+# Select the failed device (red icon)
+# Click "Remove" — choose "Evacuate data" if any components remain
+
+# From ESXi Shell (if UI is not available):
+esxcli vsan storage remove -d naa.xxxxxxxxxxxxxxxxxxxx
+
+# Confirm removal:
+esxcli vsan storage list
+# The failed device should no longer appear</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Install replacement NVMe and add to storage pool</strong></p>
+<pre><code># Hot-plug the new NVMe device (if server supports hot-plug)
+# Or schedule a brief host maintenance for cold-swap
+
+# Verify new device is visible:
+esxcli nvme device list
+# Confirm new NAA ID appears
+
+# Add to storage pool:
+# vSphere Client &gt; Host &gt; Configure &gt; vSAN &gt; Disk Management
+# Click "Claim Unused Disks" — select the new NVMe — click "Create"
+
+# From ESXi Shell:
+esxcli vsan storage add -d naa.xxxxxxxxxxxxxxxxxxxx
+
+# Verify the device is now in the pool:
+esxcli vsan storage list | grep -A3 "naa.xxxxxxxxxxxxxxxxxxxx"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Monitor NVMe device SMART data proactively. Set vSAN health alerts for "Percentage Used" approaching 90% and "Available Spare" below 10%. Replace devices before they fail using predictive analytics in vSphere Client &gt; Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Physical Disk Health.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #43: OSA to ESA Migration — Full Workflow     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="OSA ESA migration convert upgrade workflow move workload vSAN 8 express storage original">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">43</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">OSA to ESA Migration — Complete Workflow &amp; Pre-Checks</div>
+            <div class="kb-entry-subtitle">Migrating workloads from a vSAN OSA cluster to a vSAN ESA cluster — planning, execution, and validation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Migration</span>
+                <span class="tag">OSA → ESA</span>
+                <span class="tag">Workflow</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Important:</strong> There is NO in-place upgrade from OSA to ESA. You must build a new ESA cluster and migrate workloads via vMotion/Storage vMotion. The new cluster requires all NVMe hardware on the vSAN ESA HCL.</span>
+        </div>
+
+        <div class="section-label">Pre-Migration Assessment</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">ESA Hardware Requirements</div>
+                <ul>
+                    <li>All storage devices: <strong>NVMe SSDs</strong> (SAS/SATA not supported)</li>
+                    <li>Minimum <strong>4 NVMe devices per host</strong></li>
+                    <li>Minimum <strong>512 GB RAM per host</strong> (recommended for ESA efficiency)</li>
+                    <li>Server model on <strong>vSAN ESA HCL</strong> (separate from OSA HCL)</li>
+                    <li><strong>ESXi 8.0 Update 1+</strong> required (8.0 U2+ recommended)</li>
+                    <li>vSAN 8 Enterprise or Enterprise Plus license</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Migration Methods</div>
+                <ul>
+                    <li><strong>Method A — Cross-vMotion:</strong> Both clusters in same vCenter; live vMotion VMs across</li>
+                    <li><strong>Method B — Cross-vCenter vMotion:</strong> Clusters in different vCenters; use xVC-vMotion</li>
+                    <li><strong>Method C — Backup/Restore:</strong> For environments that cannot vMotion (use vSAN native snapshots on ESA side)</li>
+                    <li><strong>Timeline:</strong> Depends on data volume and network speed; plan for 50-100 TB/day on 25GbE</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Migration — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Validate ESA hardware readiness on new hosts</strong></p>
+<pre><code># On each new ESA host:
+# Verify ESXi 8.0 U1+:
+vmware -vl
+
+# Confirm all NVMe devices are visible:
+esxcli nvme device list
+
+# Check device count (minimum 4):
+esxcli nvme device list | grep -c "vmhba"
+
+# Verify devices are on ESA HCL:
+esxcli nvme device get -A &lt;vmhbaX&gt;
+# Note Model Number — cross-check against:
+# https://www.vmware.com/resources/compatibility (select vSAN ESA)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Build the ESA cluster</strong></p>
+<pre><code># In vSphere Client:
+# Right-click Datacenter &gt; New Cluster
+# Enable vSAN — select "Express Storage Architecture (ESA)"
+# Add the new ESXi 8.0 hosts to this cluster
+# Claim NVMe devices into the storage pool:
+# Cluster &gt; Configure &gt; vSAN &gt; Disk Management &gt; Claim Disks
+
+# Verify ESA is active:
+esxcli vsan cluster get
+# Confirm: "vSAN ESA Enabled: true"
+
+# Verify storage pool:
+esxcli vsan storage list
+# All NVMe devices should appear under "Storage Pool"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Migrate VMs from OSA cluster to ESA cluster</strong></p>
+<pre><code># In vSphere Client:
+# Right-click VM on OSA cluster &gt; Migrate
+# Select "Change both compute resource and storage"
+# Target: ESA cluster + ESA vSAN datastore
+# Network: map source port groups to destination port groups
+# Storage Policy: Select ESA-compatible policy (RAID-5/6 recommended)
+
+# For bulk migration, use vSphere Client multi-select:
+# Select multiple VMs &gt; Right-click &gt; Migrate
+# Up to 8 concurrent vMotions per host (default)
+
+# Monitor migration progress:
+# vSphere Client &gt; Tasks &amp; Events
+# Watch for any failures — common issues:
+#   - Insufficient bandwidth (saturated vMotion vmk)
+#   - Storage policy incompatibility
+#   - EVC mode mismatch between clusters</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Post-migration validation on ESA cluster</strong></p>
+<pre><code># Verify all VMs are running on ESA datastore:
+# Cluster &gt; VMs tab — confirm all VMs show ESA vSAN datastore
+
+# Run vSAN health check:
+esxcli vsan health cluster list
+
+# Verify storage policies are applied:
+# VM &gt; Configure &gt; Policies &gt; check assigned policy matches ESA-recommended
+
+# Validate inline dedup/compression is active:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# "Deduplication and Compression" should show savings ratio
+
+# Confirm native snapshots work (ESA-specific):
+# VM &gt; Snapshots &gt; Take Snapshot
+# Verify snapshot is created instantly (ESA native, not legacy redo-log)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Post-Migration:</strong> After all workloads are migrated, decommission the OSA cluster. Reclaim the hardware or repurpose OSA hosts. Do NOT attempt to join OSA hosts to an ESA cluster — they are architecturally incompatible.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #44: ESA RAID-5/6 Efficiency & Policy Design  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA RAID-5 RAID-6 erasure coding storage policy SPBM FTT FTM efficiency stripe capacity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">44</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA RAID-5/6 Erasure Coding — Policy Design &amp; Efficiency</div>
+            <div class="kb-entry-subtitle">Understanding ESA's per-stripe erasure coding and designing optimal storage policies for capacity and performance</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESA</span>
+                <span class="tag">RAID-5/6</span>
+                <span class="tag">Storage Policy</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Key Difference:</strong> In OSA, RAID-5/6 erasure coding operates at the <em>object level</em> across hosts (3+1 or 4+2 stripes across hosts). In ESA, erasure coding operates at the <em>per-object-stripe level</em> — individual data stripes within an object are erasure-coded. This means ESA RAID-5 can work with fewer hosts and provides better capacity efficiency.</span>
+        </div>
+
+        <div class="section-label">ESA Erasure Coding vs OSA</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title orange">OSA RAID-5/6 (Legacy)</div>
+                <ul>
+                    <li><strong>RAID-5 (FTT=1):</strong> 3 data + 1 parity across 4 hosts — 1.33x overhead</li>
+                    <li><strong>RAID-6 (FTT=2):</strong> 4 data + 2 parity across 6 hosts — 1.5x overhead</li>
+                    <li>Minimum hosts: 4 for RAID-5, 6 for RAID-6</li>
+                    <li>Performance impact: write amplification for parity calculation</li>
+                    <li>Not recommended for mixed HDD/SSD (too slow for parity rebuild)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">ESA RAID-5/6 (Express)</div>
+                <ul>
+                    <li><strong>RAID-5 (FTT=1):</strong> Per-stripe 3+1 — works with <strong>3 hosts minimum</strong></li>
+                    <li><strong>RAID-6 (FTT=2):</strong> Per-stripe 4+2 — works with <strong>4 hosts minimum</strong></li>
+                    <li>Capacity overhead identical but usable with fewer hosts</li>
+                    <li>Performance: NVMe speed makes parity overhead negligible</li>
+                    <li><strong>ESA RAID-5 is the recommended default</strong> for all ESA workloads</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Storage Policy Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create an ESA-optimized storage policy</strong></p>
+<pre><code># In vSphere Client:
+# Menu &gt; Policies and Profiles &gt; VM Storage Policies
+# Click "Create" &gt; Name: "ESA-RAID5-Standard"
+
+# Rules:
+#   vSAN &gt; Storage Type: vSAN ESA
+#   Failures to Tolerate (FTT): 1
+#   Failure Tolerance Method (FTM): RAID-5 (Erasure Coding)
+#   Storage Tier: All Flash (auto for ESA)
+
+# Advanced (optional):
+#   Object Space Reservation: 0% (thin provision, recommended)
+#   IOPS limit: No limit (unless multi-tenant)
+#   Disable object checksum: No (keep enabled)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Create a high-resilience policy for critical VMs</strong></p>
+<pre><code># For mission-critical VMs, use RAID-6 (FTT=2):
+# Policies and Profiles &gt; Create:
+#   Name: "ESA-RAID6-Critical"
+#   FTT: 2
+#   FTM: RAID-6 (Erasure Coding)
+
+# Capacity impact:
+#   RAID-5 (FTT=1): 100GB VM uses ~133GB raw (1.33x)
+#   RAID-6 (FTT=2): 100GB VM uses ~150GB raw (1.5x)
+#   RAID-1 (FTT=1): 100GB VM uses ~200GB raw (2x) — mirroring
+
+# ESA recommendation: Use RAID-5 as default, RAID-6 for critical only
+# RAID-1 mirroring is still available but rarely needed in ESA</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Apply policies and verify compliance</strong></p>
+<pre><code># Assign policy to VM:
+# VM &gt; Configure &gt; Policies &gt; Edit VM Storage Policies
+# Select "ESA-RAID5-Standard" for all VM disks
+# Click OK — vSAN will reconfigure object layout
+
+# Verify policy compliance:
+# VM &gt; Monitor &gt; Policies
+# Status should show "Compliant" (green)
+
+# If "Non-compliant" — check:
+# 1. Enough hosts to satisfy FTT (3 for RAID-5, 4 for RAID-6)
+# 2. Enough capacity in the storage pool
+# 3. No host in maintenance mode reducing available fault domains
+
+# From ESXi Shell:
+esxcli vsan debug object health summary get
+# Shows count of compliant vs non-compliant objects</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Capacity Tip:</strong> ESA RAID-5 + inline dedup/compression typically achieves 3-5x effective capacity compared to raw. A 10TB raw ESA cluster can often store 30-50TB of effective data depending on workload data patterns.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #45: ESA Native Snapshots Troubleshooting     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="ESA native snapshot redo log stun consolidation chain delete stuck performance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">45</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA Native Snapshots — Failures &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">ESA replaces legacy redo-log snapshots with efficient block-level native snapshots — common issues and resolution</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESA</span>
+                <span class="tag">Native Snapshots</span>
+                <span class="tag">Troubleshooting</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>ESA Native Snapshots:</strong> ESA introduces block-level native snapshots that replace the legacy redo-log mechanism. These snapshots have near-zero performance overhead, support deeper chains, and eliminate the "snapshot stun" problem during consolidation. However, they require ESA-specific configuration and have their own failure modes.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Common Failures</div>
+                <ul>
+                    <li>Snapshot create fails: <strong>"Native snapshot not supported for this VM"</strong></li>
+                    <li>Snapshot chain exceeds limit: <strong>"Maximum snapshot depth reached"</strong></li>
+                    <li>Snapshot delete hangs for hours with no progress</li>
+                    <li>VM shows legacy redo-log snapshots on an ESA cluster</li>
+                    <li>Backup software fails to quiesce ESA native snapshots</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VM was migrated from OSA with existing legacy snapshots — ESA inherits them</li>
+                    <li>VM hardware version too old — ESA native snapshots require vmx-20+</li>
+                    <li>Storage policy does not support native snapshots (check policy config)</li>
+                    <li>Backup software using legacy snapshot API instead of VADP ESA-aware API</li>
+                    <li>Capacity exhaustion — native snapshots still consume space for changed blocks</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify native snapshot support for the VM</strong></p>
+<pre><code># Check VM hardware version:
+# vSphere Client &gt; VM &gt; Summary
+# "VM Hardware: Version vmx-20" or higher is required
+
+# If older version:
+# VM &gt; Actions &gt; Compatibility &gt; Upgrade VM Compatibility
+# Select "ESXi 8.0 and later" (vmx-20 or vmx-21)
+# Note: VM must be powered off for hardware upgrade
+
+# Verify the VM is on an ESA-compliant storage policy:
+# VM &gt; Configure &gt; Policies
+# Policy must specify "vSAN ESA" storage type</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check for legacy snapshots inherited from OSA migration</strong></p>
+<pre><code># In vSphere Client:
+# VM &gt; Snapshots &gt; Manage Snapshots
+# If you see delta disks (legacy format), they must be consolidated first:
+
+# VM &gt; Snapshots &gt; Consolidate
+# This converts legacy redo-log snapshots to ESA native format
+
+# If consolidation hangs, check:
+# 1. Sufficient capacity on ESA datastore
+# 2. VM I/O is not preventing quiesce
+# 3. No locks on the VMDK files
+
+# Monitor progress:
+# vSphere Client &gt; VM &gt; Tasks &gt; "Consolidate virtual machine disk files"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot snapshot deletion that is stuck</strong></p>
+<pre><code># Check if a snapshot delete task is running:
+# vSphere Client &gt; VM &gt; Tasks &amp; Events
+# Look for "Remove Snapshot" or "Consolidate" task
+
+# If stuck, check for file locks on the host where VM runs:
+# SSH to ESXi host:
+vmkvsitools lsof | grep &lt;vm-name&gt;
+
+# Check vSAN object health for the VM's namespace:
+esxcli vsan debug object list | grep -i "&lt;vm-name&gt;"
+
+# If the task has been running for 24+ hours with no progress:
+# 1. Power off the VM gracefully (guest OS shutdown)
+# 2. Retry snapshot consolidation while VM is off
+# 3. Power VM back on after consolidation completes
+
+# Verify all snapshots are cleared:
+# VM &gt; Snapshots &gt; Manage Snapshots — should show "You are here" only</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Configure backup software for ESA native snapshots</strong></p>
+<pre><code># ESA native snapshots require updated backup agents:
+# - Veeam: v12.1+ with vSAN 8 ESA awareness
+# - Commvault: v2024+ with VADP 8.0 support
+# - Dell Avamar/NetWorker: Latest version with ESA support
+
+# Verify backup integration:
+# 1. Test a single VM backup + restore on ESA
+# 2. Confirm backup uses native snapshot (not legacy):
+#    - During backup, check VM &gt; Snapshots
+#    - Native snapshots do NOT create delta VMDK files
+#    - They appear as lightweight block-level refs
+
+# In vSphere Client:
+# VM &gt; Monitor &gt; Events
+# During backup, look for "Create snapshot" event
+# Type should indicate "vSAN native snapshot"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Important:</strong> ESA native snapshots still consume space for changed blocks. Monitor snapshot space via Cluster &gt; Monitor &gt; vSAN &gt; Capacity. Set alerts for snapshot space exceeding 20% of total capacity. Always delete old snapshots after backup verification.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #46: ESA Dedup & Compression — Always-On      -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA deduplication compression inline always-on ratio savings efficiency data reduction">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">46</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA Inline Dedup &amp; Compression — Monitoring &amp; Optimization</div>
+            <div class="kb-entry-subtitle">ESA enables always-on inline deduplication and compression with zero performance penalty — how to monitor and maximize savings</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESA</span>
+                <span class="tag">Dedup</span>
+                <span class="tag">Compression</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>ESA Innovation:</strong> In OSA, dedup &amp; compression was optional, required all-flash, and was post-process (added latency). In ESA, dedup &amp; compression is <strong>always enabled, inline (real-time), and has zero performance overhead</strong> thanks to the log-structured object manager and NVMe speed. You cannot disable it — and you don't want to.</span>
+        </div>
+
+        <div class="section-label">How ESA Dedup/Compression Works</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">ESA Process</div>
+                <ul>
+                    <li><strong>Inline compression:</strong> Every write is compressed before hitting NVMe (LZ4 algorithm)</li>
+                    <li><strong>Inline dedup:</strong> Block fingerprinting identifies duplicates in real-time</li>
+                    <li><strong>No destage penalty:</strong> No cache tier means no dedup destage overhead</li>
+                    <li><strong>Per-object dedup scope:</strong> Dedup operates within each object's block space</li>
+                    <li><strong>Savings ratio:</strong> Typically 2-5x for general workloads, 5-10x for VDI</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">OSA Process (for comparison)</div>
+                <ul>
+                    <li>Dedup/compression was <strong>opt-in</strong> and required all-flash</li>
+                    <li>Post-process: Data written to cache, then deduped during destage to capacity</li>
+                    <li>Destage overhead: 10-30% latency increase during heavy writes</li>
+                    <li>Cluster-wide dedup scope (across disk groups on same host)</li>
+                    <li>Could be disabled if performance impact was unacceptable</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Monitoring &amp; Validation</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check dedup/compression savings ratio</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Look for "Deduplication and Compression Overview":
+#   - Before Dedup/Compression: XXX TB
+#   - After Dedup/Compression: YYY TB
+#   - Savings Ratio: X.Xx
+
+# From ESXi Shell:
+esxcli vsan debug resync summary get
+# Shows "Data Movement" which reflects deduplicated writes
+
+# Per-host breakdown:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity &gt; "Dedup and Compression" column
+# Shows savings per host — helpful to identify imbalanced data</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Understand capacity reporting with dedup</strong></p>
+<pre><code># IMPORTANT: ESA capacity numbers can be confusing
+# Key terms:
+#   "Used" — raw bytes consumed on NVMe after dedup/compress
+#   "Logical Used" — what VMs think they're using (before dedup)
+#   "Savings" — difference between Logical Used and Used
+
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# "Capacity Overview" shows:
+#   Total Raw Capacity → Usable Capacity → Used → Free
+#   Usable = Raw minus overhead (metadata, checksums, slack)
+
+# For accurate VM-level capacity:
+# VM &gt; Summary &gt; Storage
+# "Provisioned" = VMDK file size
+# "Used" = actual space on ESA datastore (after dedup/compress)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Maximize dedup/compression efficiency</strong></p>
+<pre><code># Workload tips for better dedup ratios:
+# 1. Use thin-provisioned VMDKs (default in ESA)
+#    VM &gt; Edit Settings &gt; Hard Disk &gt; Type: "Thin Provision"
+#
+# 2. Zero-fill free space inside guest OS:
+#    Windows: sdelete -z C:\
+#    Linux: cat /dev/zero > /tmp/zero.fill; rm -f /tmp/zero.fill
+#    This allows ESA to dedup zero blocks efficiently
+#
+# 3. Use the same OS template for VDI/similar VMs
+#    ESA dedup will identify common OS blocks across VMs
+#
+# 4. Avoid pre-encrypted data at the guest level
+#    Guest-level encryption (BitLocker/LUKS) prevents dedup
+#    Use vSAN encryption instead (encrypts after dedup)
+
+# Monitor dedup efficiency over time:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Track the savings ratio weekly — it should stabilize after initial data load</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Capacity Planning:</strong> When sizing ESA clusters, assume a conservative 2x dedup/compression ratio for general workloads. For VDI, use 4x. Never size based on best-case ratios — build headroom for workloads with low dedup potential (databases, media files).</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #47: ESA Storage Pool Rebalance               -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="ESA storage pool rebalance unbalanced skew capacity imbalance host utilization">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">47</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA Storage Pool Imbalance — Capacity Skew Across Hosts</div>
+            <div class="kb-entry-subtitle">vSAN ESA storage pool utilization becomes heavily skewed, causing premature capacity warnings and uneven performance</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESA</span>
+                <span class="tag">Rebalance</span>
+                <span class="tag">Capacity</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When storage pool utilization is unevenly distributed, one or more hosts may hit capacity limits while others have ample free space. This triggers premature "cluster capacity critical" alarms, blocks new VM provisioning, and can cause resync failures. Performance degrades on the overloaded hosts.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Disk balance"</strong> shows imbalance across hosts</li>
+                    <li>One host at 85% used, others at 40-50%</li>
+                    <li>VM provisioning fails: <strong>"Insufficient disk space on datastore"</strong></li>
+                    <li>vSAN alarm: <strong>"vSAN disk balance — Imbalance detected"</strong></li>
+                    <li>Higher latency on VMs whose objects land on the overloaded host</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Hosts have different NVMe device counts or sizes (heterogeneous config)</li>
+                    <li>A host was removed and re-added, causing data concentration on remaining hosts</li>
+                    <li>Large VM with thick-provisioned VMDK placed predominantly on one host</li>
+                    <li>Automatic rebalance threshold not reached (default: 30% variance triggers rebalance)</li>
+                    <li>Rebalance process was interrupted (host went to maintenance mode during rebalance)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current balance state</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Review "Host Capacity Usage" — look for outliers
+
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# Expand "Data" section &gt; "Disk balance"
+# Shows: Variance %, Most used host, Least used host
+
+# From ESXi Shell:
+esxcli vsan health cluster list | grep -i "balance"
+
+# Get per-device usage:
+esxcli vsan storage list
+# Compare "Used Capacity" across all devices on all hosts</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Trigger manual rebalance if automatic has not kicked in</strong></p>
+<pre><code># vSAN automatically rebalances when variance exceeds 30%
+# To trigger a proactive rebalance:
+
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# Click on "Disk balance" health check
+# Click "Rebalance Disks" button
+
+# This starts a background proactive rebalance operation
+# Data moves from over-utilized hosts to under-utilized hosts
+
+# Monitor rebalance progress:
+# Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# Rebalance operations appear as "Rebalance" type resyncs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Address root cause — heterogeneous device configuration</strong></p>
+<pre><code># If hosts have different NVMe counts/sizes, consider:
+# 1. Add NVMe devices to under-provisioned hosts to match capacity
+# 2. Replace smaller NVMe with larger ones during maintenance windows
+
+# Check per-host device count and sizes:
+# For each host:
+esxcli nvme device list
+esxcli vsan storage list | grep "Capacity"
+
+# Ideal ESA config: ALL hosts have identical NVMe device count and size
+# Example: 4 hosts × 6 × 3.84TB NVMe each = 92.16TB raw per host
+
+# If adding a new device to an existing host:
+# Host &gt; Configure &gt; vSAN &gt; Disk Management &gt; Claim Unused Disks
+# vSAN will gradually place new object components on the fresh device</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use identical hardware across all ESA hosts (same NVMe model, count, and capacity). This ensures even data distribution, predictable performance, and avoids rebalance overhead. If you must mix, keep the variance within 20% of average host capacity.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #48: ESA NVMe Firmware Update — Live          -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="ESA NVMe firmware update upgrade flash vLCM HSM driver maintenance live rolling">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">48</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA NVMe Firmware Updates — Rolling Upgrade via vLCM</div>
+            <div class="kb-entry-subtitle">Safely updating NVMe device firmware on ESA hosts using vSphere Lifecycle Manager without data loss</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">ESA</span>
+                <span class="tag">NVMe Firmware</span>
+                <span class="tag">vLCM</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> NVMe firmware updates are critical for ESA stability. Firmware bugs can cause device drops, PSOD, or data corruption. vLCM (vSphere Lifecycle Manager) with a Hardware Support Manager (HSM) can orchestrate rolling firmware updates across the ESA cluster with zero downtime.</span>
+        </div>
+
+        <div class="section-label">Pre-Update Checks</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Requirements</div>
+                <ul>
+                    <li>vLCM image-based management enabled on the cluster</li>
+                    <li>Hardware Support Manager registered for your server vendor (Dell OMIVV, HPE OneView, Lenovo XClarity)</li>
+                    <li>Firmware depot accessible from vCenter (online or offline)</li>
+                    <li>vSAN cluster healthy — all objects compliant, no active resyncs</li>
+                    <li>Sufficient capacity for maintenance mode data evacuation</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Risks</div>
+                <ul>
+                    <li>Firmware update requires host reboot — one host at a time (rolling)</li>
+                    <li>During reboot, host's objects are in "Reduced Availability"</li>
+                    <li>If firmware update fails, host may not boot — have iLO/iDRAC access ready</li>
+                    <li>Some NVMe firmware updates require cold boot (full power cycle)</li>
+                    <li>Estimated per-host time: 20-45 minutes (reboot + resync verification)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Update Procedure — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current NVMe firmware versions</strong></p>
+<pre><code># On each ESXi host:
+esxcli nvme device list
+# Note: Firmware Revision for each device
+
+# Or from vSphere Client:
+# Host &gt; Configure &gt; vSAN &gt; Disk Management
+# Each NVMe device shows firmware version
+
+# Check vLCM compliance:
+# Cluster &gt; Updates &gt; Image &gt; Check Compliance
+# Firmware tab shows which hosts need updates</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Validate vSAN health before starting</strong></p>
+<pre><code># ALL of these must be green before proceeding:
+esxcli vsan health cluster list
+
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# Critical checks:
+#   - "Cluster health — All hosts contributing to cluster"
+#   - "Data — vSAN object health"
+#   - "Network — All hosts have unicast connectivity"
+
+# Verify no active resyncs:
+# Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# Must show 0 resyncing objects
+
+# Check capacity headroom for maintenance mode evacuation:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Free space must accommodate one host's worth of data</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Initiate rolling remediation via vLCM</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Updates &gt; Image &gt; Remediate
+# Select all non-compliant hosts
+# Settings:
+#   - Maintenance Mode: "Ensure data accessibility" (recommended for vSAN)
+#   - Rolling: Yes (one host at a time — sequential)
+#   - Retry on failure: Yes (1 retry)
+
+# vLCM will for each host:
+# 1. Migrate VMs off (DRS)
+# 2. Enter maintenance mode (vSAN data migration)
+# 3. Apply firmware update
+# 4. Reboot host
+# 5. Exit maintenance mode
+# 6. Wait for vSAN resync to complete
+# 7. Move to next host
+
+# Monitor progress:
+# Cluster &gt; Updates &gt; Image &gt; "Remediation" tab
+# Shows per-host status and current phase</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Post-update validation</strong></p>
+<pre><code># After all hosts are remediated:
+
+# Verify firmware updated:
+esxcli nvme device list
+# Compare Firmware Revision with target version
+
+# Run full vSAN health check:
+esxcli vsan health cluster list
+
+# Verify all objects are healthy:
+esxcli vsan debug object health summary get
+
+# Check NVMe device health (SMART data):
+esxcli nvme device log smart get -A &lt;vmhbaX&gt;
+# Confirm no new errors post-update
+
+# Verify cluster compliance:
+# Cluster &gt; Updates &gt; Image &gt; Check Compliance
+# All hosts should show "Compliant"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Never update all hosts simultaneously.</strong> Always use rolling remediation. If a firmware bug is introduced, you want the majority of hosts still on the known-good firmware to maintain data availability. Test firmware on one host first if the update is not from a VMware-validated bundle.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #49: ESA Log-Structured Object Manager Issues -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="ESA log-structured object manager LSOM2 write amplification metadata corruption object manager crash">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">49</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA Log-Structured Object Manager (LSOM2) — Crash &amp; Recovery</div>
+            <div class="kb-entry-subtitle">ESA's new log-structured object manager encounters metadata corruption, object I/O failures, or service crashes</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">ESA</span>
+                <span class="tag">LSOM2</span>
+                <span class="tag">Object Manager</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> The ESA LSOM2 (Log-Structured Object Manager v2) is the core storage engine. If it crashes or encounters metadata corruption, all vSAN objects on the affected host become inaccessible. VMs with components on this host will experience I/O errors. This is typically caused by firmware bugs, power loss during writes, or known ESXi issues.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs on ESA datastore report <strong>disk I/O errors</strong> — reads/writes fail</li>
+                    <li>ESXi <code class="inline">vmkernel.log</code>: <strong>"LSOM2: metadata corruption detected on device naa.xxx"</strong></li>
+                    <li>vSAN Health: <strong>"Physical disk health — Metadata health"</strong> fails</li>
+                    <li>Host-local vSAN service crashes and restarts repeatedly</li>
+                    <li>Objects on this host marked as <strong>"Absent"</strong> in vSAN object health</li>
+                    <li>In extreme cases: host PSOD with LSOM2-related stack trace</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NVMe firmware bug causing silent data corruption on metadata sectors</li>
+                    <li>Unexpected power loss during active write operations (no UPS)</li>
+                    <li>Known ESXi bug — check VMware patch advisories for LSOM2 fixes</li>
+                    <li>Memory error (ECC fault) corrupting in-flight metadata before NVMe write</li>
+                    <li>NVMe device approaching end-of-life (wear level critical)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Emergency Recovery — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Assess the scope of the failure</strong></p>
+<pre><code># Check which objects are affected:
+esxcli vsan debug object health summary get
+# Note count of: Inaccessible, Reduced Availability, Absent
+
+# Check which device(s) have metadata errors:
+esxcli vsan storage list
+# Look for devices with "Health: Error" or "Metadata Error"
+
+# Check vmkernel log for LSOM2 errors:
+grep -i "LSOM2\|lsom2\|metadata corruption" /var/log/vmkernel.log | tail -50
+
+# Check if vSAN daemon is running:
+/etc/init.d/vsand status
+# If "not running" — it may be crash-looping</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Isolate the affected device — do NOT reboot yet</strong></p>
+<pre><code># If a single NVMe device has metadata corruption:
+# Remove it from the storage pool to stop further damage:
+esxcli vsan storage remove -d naa.xxxxxxxxxxxxxxxxxxxx
+
+# This will mark all components on this device as "Absent"
+# vSAN will begin rebuilding those components from replicas on other hosts
+
+# Verify the rebuild starts:
+# vSphere Client &gt; Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# Objects should begin rebuilding automatically
+
+# If vsand is crash-looping, try restarting it after removing the bad device:
+/etc/init.d/vsand restart
+
+# If vsand still won't start, the host may need a reboot:
+# Only reboot AFTER verifying vSAN cluster has quorum without this host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check for ESXi patches that address LSOM2 bugs</strong></p>
+<pre><code># Check current ESXi build:
+vmware -vl
+
+# Review VMware/Broadcom patch advisories:
+# https://support.broadcom.com &gt; VMware vSAN
+# Search for "LSOM2" or "metadata corruption" in known issues
+
+# Common fixes:
+#   ESXi 8.0 U2a: Fixed LSOM2 crash with specific NVMe controller models
+#   ESXi 8.0 U3: Fixed metadata corruption during power-loss recovery
+#   Check your specific build against the release notes
+
+# If a patch is available:
+# Plan to update the ESXi host via vLCM after the immediate crisis is resolved
+# Do NOT apply patches during an active outage — stabilize first</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Replace the failed device and restore full health</strong></p>
+<pre><code># After the corrupted device is removed and resync completes:
+
+# 1. Replace the physical NVMe device (hot-swap or cold-swap)
+# 2. Verify new device is visible:
+esxcli nvme device list
+
+# 3. Check new device firmware matches the validated version:
+esxcli nvme device get -A &lt;vmhbaX&gt;
+
+# 4. Add new device to storage pool:
+esxcli vsan storage add -d naa.xxxxxxxxxxxxxxxxxxxx
+
+# 5. Run full health check:
+esxcli vsan health cluster list
+
+# 6. Verify all objects are healthy (no absent/degraded):
+esxcli vsan debug object health summary get
+# Expected: Healthy = 100%, all other counts = 0
+
+# 7. Apply ESXi patch if one is available for the LSOM2 bug</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Prevention:</strong> Always use NVMe devices with power-loss protection (PLP). Run ESA clusters on UPS-protected servers. Keep ESXi patched to the latest validated build. Monitor NVMe SMART data for early warning signs (Media Errors, Unsafe Shutdowns counters incrementing).</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #50: ESA Performance Tuning & Benchmarking    -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA performance tuning benchmark IOPS latency throughput NVMe queue depth vSAN performance service">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">50</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESA Performance Tuning &amp; Benchmarking Best Practices</div>
+            <div class="kb-entry-subtitle">Measuring and optimizing vSAN ESA performance — native tools, expected baselines, and common tuning knobs</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESA</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Tuning</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>ESA Performance Expectations:</strong> ESA on NVMe typically delivers: <strong>Read latency: 100-200μs</strong>, <strong>Write latency: 150-300μs</strong>, <strong>IOPS: 100K-500K+ per host</strong> (depending on NVMe count and workload pattern). These numbers significantly exceed OSA due to eliminated cache tier bottleneck and direct NVMe access.</span>
+        </div>
+
+        <div class="section-label">Performance Monitoring — Native Tools</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Monitor cluster-wide performance via vSphere Client</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance
+
+# Key metrics to watch:
+#   - IOPS: Read/Write operations per second (cluster and per-host)
+#   - Throughput: MB/s read and write
+#   - Latency: Average read/write latency (target: &lt;500μs for ESA)
+#   - Congestion: Should be 0 — any value &gt;0 indicates backpressure
+#   - Outstanding I/O: Queue depth to vSAN — high values indicate saturation
+
+# Per-VM performance:
+# VM &gt; Monitor &gt; Performance &gt; Advanced &gt; Virtual Disk
+# Select: Read Latency, Write Latency, IOPS, Throughput
+
+# Enable vSAN Performance Service (if not already):
+# Cluster &gt; Configure &gt; vSAN &gt; Services &gt; Performance Service &gt; Enable</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check per-device NVMe performance from ESXi Shell</strong></p>
+<pre><code># Real-time NVMe device stats:
+esxcli nvme device log smart get -A &lt;vmhbaX&gt;
+# Key metrics:
+#   Data Units Read / Written — lifetime I/O volume
+#   Host Read/Write Commands — lifetime command count
+#   Temperature — must be below thermal throttle threshold
+
+# vSAN per-device I/O stats:
+esxcli vsan storage list
+# Shows: Read Cache Hit Rate (ESA: N/A — no cache tier)
+# Shows: Write Buffer Fill % (ESA: handled by LSOM2 log buffer)
+
+# Monitor device queue depth:
+esxtop
+# Press 'd' for disk view
+# Look at QUED (queue depth) and DAVG (device average latency)
+# ESA NVMe DAVG should be &lt;200μs for healthy devices</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Tune vSAN performance parameters</strong></p>
+<pre><code># ESA generally requires LESS tuning than OSA, but key knobs:
+
+# 1. Resync throttle — balance between resync speed and VM I/O:
+# Cluster &gt; Configure &gt; vSAN &gt; Services
+# Resync throttle: Low / Medium / High
+# Use "Low" during business hours, "High" during maintenance windows
+
+# 2. Verify NVMe queue depth is not artificially limited:
+esxcli system settings advanced list -o /Disk/QFullSampleSize
+esxcli system settings advanced list -o /Disk/QFullThreshold
+# Default values are usually correct for NVMe — do not change unless advised
+
+# 3. Check vSAN network adapter ring buffer size:
+esxcli network nic ring current get -n vmnic0
+# For 25GbE+: RX should be 4096, TX should be 4096
+# If lower, increase:
+esxcli network nic ring current set -n vmnic0 -r 4096 -t 4096
+
+# 4. Verify Jumbo Frames are enabled on vSAN vmk:
+vmkping -I vmk1 -d -s 8972 &lt;other-host-vSAN-IP&gt;
+# If fails: MTU not set to 9000 on all components (vmk, VDS, physical switch)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Baseline performance testing (non-production only)</strong></p>
+<pre><code># Use VMware's built-in vSAN HCL Benchmark tool (Proactive Tests):
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# "Performance Tests" section &gt; Run Proactive Tests
+
+# Proactive tests measure:
+#   - Sequential Read/Write throughput per host
+#   - Random Read/Write IOPS per host
+#   - Latency under load
+
+# IMPORTANT: Run proactive tests ONLY during maintenance windows
+# They generate significant I/O load
+
+# Expected ESA baselines (4 NVMe per host):
+#   Sequential Read: 3-6 GB/s per host
+#   Sequential Write: 2-4 GB/s per host
+#   Random 4K Read IOPS: 200K-400K per host
+#   Random 4K Write IOPS: 100K-200K per host
+#   Average Latency: 100-300μs
+
+# If results are significantly below these, investigate:
+#   - NVMe firmware version (check for known performance bugs)
+#   - Network MTU / bandwidth
+#   - Host CPU utilization (LSOM2 is CPU-intensive)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Key Insight:</strong> ESA's biggest performance advantage over OSA is the elimination of the write buffer (cache tier) bottleneck. In OSA, a single cache SSD could saturate at 50-100K IOPS. In ESA, writes are distributed across all NVMe devices in the storage pool, providing linear scalability.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base — Phase 5: ESA Deep Dive | 10 entries (KB #41–50)</p>
+    <p style="margin-top:0.5rem;">Official VMware/Broadcom tooling only — ESXCLI, vSphere Client UI, RVC, ESXi Shell, esxtop, NVMe CLI</p>
+</footer>
+
+<script>
+function toggleEntry(header) {
+    const entry = header.closest('.kb-entry');
+    entry.classList.toggle('open');
+}
+
+function copyCode(btn) {
+    const code = btn.parentElement.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+
+function filterEntries() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        const keywords = entry.dataset.keywords ? entry.dataset.keywords.toLowerCase() : '';
+        entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+    });
+}
+
+function filterByType(type, btn) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        if (type === 'all') { entry.style.display = ''; return; }
+        if (type === 'critical' || type === 'high') {
+            entry.style.display = entry.dataset.severity === type ? '' : 'none';
+        } else {
+            entry.style.display = entry.dataset.type === type ? '' : 'none';
+        }
+    });
+}
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+
+</body>
+</html>

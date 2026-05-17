@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Interactive Troubleshooting Decision Tree</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-tree { background: rgba(244,162,97,0.15); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(244,162,97,0.15); border-color: var(--warning); color: var(--warning-light); }
+
+        /* ── Container ── */
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+
+        /* ── Hero / Intro ── */
+        .hero {
+            text-align: center; padding: 2rem 0 2.5rem;
+        }
+        .hero h2 {
+            font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .hero p { color: var(--text-secondary); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb {
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+            padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 10px; font-size: 0.82rem; min-height: 52px;
+        }
+        .breadcrumb-item {
+            color: var(--text-muted); cursor: pointer; transition: color 0.2s;
+        }
+        .breadcrumb-item:hover { color: var(--accent-light); }
+        .breadcrumb-item.current { color: var(--accent-light); font-weight: 600; cursor: default; }
+        .breadcrumb-sep { color: var(--text-muted); font-size: 0.7rem; }
+        .breadcrumb-home {
+            color: var(--text-secondary); cursor: pointer; transition: color 0.2s;
+            display: flex; align-items: center; gap: 0.35rem;
+        }
+        .breadcrumb-home:hover { color: var(--warning-light); }
+
+        /* ── Decision Step ── */
+        .step-question {
+            font-size: 1.15rem; font-weight: 600; margin-bottom: 1.25rem;
+            color: var(--text-primary);
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .step-question .step-icon {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 800; flex-shrink: 0;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light);
+        }
+
+        .choices {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem; margin-bottom: 2rem;
+        }
+        .choice-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem; cursor: pointer;
+            transition: all 0.25s ease; position: relative; overflow: hidden;
+        }
+        .choice-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(0,180,216,0.04), rgba(0,180,216,0.01));
+            opacity: 0; transition: opacity 0.25s;
+        }
+        .choice-card:hover {
+            border-color: var(--accent); box-shadow: 0 4px 20px rgba(0,180,216,0.1);
+            transform: translateY(-2px);
+        }
+        .choice-card:hover::before { opacity: 1; }
+        .choice-card .choice-icon {
+            font-size: 1.8rem; margin-bottom: 0.5rem;
+        }
+        .choice-card .choice-title {
+            font-size: 1rem; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 0.35rem;
+        }
+        .choice-card .choice-desc {
+            font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;
+        }
+        .choice-card .choice-count {
+            position: absolute; top: 1rem; right: 1rem;
+            font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 10px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2);
+        }
+
+        /* ── Result Card ── */
+        .result-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 2rem; margin-bottom: 1.5rem;
+            border-left: 4px solid var(--success);
+        }
+        .result-card.break-result { border-left-color: var(--danger); }
+        .result-header {
+            display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;
+        }
+        .result-kb-num {
+            font-size: 1.4rem; font-weight: 800; color: var(--accent-light);
+        }
+        .result-title {
+            font-size: 1.2rem; font-weight: 600; color: var(--text-primary);
+        }
+        .result-type {
+            padding: 0.25rem 0.7rem; border-radius: 12px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+        }
+        .result-type.break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .result-type.fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .result-summary {
+            font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.6;
+        }
+        .result-link {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.65rem 1.5rem; border-radius: 10px;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); text-decoration: none;
+            font-size: 0.88rem; font-weight: 600; transition: all 0.2s;
+        }
+        .result-link:hover {
+            background: rgba(0,180,216,0.25); border-color: var(--accent);
+            transform: translateY(-1px); box-shadow: 0 2px 12px rgba(0,180,216,0.15);
+        }
+        .result-link svg { width: 16px; height: 16px; }
+
+        /* ── Restart bar ── */
+        .restart-bar {
+            text-align: center; padding: 2rem 0;
+        }
+        .restart-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.75rem 2rem; border-radius: 10px;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.9rem; font-weight: 500; transition: all 0.2s;
+        }
+        .restart-btn:hover {
+            border-color: var(--warning); color: var(--warning-light);
+            background: rgba(244,162,97,0.1);
+        }
+
+        /* ── Fade-in animation ── */
+        .fade-in { animation: fadeSlide 0.35s ease forwards; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Quick-path sidebar ── */
+        .quick-paths {
+            margin-top: 2.5rem; padding: 1.5rem;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .quick-paths h3 {
+            font-size: 0.95rem; font-weight: 600; color: var(--text-secondary);
+            margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .quick-path-list { display: flex; flex-direction: column; gap: 0.5rem; }
+        .quick-path-item {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.6rem 1rem; border-radius: 8px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            cursor: pointer; transition: all 0.2s; font-size: 0.82rem;
+        }
+        .quick-path-item:hover {
+            border-color: var(--accent); background: var(--bg-card-hover);
+        }
+        .quick-path-item .qp-icon { font-size: 1rem; flex-shrink: 0; }
+        .quick-path-item .qp-label { color: var(--text-primary); font-weight: 500; }
+        .quick-path-item .qp-desc { color: var(--text-muted); font-size: 0.75rem; margin-left: auto; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .header-inner { padding: 0 1rem; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+            .choices { grid-template-columns: 1fr; }
+            .hero h2 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>vSAN Troubleshooting <span>Decision Tree</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-tree">&#9881; Interactive Diagnosis</span>
+            <span class="badge badge-phase">70 KB Entries</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ PHASE NAVIGATION ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="active">Decision Tree</a>
+</nav>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container">
+    <div class="hero">
+        <h2>What symptom are you experiencing?</h2>
+        <p>Select the category that best describes your issue. The tree will guide you step-by-step to the right KB entry.</p>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb" id="breadcrumb">
+        <span class="breadcrumb-home" onclick="goHome()">&#8962; Start</span>
+    </div>
+
+    <!-- Dynamic content area -->
+    <div id="treeContent" class="fade-in"></div>
+
+    <!-- Quick-path shortcuts (shown on root only) -->
+    <div class="quick-paths" id="quickPaths">
+        <h3>&#9889; Common Scenarios — Jump Directly</h3>
+        <div class="quick-path-list">
+            <div class="quick-path-item" onclick="jumpTo(['root','storage','disk_group'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Disk group missing or degraded</span>
+                <span class="qp-desc">KB #1</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','network','partition'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Network partition / split brain</span>
+                <span class="qp-desc">KB #2, #65</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','performance','latency_write'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">High write latency</span>
+                <span class="qp-desc">KB #55</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','cluster','maintenance'])">
+                <span class="qp-icon">&#128993;</span>
+                <span class="qp-label">Host stuck in maintenance mode</span>
+                <span class="qp-desc">KB #10</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','cluster','psod'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Purple Screen of Death (PSOD)</span>
+                <span class="qp-desc">KB #21</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','upgrade','upgrade_fail'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Upgrade failure</span>
+                <span class="qp-desc">KB #9</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','storage','capacity_full'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Capacity full emergency</span>
+                <span class="qp-desc">KB #17</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','vcf','sddc_bringup'])">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">SDDC Manager bring-up failure</span>
+                <span class="qp-desc">KB #31</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DECISION TREE DATA
+// ═══════════════════════════════════════════════════════════════════
+
+const tree = {
+    root: {
+        question: "What area is affected?",
+        stepNum: 1,
+        choices: [
+            { id: "storage",     icon: "&#128190;", title: "Storage / Disk",              desc: "Disk groups, objects, capacity, NVMe, checksum errors",             count: 15 },
+            { id: "network",     icon: "&#127760;", title: "Network / Connectivity",      desc: "VMkernel, MTU, partition, split brain, NIC teaming, firewall",      count: 10 },
+            { id: "performance", icon: "&#9889;",   title: "Performance",                 desc: "Latency, congestion, resync, IOPS, esxtop counters",               count: 10 },
+            { id: "cluster",     icon: "&#128421;", title: "Cluster / Host",              desc: "Host join, maintenance mode, witness, PSOD, isolation, HA",         count: 10 },
+            { id: "data_prot",   icon: "&#128737;", title: "Data Protection & Recovery",  desc: "Snapshots, vCenter recovery, stretched cluster failover",           count: 7  },
+            { id: "upgrade",     icon: "&#128259;", title: "Upgrade / Lifecycle",          desc: "Upgrade failures, vLCM, firmware, OSA→ESA migration",              count: 7  },
+            { id: "encryption",  icon: "&#128274;", title: "Encryption / Security",       desc: "KMS keys, key rotation, certificates, SPBM policies",              count: 4  },
+            { id: "vcf",         icon: "&#127970;", title: "VCF / SDDC",                  desc: "SDDC Manager, workload domains, NSX-T, Aria, HCI Mesh",            count: 9  }
+        ]
+    },
+
+    /* ───────── STORAGE ───────── */
+    storage: {
+        question: "What storage symptom are you seeing?",
+        stepNum: 2,
+        choices: [
+            { id: "disk_group",      icon: "&#128308;", title: "Disk group absent / degraded",        desc: "Entire disk group went offline or shows degraded status",     result: true },
+            { id: "objects",         icon: "&#128308;", title: "Objects inaccessible",                desc: "VMs report inaccessible objects after host/disk failure",     result: true },
+            { id: "nvme_drop",       icon: "&#128308;", title: "NVMe device dropped (ESA)",           desc: "ESA storage pool lost an NVMe device unexpectedly",          result: true },
+            { id: "capacity_full",   icon: "&#128308;", title: "Capacity full / emergency",           desc: "Datastore critically low, VMs pausing or stalling",          result: true },
+            { id: "checksum",        icon: "&#128308;", title: "Checksum / data integrity errors",    desc: "CLOMD / health check reports checksum mismatches",           result: true },
+            { id: "pool_imbalance",  icon: "&#128993;", title: "ESA storage pool imbalance",          desc: "Uneven distribution across NVMe devices in ESA",             result: true },
+            { id: "lsom_crash",      icon: "&#128308;", title: "LSOM / LSOM2 crash",                  desc: "Kernel log shows LSOM panic, component marked absent",       result: true },
+            { id: "snapshot_sprawl", icon: "&#128993;", title: "Snapshot sprawl / consolidation",     desc: "Too many snapshots, consolidation fails",                    result: true },
+            { id: "trim_unmap",      icon: "&#128993;", title: "TRIM / UNMAP not reclaiming",         desc: "Deleted data not freeing capacity, thin disks growing",       result: true },
+            { id: "file_svc",        icon: "&#128308;", title: "File services failure",               desc: "vSAN file services not mounting or reporting errors",         result: true },
+            { id: "dedup_comp",      icon: "&#128993;", title: "Dedup & compression issues",          desc: "Unexpected dedup ratios, compression stalling rebuilds",      result: true },
+            { id: "spbm",            icon: "&#128993;", title: "Storage policy mismatch",             desc: "SPBM shows non-compliant, policy not applying correctly",     result: true }
+        ]
+    },
+
+    /* ───────── NETWORK ───────── */
+    network: {
+        question: "What networking symptom describes your issue?",
+        stepNum: 2,
+        choices: [
+            { id: "vmkernel",    icon: "&#128308;", title: "VMkernel misconfiguration",    desc: "Wrong subnet, tagging, or missing vSAN vmk",           result: true },
+            { id: "mtu",         icon: "&#128308;", title: "MTU / jumbo frame mismatch",   desc: "Packets dropped, vmkping -d -s 8972 failing",          result: true },
+            { id: "partition",   icon: "&#128308;", title: "Network partition / split brain", desc: "Cluster partitioned, objects degraded across segments", result: true },
+            { id: "nic_teaming", icon: "&#128993;", title: "NIC teaming & failover",       desc: "Incorrect load-balancing or failover policy on vSAN pNICs", result: true },
+            { id: "multicast",   icon: "&#128993;", title: "Multicast → unicast migration", desc: "Moving from legacy multicast to unicast transport",   result: true },
+            { id: "vds",         icon: "&#128308;", title: "vDS migration pitfalls",        desc: "Lost connectivity during standard → distributed switch", result: true },
+            { id: "rdma",        icon: "&#128993;", title: "RDMA / RoCE v2 issues",         desc: "PFC / ECN misconfigured, RDMA not initializing",       result: true },
+            { id: "stretched_net", icon: "&#128993;", title: "Stretched cluster networking", desc: "Inter-site latency, witness connectivity, ISL sizing",  result: true },
+            { id: "firewall",    icon: "&#128308;", title: "Firewall / ports blocked",      desc: "Hosts can't communicate on vSAN ports (2233, 12321…)",  result: true },
+            { id: "25_100gbe",   icon: "&#128993;", title: "25/100 GbE design for ESA",     desc: "NIC selection, switch config for high-bandwidth ESA",   result: true }
+        ]
+    },
+
+    /* ───────── PERFORMANCE ───────── */
+    performance: {
+        question: "What performance problem are you observing?",
+        stepNum: 2,
+        choices: [
+            { id: "latency_write", icon: "&#128308;", title: "High write latency",          desc: "VMs experiencing slow writes, cache destage backlog",        result: true },
+            { id: "latency_read",  icon: "&#128308;", title: "High read latency",           desc: "Read cache misses, large working set exceeds cache",         result: true },
+            { id: "congestion",    icon: "&#128308;", title: "Congestion / backpressure",   desc: "esxtop shows VSCSI congestion, throttled I/O",               result: true },
+            { id: "resync_slow",   icon: "&#128993;", title: "Resync stalled or very slow", desc: "Resync not progressing or taking too long after failure",     result: true },
+            { id: "iops_limit",    icon: "&#128993;", title: "IOPS limiting by policy",     desc: "VM capped at lower IOPS than expected by storage policy",     result: true },
+            { id: "general_diag",  icon: "&#128993;", title: "General degradation diagnosis", desc: "Don't know root cause — need esxtop / metrics deep dive",  result: true },
+            { id: "esa_perf",      icon: "&#128993;", title: "ESA-specific performance",    desc: "ESA not delivering expected throughput, tuning needed",       result: true },
+            { id: "resync_throttle", icon: "&#128993;", title: "Resync throttle balancing",  desc: "Resync consuming too much bandwidth / need to tune",         result: true },
+            { id: "capacity_plan", icon: "&#128993;", title: "Capacity planning & sizing",  desc: "Right-sizing clusters, slack space, growth projections",      result: true },
+            { id: "readynode",     icon: "&#128993;", title: "ReadyNode hardware selection", desc: "Picking the right ReadyNode config for workload profile",    result: true }
+        ]
+    },
+
+    /* ───────── CLUSTER / HOST ───────── */
+    cluster: {
+        question: "What cluster or host issue are you seeing?",
+        stepNum: 2,
+        choices: [
+            { id: "host_join",     icon: "&#128308;", title: "Host fails to join cluster",    desc: "Host added but vSAN cluster membership rejected",          result: true },
+            { id: "maintenance",   icon: "&#128993;", title: "Maintenance mode stuck",        desc: "Host can't enter/exit maintenance — objects evacuating forever", result: true },
+            { id: "witness",       icon: "&#128308;", title: "Witness appliance failure",     desc: "Witness unreachable, stretched cluster quorum at risk",     result: true },
+            { id: "psod",          icon: "&#128308;", title: "PSOD (Purple Screen of Death)", desc: "ESXi host crashed with purple diagnostic screen",           result: true },
+            { id: "isolation",     icon: "&#128993;", title: "Host isolation response",       desc: "Host isolated from cluster, VM reaction policy needed",     result: true },
+            { id: "proactive_ha",  icon: "&#128993;", title: "Proactive HA configuration",    desc: "Hardware health provider triggering premature migrations",  result: true },
+            { id: "shutdown_seq",  icon: "&#128993;", title: "Cluster shutdown / startup",    desc: "Correct sequence for powering down and restarting vSAN",    result: true },
+            { id: "fault_domain",  icon: "&#128308;", title: "Fault domain misconfiguration", desc: "Objects violating FTT because of incorrect FD layout",     result: true },
+            { id: "witness_res",   icon: "&#128308;", title: "Witness resource exhaustion",   desc: "Witness appliance OOM, CPU saturated, objects degraded",    result: true },
+            { id: "stretched_fail",icon: "&#128308;", title: "Stretched cluster site failure", desc: "Entire preferred or secondary site went down",             result: true }
+        ]
+    },
+
+    /* ───────── DATA PROTECTION ───────── */
+    data_prot: {
+        question: "What data protection / recovery scenario?",
+        stepNum: 2,
+        choices: [
+            { id: "vcenter_recover", icon: "&#128993;", title: "vCenter recovery from vSAN",    desc: "vCenter VM lost, need to recover from vSAN datastore",   result: true },
+            { id: "native_snap",     icon: "&#128993;", title: "vSAN 8 native snapshots",       desc: "ESA native snapshot issues or configuration",            result: true },
+            { id: "esa_snap_deep",   icon: "&#128993;", title: "ESA snapshots deep dive",       desc: "Advanced ESA snapshot operations and troubleshooting",   result: true },
+            { id: "raid_policy",     icon: "&#128993;", title: "RAID-5/6 erasure coding (ESA)", desc: "ESA RAID policy design, rebuild impact, FTT choices",    result: true },
+            { id: "esa_arch",        icon: "&#128993;", title: "ESA vs OSA architecture",       desc: "Understanding architectural differences for decisions",   result: true },
+            { id: "osa_to_esa",      icon: "&#128993;", title: "OSA → ESA migration planning",  desc: "Planning and executing migration from OSA to ESA",       result: true },
+            { id: "esa_dedup",       icon: "&#128993;", title: "ESA dedup & compression",       desc: "ESA-specific dedup/compression tuning and issues",       result: true }
+        ]
+    },
+
+    /* ───────── UPGRADE / LIFECYCLE ───────── */
+    upgrade: {
+        question: "What upgrade or lifecycle issue?",
+        stepNum: 2,
+        choices: [
+            { id: "upgrade_fail",    icon: "&#128308;", title: "vSAN upgrade failure",          desc: "Upgrade pre-check failed or upgrade rolled back",         result: true },
+            { id: "vlcm",            icon: "&#128993;", title: "vLCM update issues",            desc: "Lifecycle Manager remediation or image compliance errors", result: true },
+            { id: "vlcm_vcf",        icon: "&#128993;", title: "vLCM image-based in VCF",       desc: "VCF-specific vLCM image management problems",             result: true },
+            { id: "nvme_firmware",   icon: "&#128993;", title: "NVMe firmware updates (ESA)",   desc: "Firmware update for NVMe drives in ESA cluster",          result: true },
+            { id: "skyline",         icon: "&#128993;", title: "Skyline Health alerts",         desc: "Skyline advisor showing warnings, need remediation",      result: true },
+            { id: "vcf_bundle",      icon: "&#128993;", title: "VCF bundle download & apply",   desc: "SDDC Manager bundle errors during patching",              result: true },
+            { id: "trim_reclaim",    icon: "&#128993;", title: "Capacity reclaim / TRIM",       desc: "TRIM / UNMAP not reclaiming space after deletes",         result: true }
+        ]
+    },
+
+    /* ───────── ENCRYPTION ───────── */
+    encryption: {
+        question: "What encryption or security problem?",
+        stepNum: 2,
+        choices: [
+            { id: "kms_keys",    icon: "&#128308;", title: "KMS / encryption key issues",       desc: "Host can't unlock encrypted disk group, KMS unreachable",  result: true },
+            { id: "key_rotation",icon: "&#128993;", title: "Encryption key rotation",            desc: "Key rotation stuck, shallow vs deep re-key",              result: true },
+            { id: "cert_rot",    icon: "&#128308;", title: "Certificate rotation breaks encryption", desc: "After cert renewal, vSAN encryption stopped working", result: true },
+            { id: "spbm_enc",    icon: "&#128993;", title: "SPBM storage policy mismatch",      desc: "Encryption policy not applying, compliance issues",        result: true }
+        ]
+    },
+
+    /* ───────── VCF / SDDC ───────── */
+    vcf: {
+        question: "What VCF / SDDC platform issue?",
+        stepNum: 2,
+        choices: [
+            { id: "sddc_bringup",   icon: "&#128308;", title: "SDDC Manager bring-up failure", desc: "Cloud Builder or SDDC Manager stuck during deployment",     result: true },
+            { id: "workload_domain",icon: "&#128993;", title: "Workload domain expansion",     desc: "Can't add hosts or stretch a workload domain",              result: true },
+            { id: "nsxt_breaks",    icon: "&#128308;", title: "NSX-T transport breaks vSAN",   desc: "NSX overlay config broke vSAN VMkernel traffic",            result: true },
+            { id: "stretched_vcf",  icon: "&#128993;", title: "Stretched cluster in VCF",      desc: "VCF-specific stretched cluster configuration issues",       result: true },
+            { id: "aria",           icon: "&#128993;", title: "Aria Operations metrics",       desc: "Aria dashboards missing vSAN data, adapter issues",         result: true },
+            { id: "mgmt_recovery",  icon: "&#128308;", title: "Management domain recovery",   desc: "Management domain vSAN failure, SDDC recovery",             result: true },
+            { id: "hci_mesh_vcf",   icon: "&#128993;", title: "HCI Mesh cross-domain",        desc: "HCI Mesh between workload domains in VCF",                  result: true },
+            { id: "hci_mesh_gen",   icon: "&#128993;", title: "HCI Mesh general config",      desc: "Non-VCF HCI Mesh setup and troubleshooting",                result: true },
+            { id: "iscsi_target",   icon: "&#128993;", title: "iSCSI target service",          desc: "vSAN iSCSI target configuration or failure",                result: true }
+        ]
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// RESULT MAP — leaf id → KB details
+// ═══════════════════════════════════════════════════════════════════
+
+const results = {
+    // Storage
+    disk_group:     { kbs: [{ n:1,  t:"Disk Group Absent / Degraded",           ty:"break", f:"phase1.html",  sum:"Disk group goes offline or shows degraded status. Root causes include SSD/HDD failure, controller issues, or metadata corruption. Use esxcli vsan storage list and CLOMD logs." }] },
+    objects:        { kbs: [{ n:3,  t:"Objects Inaccessible After Failure",     ty:"break", f:"phase1.html",  sum:"VM objects become inaccessible after disk/host failure. Check object health, component states, and CLOM repair timer via esxcli vsan debug object health summary." }] },
+    nvme_drop:      { kbs: [{ n:11, t:"ESA NVMe Device Drop",                  ty:"break", f:"phase2.html", sum:"NVMe device disappears from ESA storage pool. Check dmesg, NVMe controller reset logs, and firmware compatibility matrix." },
+                            { n:42, t:"ESA NVMe Failure Recovery",             ty:"break", f:"phase5.html", sum:"Recovery steps when an ESA NVMe drive fails — replacing the device and rebuilding the storage pool." }] },
+    capacity_full:  { kbs: [{ n:17, t:"Capacity Full Emergency",               ty:"break", f:"phase2.html", sum:"Datastore hits critical threshold (≥80%/94%). Immediate actions: delete old snapshots, evacuate VMs, enable TRIM/UNMAP, resize policies." }] },
+    checksum:       { kbs: [{ n:25, t:"Checksum / Data Integrity Errors",      ty:"break", f:"phase3.html", sum:"vSAN detects bit-rot or silent corruption via checksum validation. Use health check, identify affected components, replace faulty hardware." }] },
+    pool_imbalance: { kbs: [{ n:47, t:"ESA Storage Pool Imbalance",            ty:"break", f:"phase5.html", sum:"ESA NVMe devices showing uneven capacity usage. Rebalance runs automatically but may need manual intervention via esxcli vsan storage." }] },
+    lsom_crash:     { kbs: [{ n:49, t:"ESA LSOM2 Crash & Recovery",            ty:"break", f:"phase5.html", sum:"LSOM2 crashes leave components in absent state. Check vmkernel.log for LSOM panic traces, rebuild affected components." }] },
+    snapshot_sprawl:{ kbs: [{ n:22, t:"Snapshot Sprawl & Consolidation",       ty:"break", f:"phase3.html", sum:"Excessive snapshots degrading performance and consuming capacity. Identify stale snapshots and consolidate safely." }] },
+    trim_unmap:     { kbs: [{ n:60, t:"Capacity Reclaim — TRIM/UNMAP",         ty:"break", f:"phase6.html", sum:"Deleted data not releasing space. Enable automatic UNMAP, verify guest OS TRIM support, check EnableBlockDelete advanced setting." }] },
+    file_svc:       { kbs: [{ n:12, t:"File Services Failure",                 ty:"break", f:"phase2.html", sum:"vSAN File Services (vDFS) fails to mount shares or agent VMs crash. Check File Service Domain health, DNS config, and agent VM console." }] },
+    dedup_comp:     { kbs: [{ n:16, t:"Dedup & Compression Tuning",            ty:"fix",   f:"phase2.html", sum:"Unexpected dedup/compression ratios, performance impact during destage. Verify cluster config, check overhead, and tune policies." },
+                            { n:46, t:"ESA Dedup & Compression",               ty:"fix",   f:"phase5.html", sum:"ESA-specific dedup/compression behavior differs from OSA — inline processing, no cache tier overhead." }] },
+    spbm:           { kbs: [{ n:19, t:"SPBM Policy Mismatch",                  ty:"break", f:"phase2.html", sum:"Storage policy shows non-compliant. Verify FTT/FTM settings, stripe width, and site affinity rules match cluster topology." }] },
+
+    // Network
+    vmkernel:       { kbs: [{ n:61, t:"VMkernel Adapter Misconfiguration",     ty:"break", f:"phase7.html", sum:"vSAN VMkernel on wrong subnet, missing vSAN traffic tag, or incorrect gateway. Verify with esxcli network ip interface list." }] },
+    mtu:            { kbs: [{ n:62, t:"MTU / Jumbo Frame Mismatch",            ty:"break", f:"phase7.html", sum:"End-to-end MTU mismatch causes packet drops. Test with vmkping ++netstack=vsan -d -s 8972. Fix all switches in the path." }] },
+    partition:      { kbs: [{ n:2,  t:"Network Partition",                     ty:"break", f:"phase1.html",  sum:"Cluster splits into multiple partitions. Objects degrade, risk of data loss. Use esxcli vsan cluster get to identify partition UUIDs." },
+                            { n:65, t:"Network Partition — Split Brain",       ty:"break", f:"phase7.html", sum:"Deep dive into split-brain scenarios — detection, resolution, and prevention via proper network redundancy." }] },
+    nic_teaming:    { kbs: [{ n:63, t:"NIC Teaming & Failover",               ty:"fix",   f:"phase7.html", sum:"Incorrect teaming policy (IP hash vs. port-id vs. LACP) causing uneven traffic or failover gaps on vSAN uplinks." }] },
+    multicast:      { kbs: [{ n:64, t:"Multicast → Unicast Migration",        ty:"fix",   f:"phase7.html", sum:"Move from multicast-based CMMDS to unicast. Required on vSAN 7.0u1+. Validate switch cleanup and agent reconfig." }] },
+    vds:            { kbs: [{ n:66, t:"vDS Migration Pitfalls",               ty:"break", f:"phase7.html", sum:"Migrating from vSS to vDS can disrupt vSAN if VMkernel adapters lose connectivity. Plan rollback and test first." }] },
+    rdma:           { kbs: [{ n:67, t:"vSAN over RDMA (RoCE v2)",             ty:"fix",   f:"phase7.html", sum:"RDMA requires PFC (Priority Flow Control) and ECN. Validate switch QoS config and NIC firmware for RoCE v2 support." }] },
+    stretched_net:  { kbs: [{ n:68, t:"Stretched Cluster Networking",          ty:"fix",   f:"phase7.html", sum:"Inter-site networking for stretched clusters — RTT ≤5ms, ISL bandwidth sizing, witness network path requirements." }] },
+    firewall:       { kbs: [{ n:69, t:"Firewall & Port Requirements",          ty:"break", f:"phase7.html", sum:"Firewall blocking vSAN ports (2233 data, 12321 CMMDS, 8080 HTTP). Verify esxcli network firewall ruleset list." }] },
+    "25_100gbe":    { kbs: [{ n:70, t:"25/100GbE Network Design for ESA",      ty:"fix",   f:"phase7.html", sum:"ESA demands high bandwidth — NIC selection (25G min), switch requirements, cable validation, RSS/IRQ tuning." }] },
+
+    // Performance
+    latency_write:  { kbs: [{ n:55, t:"High Write Latency — Cache Destage",   ty:"break", f:"phase6.html", sum:"Write latency spikes during cache destage in OSA. Analyze with esxtop KAVG, check cache tier health and SSD endurance." }] },
+    latency_read:   { kbs: [{ n:56, t:"Read Latency — Cache Miss Storm",      ty:"break", f:"phase6.html", sum:"Working set exceeds read cache capacity. Identify hot VMs, evaluate cache tier sizing, consider ESA migration." }] },
+    congestion:     { kbs: [{ n:51, t:"vSAN Congestion / Backpressure",        ty:"break", f:"phase6.html", sum:"IOPS throttled by vSAN congestion. Check esxtop for VSCSI latency, SSD queue depth, and DOM owner congestion counters." }] },
+    resync_slow:    { kbs: [{ n:4,  t:"Resync Stalled / Not Progressing",      ty:"fix",   f:"phase1.html",  sum:"After failure, resync doesn't progress. Check resync dashboard, bandwidth limits, and CLOM repair scheduling." }] },
+    iops_limit:     { kbs: [{ n:57, t:"VM Storage Policy IOPS Limiting",       ty:"fix",   f:"phase6.html", sum:"VM IOPS capped by storage policy. Check IOPS reservation/limit in SPBM profile, adjust or remove the limit." }] },
+    general_diag:   { kbs: [{ n:8,  t:"Performance Degradation Diagnosis",     ty:"fix",   f:"phase1.html",  sum:"Systematic performance diagnosis using vSAN Performance Service, Skyline Health, and esxtop deep-dive." },
+                            { n:54, t:"esxtop Deep Dive for vSAN",             ty:"fix",   f:"phase6.html", sum:"Key esxtop fields for vSAN: CMDS/s, READS/s, WRITES/s, KAVG, DAVG, GAVG, queue depth, congestion values." }] },
+    esa_perf:       { kbs: [{ n:50, t:"ESA Performance Tuning",               ty:"fix",   f:"phase5.html", sum:"ESA-specific tuning: NVMe queue depth, interrupt coalescing, storage pool balance, NUMA-aware placement." }] },
+    resync_throttle:{ kbs: [{ n:52, t:"Resync Throttle Balancing",            ty:"fix",   f:"phase6.html", sum:"Tune resync bandwidth vs. VM I/O using VSAN.ResyncThrottleThreshold. Balance recovery speed against production workload." }] },
+    capacity_plan:  { kbs: [{ n:53, t:"Capacity Planning & Sizing",           ty:"fix",   f:"phase6.html", sum:"Right-size vSAN clusters: slack space, FTT overhead, growth projections, and operational reserves calculation." }] },
+    readynode:      { kbs: [{ n:58, t:"ReadyNode Sizing & Hardware Selection", ty:"fix",   f:"phase6.html", sum:"Choosing the right ReadyNode profile for your workload — AF vs. hybrid, NVMe vs. SAS, capacity vs. performance tier." }] },
+
+    // Cluster / Host
+    host_join:      { kbs: [{ n:5,  t:"Host Fails to Join vSAN Cluster",      ty:"break", f:"phase1.html",  sum:"Host can't join vSAN. Check VMkernel tagging, sub-cluster formation, time sync, firewall, and vSAN license." }] },
+    maintenance:    { kbs: [{ n:10, t:"Maintenance Mode Stuck",               ty:"fix",   f:"phase1.html",  sum:"Host can't enter maintenance — insufficient capacity for evacuation. Check DRS, reduce FTT, or use no-action mode." }] },
+    witness:        { kbs: [{ n:6,  t:"Stretched Cluster Witness Failure",     ty:"break", f:"phase1.html",  sum:"Witness appliance down or unreachable. Stretched cluster loses quorum. Verify witness network path and appliance health." }] },
+    psod:           { kbs: [{ n:21, t:"PSOD Recovery",                         ty:"break", f:"phase3.html", sum:"ESXi crashed with PSOD. Collect vmkernel-zdump, identify faulting module, check VMware KB for known issues matching backtrace." }] },
+    isolation:      { kbs: [{ n:27, t:"Host Isolation Response",               ty:"fix",   f:"phase3.html", sum:"Configure das.isolationResponse — powerOff, shutdown, or leave powered on. Ensure isolation addresses are routable." }] },
+    proactive_ha:   { kbs: [{ n:28, t:"Proactive HA Configuration",            ty:"fix",   f:"phase3.html", sum:"Proactive HA uses hardware health providers. Tune sensitivity to avoid unnecessary vMotion during transient sensor readings." }] },
+    shutdown_seq:   { kbs: [{ n:29, t:"Cluster Shutdown / Startup Procedure",  ty:"fix",   f:"phase3.html", sum:"Correct order: shut down VMs, vCenter last, power off hosts. Startup: power on all hosts first, then vCenter, verify resync." }] },
+    fault_domain:   { kbs: [{ n:30, t:"Fault Domain Misconfiguration",         ty:"break", f:"phase3.html", sum:"Incorrect FD assignments violate object placement rules. Objects show non-compliant or reduced availability." }] },
+    witness_res:    { kbs: [{ n:59, t:"Witness Appliance Resource Exhaustion",  ty:"break", f:"phase6.html", sum:"Witness OOM or CPU saturated. Increase appliance size, check max component count, evaluate dedicated witness host." }] },
+    stretched_fail: { kbs: [{ n:23, t:"Stretched Cluster Site Failure",        ty:"break", f:"phase3.html", sum:"Entire site down. Behavior depends on which site (preferred vs. secondary) and witness placement. Force-reconfigure if needed." }] },
+
+    // Data Protection
+    vcenter_recover:{ kbs: [{ n:26, t:"vCenter Recovery from vSAN",           ty:"fix",   f:"phase3.html", sum:"vCenter VM lost. Use ESXi host client to browse vSAN datastore, re-register VM, or restore from backup." }] },
+    native_snap:    { kbs: [{ n:24, t:"vSAN 8 Native Snapshots",              ty:"fix",   f:"phase3.html", sum:"vSAN 8 native snapshots on ESA — no performance penalty, snapshot-based replication integration." }] },
+    esa_snap_deep:  { kbs: [{ n:45, t:"ESA Native Snapshots Deep Dive",       ty:"fix",   f:"phase5.html", sum:"Advanced ESA snapshot internals — block-level tracking, snapshot tree management, and performance characteristics." }] },
+    raid_policy:    { kbs: [{ n:44, t:"ESA RAID-5/6 Policy Design",           ty:"fix",   f:"phase5.html", sum:"ESA RAID-5/6 erasure coding — FTT values, stripe sizing, capacity overhead, and rebuild performance trade-offs." }] },
+    esa_arch:       { kbs: [{ n:41, t:"ESA vs OSA Architecture Comparison",   ty:"fix",   f:"phase5.html", sum:"Fundamental differences — single tier vs. two tier, LSOM2 vs. LSOM, native snapshots, inline dedup/compression." }] },
+    osa_to_esa:     { kbs: [{ n:43, t:"OSA to ESA Migration",                 ty:"fix",   f:"phase5.html", sum:"Migration requires new cluster (no in-place). Planning steps, HCL validation, data migration via Storage vMotion." }] },
+    esa_dedup:      { kbs: [{ n:46, t:"ESA Dedup & Compression",              ty:"fix",   f:"phase5.html", sum:"ESA inline dedup/compression — always-on, no cache tier penalty, savings estimation, and monitoring." }] },
+
+    // Upgrade / Lifecycle
+    upgrade_fail:   { kbs: [{ n:9,  t:"vSAN Upgrade Failure",                 ty:"break", f:"phase1.html",  sum:"Pre-check failures, disk format upgrade blocked, or on-disk format incompatibility. Run pre-upgrade health check first." }] },
+    vlcm:           { kbs: [{ n:18, t:"vLCM Update Workflow",                  ty:"fix",   f:"phase2.html", sum:"vSphere Lifecycle Manager remediation for vSAN clusters — image compliance, firmware bundles, sequential host updates." }] },
+    vlcm_vcf:       { kbs: [{ n:36, t:"vLCM Image-Based Mgmt in VCF",         ty:"fix",   f:"phase4.html", sum:"VCF-managed vLCM images — bundle compatibility, async patches, and SDDC Manager integration." }] },
+    nvme_firmware:  { kbs: [{ n:48, t:"ESA NVMe Firmware Updates",             ty:"fix",   f:"phase5.html", sum:"Updating NVMe drive firmware in ESA — online vs. offline methods, HCL firmware matrix, rolling update procedure." }] },
+    skyline:        { kbs: [{ n:15, t:"Skyline Health Alerts",                 ty:"fix",   f:"phase2.html", sum:"Skyline Advisor vSAN-specific alerts — interpreting findings, applying recommended fixes, and silencing false positives." }] },
+    vcf_bundle:     { kbs: [{ n:33, t:"VCF Bundle Download & Apply",           ty:"fix",   f:"phase4.html", sum:"SDDC Manager bundle lifecycle — download, compatibility check, pre-check, apply. Troubleshoot depot connectivity errors." }] },
+    trim_reclaim:   { kbs: [{ n:60, t:"Capacity Reclaim — TRIM/UNMAP",        ty:"break", f:"phase6.html", sum:"Enable automatic UNMAP, verify guest OS TRIM support, check EnableBlockDelete advanced setting." }] },
+
+    // Encryption
+    kms_keys:       { kbs: [{ n:7,  t:"KMS / Encryption Key Issues",          ty:"break", f:"phase1.html",  sum:"Host can't unlock encrypted disk group. Verify KMS connectivity, key IDs, trust establishment, and STS token validity." }] },
+    key_rotation:   { kbs: [{ n:14, t:"Encryption Key Rotation",              ty:"fix",   f:"phase2.html", sum:"Shallow re-key (KEK only) vs. deep re-key (DEK — full rewrite). Schedule during maintenance, monitor resync." }] },
+    cert_rot:       { kbs: [{ n:40, t:"Certificate Rotation Breaks Encryption",ty:"break",f:"phase4.html", sum:"After certificate renewal, vSAN encryption broke. Re-establish KMS trust with new certs, re-register key provider." }] },
+    spbm_enc:       { kbs: [{ n:19, t:"SPBM Policy Mismatch",                 ty:"break", f:"phase2.html", sum:"Encryption-related SPBM non-compliance. Verify policy encryption flag, KMS availability, and host crypto mode." }] },
+
+    // VCF
+    sddc_bringup:   { kbs: [{ n:31, t:"SDDC Manager Bring-Up Failure",        ty:"break", f:"phase4.html", sum:"Cloud Builder or SDDC Manager fails during management domain deployment. Check logs, DNS/NTP, and host preparation." }] },
+    workload_domain:{ kbs: [{ n:32, t:"Workload Domain Expansion",            ty:"fix",   f:"phase4.html", sum:"Adding hosts to existing workload domain. Pre-validation: HCL, network pool, host preparation, license capacity." }] },
+    nsxt_breaks:    { kbs: [{ n:34, t:"NSX-T Transport Node Breaks vSAN",     ty:"break", f:"phase4.html", sum:"NSX-T overlay config on vSAN VMkernel port breaks storage traffic. Separate transport zones, verify VMkernel tagging." }] },
+    stretched_vcf:  { kbs: [{ n:35, t:"Stretched Cluster in VCF",             ty:"fix",   f:"phase4.html", sum:"VCF-specific stretched cluster deployment — witness placement, SDDC Manager config, site affinity rules." }] },
+    aria:           { kbs: [{ n:37, t:"Aria Operations vSAN Metrics",          ty:"fix",   f:"phase4.html", sum:"Aria adapter for vSAN — metrics collection, dashboard setup, health alert integration, and troubleshooting stale data." }] },
+    mgmt_recovery:  { kbs: [{ n:38, t:"Management Domain vSAN Recovery",      ty:"break", f:"phase4.html", sum:"Management domain vSAN failure is catastrophic — vCenter, SDDC Manager, NSX all run here. Follow recovery runbook precisely." }] },
+    hci_mesh_vcf:   { kbs: [{ n:39, t:"HCI Mesh Cross-Domain in VCF",         ty:"fix",   f:"phase4.html", sum:"Sharing vSAN capacity across VCF workload domains via HCI Mesh — prerequisites, configuration, and bandwidth considerations." }] },
+    hci_mesh_gen:   { kbs: [{ n:13, t:"HCI Mesh Configuration",               ty:"fix",   f:"phase2.html", sum:"General HCI Mesh setup — mounting remote datastores, network requirements, compatibility matrix, and performance expectations." }] },
+    iscsi_target:   { kbs: [{ n:20, t:"iSCSI Target Service",                 ty:"fix",   f:"phase2.html", sum:"vSAN iSCSI target configuration for physical workloads — LUN creation, network binding, multipath, and CHAP authentication." }] }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE & RENDERING
+// ═══════════════════════════════════════════════════════════════════
+
+let path = [];          // e.g. ["root", "storage", "disk_group"]
+let labels = [];        // human-readable labels for breadcrumb
+
+function goHome() {
+    path = [];
+    labels = [];
+    render();
+}
+
+function navigate(nodeId, label) {
+    path.push(nodeId);
+    labels.push(label);
+    render();
+}
+
+function goToStep(index) {
+    path = path.slice(0, index);
+    labels = labels.slice(0, index);
+    render();
+}
+
+function jumpTo(fullPath) {
+    // Quick-path: build the path and labels from tree data
+    path = [];
+    labels = [];
+    for (var i = 0; i < fullPath.length; i++) {
+        path.push(fullPath[i]);
+        if (fullPath[i] === 'root') {
+            labels.push('Start');
+        } else {
+            // Find label from tree
+            var parentNode = tree[fullPath[i - 1]] || tree.root;
+            if (parentNode && parentNode.choices) {
+                var match = parentNode.choices.find(function (c) { return c.id === fullPath[i]; });
+                labels.push(match ? match.title : fullPath[i]);
+            } else {
+                labels.push(fullPath[i]);
+            }
+        }
+    }
+    render();
+}
+
+function render() {
+    var content = document.getElementById('treeContent');
+    var quickPaths = document.getElementById('quickPaths');
+    var bc = document.getElementById('breadcrumb');
+
+    // ── Breadcrumb ──
+    var bcHtml = '<span class="breadcrumb-home" onclick="goHome()">&#8962; Start</span>';
+    for (var i = 1; i < labels.length; i++) {
+        bcHtml += ' <span class="breadcrumb-sep">&#9654;</span> ';
+        if (i < labels.length - 1) {
+            bcHtml += '<span class="breadcrumb-item" onclick="goToStep(' + (i + 1) + ')">' + labels[i] + '</span>';
+        } else {
+            bcHtml += '<span class="breadcrumb-item current">' + labels[i] + '</span>';
+        }
+    }
+    bc.innerHTML = bcHtml;
+
+    // ── Determine current node ──
+    if (path.length === 0) {
+        // Show root
+        quickPaths.style.display = 'block';
+        renderChoices(content, tree.root, 'root');
+        return;
+    }
+
+    quickPaths.style.display = 'none';
+    var currentId = path[path.length - 1];
+
+    // Check if it's a result leaf
+    if (results[currentId]) {
+        renderResult(content, results[currentId]);
+        return;
+    }
+
+    // It's a branch node
+    if (tree[currentId]) {
+        renderChoices(content, tree[currentId], currentId);
+    }
+}
+
+function renderChoices(container, node, parentId) {
+    var html = '<div class="fade-in">';
+    html += '<div class="step-question"><span class="step-icon">' + (node.stepNum || '?') + '</span> ' + node.question + '</div>';
+    html += '<div class="choices">';
+
+    node.choices.forEach(function (c) {
+        var isLeaf = c.result === true;
+        html += '<div class="choice-card" onclick="navigate(\'' + c.id + '\', \'' + c.title.replace(/'/g, "\\'") + '\')">';
+        if (c.count) { html += '<div class="choice-count">' + c.count + ' KBs</div>'; }
+        html += '<div class="choice-icon">' + c.icon + '</div>';
+        html += '<div class="choice-title">' + c.title + '</div>';
+        html += '<div class="choice-desc">' + c.desc + '</div>';
+        html += '</div>';
+    });
+
+    html += '</div></div>';
+    container.innerHTML = html;
+}
+
+function renderResult(container, data) {
+    var html = '<div class="fade-in">';
+
+    data.kbs.forEach(function (kb) {
+        var isBreak = kb.ty === 'break';
+        html += '<div class="result-card ' + (isBreak ? 'break-result' : '') + '">';
+        html += '<div class="result-header">';
+        html += '<span class="result-kb-num">KB #' + kb.n + '</span>';
+        html += '<span class="result-type ' + kb.ty + '">' + kb.ty.toUpperCase() + '</span>';
+        html += '</div>';
+        html += '<div class="result-title">' + kb.t + '</div>';
+        html += '<div class="result-summary">' + kb.sum + '</div>';
+        html += '<a href="' + kb.f + '" class="result-link">';
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+        html += 'Open Full KB Entry';
+        html += '</a>';
+        html += '</div>';
+    });
+
+    html += '<div class="restart-bar">';
+    html += '<button class="restart-btn" onclick="goHome()">';
+    html += '&#8634; Start Over — Diagnose Another Issue';
+    html += '</button>';
+    html += '</div>';
+
+    // Also show "Not what you're looking for?" with option to go back
+    html += '<div style="text-align:center;margin-top:0.5rem;">';
+    html += '<span style="color:var(--text-muted);font-size:0.82rem;cursor:pointer;" onclick="goToStep(path.length - 1)">&#8592; Go back one step</span>';
+    html += '</div>';
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ── Initial render ──
+render();
+</script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

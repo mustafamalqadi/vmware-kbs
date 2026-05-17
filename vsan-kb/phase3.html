@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Phase 3: Disaster Recovery &amp; Data Protection</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .search-bar input {
+            width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 1rem center;
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .stats-bar {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+        }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-tabs { max-width: 1400px; margin: 0 auto; padding: 0 2rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-tab {
+            padding: 0.55rem 1.2rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+        .kb-entry {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+        .kb-entry-header {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.5rem 1.75rem; cursor: pointer; user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+        .kb-number {
+            flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .kb-number.break-num { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
+        .kb-number.fix-num { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .kb-entry-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+        .kb-entry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2); font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+        .kb-chevron { flex-shrink: 0; width: 24px; height: 24px; margin-top: 0.5rem; transition: transform 0.3s; color: var(--text-muted); }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+        .kb-entry-body { display: none; padding: 0 1.75rem 1.75rem; border-top: 1px solid var(--border); }
+        .kb-entry.open .kb-entry-body { display: block; }
+        .section-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-muted); margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .kb-entry-body p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .kb-entry-body ul, .kb-entry-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .kb-entry-body li { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .kb-entry-body li strong { color: var(--text-primary); }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto;
+            margin: 0.75rem 0; position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; color: var(--accent-light); line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+            font-size: 0.85rem; color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.3rem 0.6rem; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 5px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+        .alert {
+            padding: 0.85rem 1.1rem; border-radius: 8px; margin: 0.75rem 0;
+            font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.25); color: var(--danger-light); }
+        .alert-warning { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.25); color: var(--warning-light); }
+        .alert-success { background: rgba(46,196,182,0.08); border: 1px solid rgba(46,196,182,0.25); color: var(--success-light); }
+        .alert-info { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent-light); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0.75rem 0; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.15rem; }
+        .info-box-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-number {
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+        .footer {
+            text-align: center; padding: 2rem; color: var(--text-muted);
+            font-size: 0.8rem; border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 3 — DR &amp; Data Protection</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html" class="active">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html">Phase 4 — VCF Integration</a>
+    <a href="phase5.html">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html">Phase 7 — Networking</a>
+    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);">&#9881; Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search DR, snapshots, backup, stretched cluster, PSOD, recovery..." oninput="filterEntries()">
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">DR &amp; Recovery Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 3</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #21: PSOD on vSAN Host — Full Recovery        -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="PSOD purple screen of death crash host dump vmkernel panic coredump">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">21</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Host PSOD in vSAN Cluster — Impact &amp; Recovery</div>
+            <div class="kb-entry-subtitle">Purple Screen of Death crashes an ESXi host, triggering vSAN object degradation and automatic rebuilds</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">PSOD</span>
+                <span class="tag">Host Crash</span>
+                <span class="tag">Recovery</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> All VMs on the crashed host are immediately unavailable. vSAN objects with components on this host enter "Reduced Availability". If vSphere HA is configured, VMs restart on surviving hosts. After 60 minutes, vSAN begins rebuilding components on remaining hosts.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host console shows <strong>purple diagnostic screen</strong> with register dump</li>
+                    <li>Host disconnected from vCenter</li>
+                    <li>VMs on this host powered off (HA restarts them elsewhere)</li>
+                    <li>vSAN Health: <strong>"Cluster – Host not responding"</strong></li>
+                    <li>Objects show <strong>"Reduced availability with no rebuild"</strong> (first 60 min)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Common PSOD Causes in vSAN</div>
+                <ul>
+                    <li>Storage controller driver bug (most common — check HCL)</li>
+                    <li>NVMe driver crash on ESA clusters</li>
+                    <li>Memory corruption (faulty DIMM)</li>
+                    <li>Network driver panic (vmklinux or native driver issue)</li>
+                    <li>Known ESXi bug — check VMware patch advisories</li>
+                    <li>Third-party VIB incompatibility after ESXi upgrade</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Immediate Response</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Capture the PSOD screen</strong></p>
+                    <pre><code># BEFORE rebooting the host, photograph or record the PSOD screen
+# Key information to capture:
+#   - Exception type (e.g., "#PF Exception 14" or "#GP Exception 13")
+#   - Module name (e.g., "nmlx5_core", "lsi_mr3", "vmkernel")
+#   - Stack trace addresses
+#   - Build number shown on screen
+
+# This information is critical for VMware/Broadcom GSS to identify the root cause</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reboot the host</strong></p>
+                    <pre><code># If the host is stuck on PSOD screen:
+# Use IPMI/iLO/iDRAC remote console to perform a hard reset
+# Or press the physical reset button on the server
+
+# The host will reboot and rejoin the vSAN cluster automatically
+# vSAN objects will resync once the host is back online</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Collect the core dump for root cause analysis</strong></p>
+                    <pre><code># After reboot, the core dump is saved automatically
+# From ESXi Shell:
+ls -la /var/core/
+# Look for: vmkernel-zdump.* files
+
+# Check the vmkernel log for the crash backtrace:
+grep -A 50 "PSOD\|Panic\|Exception" /var/log/vmkernel.log
+
+# Extract the core dump for VMware Support:
+# From vSphere Client:
+# Host → Monitor → Logs → Export System Logs
+# Select "Include core dump files"
+
+# Or via ESXi shell:
+vm-support -w /vmfs/volumes/datastore1/
+# This creates a support bundle with the core dump included</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Post-Recovery Validation</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Verify the host rejoined the vSAN cluster</strong></p>
+                    <pre><code># From ESXi Shell (on the recovered host):
+esxcli vsan cluster get
+# Verify: "Local Node State: AGENT" or "MASTER"
+# Verify: "Sub-Cluster Master UUID" matches other hosts
+
+# Check disk groups are mounted:
+esxcli vsan storage list
+# All disk groups should show "In CMMDS: true"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <p><strong>Monitor resync and object health</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Resyncing Objects
+# Objects should be resyncing back to compliant state
+
+# Cluster → Monitor → vSAN → Health → Run All Checks
+# All checks should return to green after resync completes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>Prevention:</strong> Keep ESXi patched with latest Broadcom advisories. Validate storage controller driver/firmware on vSAN HCL before deployment. Configure ESXi core dump to a network dump collector (vCenter → Host → Configure → System → Crash Dump) for easier analysis. Enable vSphere HA with "Host Monitoring" and "VM Restart Priority".</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #22: Snapshot Sprawl — vSAN Performance Kill  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="snapshot sprawl consolidation chain depth performance latency stun CID CTK">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">22</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Snapshot Sprawl on vSAN — Performance Degradation &amp; Consolidation Failures</div>
+            <div class="kb-entry-subtitle">Deep snapshot chains cause severe I/O latency and snapshot consolidation fails or stuns VMs</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Snapshots</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Consolidation</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Each snapshot in the chain adds read latency. At 3+ deep, write performance degrades significantly. At 30+ deep (VMware hard limit: 32), the VM may become unresponsive. Consolidation of large snapshots can <strong>stun the VM</strong> for minutes.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VM disk latency &gt;50ms, applications report timeouts</li>
+                    <li>vSphere Client shows <strong>"Virtual machine disks consolidation is needed"</strong></li>
+                    <li>Snapshot Manager shows chains &gt;3 levels deep</li>
+                    <li>vSAN datastore filling up rapidly due to snapshot growth</li>
+                    <li>Backup jobs (Veeam, Commvault) leave orphaned snapshots</li>
+                    <li>Consolidation task fails with <strong>"Unable to access file"</strong> or times out</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Backup software failed to remove snapshot after backup</li>
+                    <li>Admin created manual snapshot and forgot to delete it</li>
+                    <li>Automated snapshot schedule without retention cleanup</li>
+                    <li>Snapshot consolidation failed silently — chain keeps growing</li>
+                    <li>Insufficient vSAN free space to consolidate (needs temp space)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify VMs with snapshots</strong></p>
+                    <pre><code># From vSphere Client:
+# Menu → VMs and Templates → Add column "Needs Consolidation"
+# Filter: "Needs Consolidation = Yes"
+
+# Check snapshot depth per VM:
+# Right-click VM → Snapshots → Snapshot Manager
+# Count the depth of the snapshot chain
+
+# Find large snapshot delta files:
+# VM → Files tab → Look for *-delta.vmdk and *-sesparse.vmdk files
+# Sort by size to identify the largest snapshots</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check snapshot disk usage from ESXi Shell</strong></p>
+                    <pre><code># SSH to the host running the VM:
+# Find the VM's directory on the vSAN datastore:
+find /vmfs/volumes/vsan*/ -name "*.vmdk" -type f | xargs ls -lh
+
+# Look for delta files:
+ls -lh /vmfs/volumes/vsanDatastore/&lt;vm-folder&gt;/*delta*
+ls -lh /vmfs/volumes/vsanDatastore/&lt;vm-folder&gt;/*sesparse*
+
+# Each delta file represents a snapshot level
+# Large delta files = lots of writes accumulated since snapshot creation</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Delete snapshots safely (for chains &le;3 deep)</strong></p>
+                    <pre><code># From vSphere Client:
+# Right-click VM → Snapshots → Snapshot Manager
+# Select the OLDEST snapshot → "Delete"
+# This merges the snapshot data into its parent
+
+# For all snapshots: Click "Delete All"
+# This consolidates the entire chain back to the base disk
+
+# IMPORTANT: Schedule during low-I/O window
+# Consolidation causes temporary I/O spike</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Handle deep chains (&gt;3 deep) carefully</strong></p>
+                    <pre><code># For deep snapshot chains, consolidate ONE snapshot at a time:
+# 1. Delete the OLDEST snapshot first (smallest merge)
+# 2. Wait for the consolidation task to complete
+# 3. Verify VM is responsive
+# 4. Delete the next oldest snapshot
+# 5. Repeat until chain is clean
+
+# If consolidation fails with "Unable to access file":
+# Retry with: Right-click VM → Snapshots → "Consolidate"
+# This is a separate operation from "Delete" that retries the merge</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Emergency: VM stunned during consolidation</strong></p>
+                    <pre><code># If the VM stuns (pauses) during snapshot consolidation:
+# DO NOT power off the VM — let the consolidation complete
+# The stun duration depends on snapshot delta size and I/O rate
+
+# Monitor progress from ESXi Shell:
+tail -f /var/log/vmware/hostd.log | grep -i "consolidat\|snapshot"
+
+# If consolidation is completely stuck (>1 hour no progress):
+# 1. Cancel the consolidation task from Recent Tasks
+# 2. Power off the VM gracefully (guest shutdown)
+# 3. Consolidate while VM is powered off (much faster, no stun risk)
+# 4. Power the VM back on</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Fix backup software leaving orphaned snapshots</strong></p>
+                    <pre><code># Check backup software logs for snapshot removal failures
+# Common fixes:
+# - Verify backup proxy has permissions to remove snapshots
+# - Ensure CBT (Changed Block Tracking) is enabled on the VM:
+#   VM → Edit Settings → VM Options → Advanced → Edit Configuration
+#   Check: "ctkEnabled = true"
+# - Reset CBT if corrupted:
+#   1. Power off VM
+#   2. Edit Settings → Remove all *-ctk.vmdk files
+#   3. Set ctkEnabled = false, save, then set to true, save
+#   4. Power on VM</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware Best Practice:</strong> Never keep production snapshots longer than 72 hours. Set vCenter alarms for "VM disk consolidation needed". Limit snapshot chain depth to 2-3 maximum. Schedule regular snapshot audit reports. VMware KB 1025279 — "Best practices for virtual machine snapshots".</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #23: vSAN Stretched Cluster — Full Site Fail  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="stretched cluster site failure preferred secondary failover witness quorum full site disaster">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">23</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Stretched Cluster — Complete Site Failure &amp; Failover</div>
+            <div class="kb-entry-subtitle">Entire data site goes offline in a stretched cluster — understanding automatic vs manual failover</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Stretched Cluster</span>
+                <span class="tag">Site Failure</span>
+                <span class="tag">DR</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When an entire site fails, VMs with affinity to that site go down. If the witness + surviving site can form quorum, objects remain accessible from the surviving site. vSphere HA restarts VMs on the surviving site. If both witness AND a site fail, no automatic recovery is possible.</span>
+        </div>
+
+        <div class="section-label">Failure Scenarios &amp; Outcomes</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">Automatic Recovery (Quorum Maintained)</div>
+                <ul>
+                    <li><strong>Secondary site fails + Witness UP:</strong> Preferred site has quorum. VMs auto-restart on preferred site via HA.</li>
+                    <li><strong>Preferred site fails + Witness UP:</strong> Secondary site has quorum. VMs auto-restart on secondary site via HA.</li>
+                    <li><strong>Witness fails (both sites UP):</strong> Cluster operates normally but cannot survive another failure. Replace witness urgently.</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title red">Manual Intervention Required</div>
+                <ul>
+                    <li><strong>Preferred site + Witness fail:</strong> Secondary site alone cannot prove quorum — manual force required.</li>
+                    <li><strong>Secondary site + Witness fail:</strong> Preferred site alone cannot prove quorum — manual force required.</li>
+                    <li><strong>All three fail:</strong> Total outage. Recover sites and witness to restore.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Scenario A: Secondary Site Fails (Witness Alive)</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify quorum on the preferred site</strong></p>
+                    <pre><code># From any host on the PREFERRED site:
+esxcli vsan cluster get
+# Verify: "Sub-Cluster Member Count" shows preferred site hosts + witness
+# Verify: "Local Node State: MASTER" or "AGENT"
+
+# Check object accessibility:
+# Cluster → Monitor → vSAN → Virtual Objects
+# Objects should show "Degraded - Reduced Availability" (NOT "Inaccessible")</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify HA restarted VMs</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSphere HA → Summary
+# Check "VM Restarts" — all VMs from the failed site should be restarted
+
+# If VMs did not restart:
+# Cluster → Configure → vSphere HA → Edit
+# Verify: "Host Monitoring Status: Enabled"
+# Verify: "VM Restart Priority: Medium or High"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Wait for vSAN to rebuild (or not)</strong></p>
+                    <pre><code># vSAN will wait 60 minutes before rebuilding components
+# from the failed site onto the surviving site
+# This is controlled by the CLOM repair timer
+
+# If the site is expected to return soon, do NOT force rebuild
+# Objects remain accessible (degraded) from the surviving site
+
+# If the site is permanently lost:
+# Cluster → Monitor → vSAN → Resyncing Objects → "Repair Objects Immediately"
+# This starts rebuilding all components onto the surviving site</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Scenario B: Site + Witness Fail (Manual Recovery)</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>LAST RESORT — Force quorum on the surviving site</strong></p>
+                    <pre><code># This should ONLY be done when:
+# - The other site AND witness are CONFIRMED permanently unavailable
+# - You accept potential data inconsistency risk
+# - VMware/Broadcom GSS has been contacted
+
+# From vSphere Client (if vCenter is on the surviving site):
+# Cluster → Configure → vSAN → Fault Domains and Stretched Cluster
+# Click "Preferred Fault Domain" → verify the surviving site is preferred
+
+# From ESXi Shell on the surviving site (if vCenter is down):
+esxcli vsan cluster unicastagent add -a &lt;local_host_ip&gt; -p 12321
+# Force the local hosts to form a cluster without the witness</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Forcing quorum is a <strong>destructive, non-reversible operation</strong>. If the other site had newer writes, those writes are LOST. Always engage VMware/Broadcom GSS before performing this operation. Document everything.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Post-Recovery: Rebuilding the Failed Site</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>When the failed site comes back online</strong></p>
+                    <pre><code># Once the failed site's hosts boot up and rejoin the cluster:
+# vSAN will automatically resync stale components
+# Monitor: Cluster → Monitor → vSAN → Resyncing Objects
+
+# If the witness was also replaced:
+# Cluster → Configure → vSAN → Fault Domains → Replace Witness Host
+# Select the new witness appliance
+
+# Verify full cluster health:
+# Cluster → Monitor → vSAN → Health → Run All Checks
+# All checks should return to green after full resync</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2108285 — "vSAN stretched cluster design and troubleshooting". Ensure vCenter Server is deployed in the preferred site or use vCenter HA across sites. Place the witness at a third site with independent power/network.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #24: vSAN Native Data Protection (Snapshots)  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="native data protection snapshot local backup recovery vsan 8 integrated protection group">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">24</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Native Snapshots (vSAN 8) — Configuration &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">vSAN 8 ESA native snapshots fail to create, consume unexpected space, or cannot be restored</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Native Snapshots</span>
+                <span class="tag">vSAN 8 ESA</span>
+                <span class="tag">Data Protection</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>vSAN 8 ESA Native Snapshots</strong> are fundamentally different from traditional VMware snapshots. They are implemented at the <strong>vSAN storage layer</strong> (not the VM layer), use copy-on-write at the object level, and have <strong>no performance penalty</strong> regardless of chain depth. They replace the legacy redo-log based snapshot mechanism for ESA clusters.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Snapshot creation fails: <strong>"Insufficient space for snapshot"</strong></li>
+                    <li>Snapshot restore fails or takes extremely long</li>
+                    <li>Protection group shows <strong>"Non-compliant"</strong> status</li>
+                    <li>Snapshot schedule not executing (no new snapshots appearing)</li>
+                    <li>Space consumed by snapshots exceeds expectations</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Cluster not running vSAN 8 ESA (native snapshots require ESA)</li>
+                    <li>Insufficient vSAN capacity for snapshot reservation</li>
+                    <li>Protection group policy misconfigured</li>
+                    <li>vSAN health issues blocking snapshot operations</li>
+                    <li>Time-based schedule configured but VCSA time is skewed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration &amp; Fix Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify ESA mode and native snapshot support</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Services
+# Confirm: "Storage Architecture: Express Storage Architecture (ESA)"
+# Confirm: "Data Protection: Enabled" (or enable it)
+
+# Native snapshots are NOT available on OSA clusters
+# OSA clusters continue to use traditional VMware snapshots</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Create and configure a protection group</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Data Protection → Protection Groups
+# Click "Create Protection Group"
+#   - Name: "Production-Hourly" (example)
+#   - Schedule: Every 1 hour
+#   - Retention: Keep last 24 snapshots
+#   - Assign VMs: Select VMs to protect
+
+# Verify protection group status:
+# Cluster → Monitor → vSAN → Data Protection
+# Status should show "Compliant" for all assigned VMs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix snapshot creation failures</strong></p>
+                    <pre><code># If "Insufficient space":
+# Check capacity: Cluster → Monitor → vSAN → Capacity
+# Native snapshots consume space proportional to the CHANGE RATE
+# High-write VMs consume more snapshot space
+
+# Reduce retention or increase cluster capacity:
+# Edit Protection Group → Reduce "Retention Count"
+# Or add capacity per KB #17 (Phase 2)
+
+# If protection group is "Non-compliant":
+# Cluster → Monitor → vSAN → Health → Run All Checks
+# Fix any underlying vSAN health issues first
+# Then: Protection Group → "Reapply" to re-evaluate compliance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Restore a VM from a native snapshot</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Data Protection → Select VM
+# Browse available snapshots by timestamp
+# Select the desired recovery point → "Restore"
+
+# Options:
+#   - Restore in-place (overwrites current VM state)
+#   - Restore as new VM (creates a clone from the snapshot point)
+
+# Native snapshot restores are near-instant (metadata-level operation)
+# The VM resumes from the exact point-in-time of the snapshot</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>Key Advantage:</strong> vSAN 8 ESA native snapshots have <strong>zero performance penalty</strong> — no redo logs, no chain depth limits, no VM stun during creation/deletion. This makes them suitable for frequent (hourly) protection schedules that were impractical with traditional snapshots.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #25: vSAN Data Integrity — Checksum Mismatch  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="data integrity checksum mismatch corruption silent bit rot scrubbing object consistency">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">25</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Data Integrity — Checksum Mismatch (Silent Data Corruption)</div>
+            <div class="kb-entry-subtitle">vSAN detects checksum errors indicating silent data corruption (bit rot) on physical media</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Data Integrity</span>
+                <span class="tag">Checksum</span>
+                <span class="tag">Corruption</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN's end-to-end checksum detects data that has been silently corrupted on disk. If only one replica is corrupt, vSAN auto-heals by copying from the good replica. If ALL replicas are corrupt (extremely rare), data loss occurs for that object.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Data – vSAN object health"</strong> shows checksum errors</li>
+                    <li>vmkernel.log: <code class="inline">LSOM: Checksum mismatch detected</code></li>
+                    <li>Proactive scrubbing alerts in vSAN health dashboard</li>
+                    <li>VM may experience I/O errors if all replicas are affected</li>
+                    <li>vSAN Performance: read errors on specific physical disks</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li><strong>Bit rot:</strong> Physical media degradation (aging SSD/HDD)</li>
+                    <li>Firmware bug in storage controller causing write corruption</li>
+                    <li>Memory (DIMM) error during I/O path (no ECC or ECC failure)</li>
+                    <li>Power loss during write causing partial/torn write</li>
+                    <li>Cosmic ray bit flip (yes, this happens — DRAM soft errors)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">How vSAN Protects Against Corruption</div>
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>End-to-End Checksum:</strong> vSAN computes a checksum for every data block when written. On every read, the checksum is re-verified. If a mismatch is detected:<br>
+            1. vSAN reads the same block from another replica (mirror) or reconstructs from parity (RAID-5/6).<br>
+            2. The good data is returned to the VM (transparent — VM sees no error).<br>
+            3. The corrupt block on the bad replica is overwritten with good data (auto-heal).<br>
+            <strong>Proactive Scrubbing:</strong> vSAN periodically reads and verifies ALL data blocks in the background, even if no VM is reading them. This catches bit rot BEFORE a VM needs the data.</span>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check for checksum errors in health dashboard</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Health → Data
+# Look for checksum error counts
+
+# Review vmkernel log for checksum events:
+grep -i "checksum\|csum\|integrity" /var/log/vmkernel.log | tail -50</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify the affected disk</strong></p>
+                    <pre><code># From ESXi Shell:
+esxcli vsan debug disk list
+# Look for disks with non-zero "Checksum Errors" or "Read Errors"
+
+# Check SMART data for the suspected disk:
+esxcli storage core device smart get -d naa.xxxxxxxxxxxx
+# Key indicators: "Uncorrectable Error Count", "Reallocated Sector Count"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>For isolated checksum errors — vSAN auto-heals</strong></p>
+                    <pre><code># If checksum errors are infrequent (a few per week):
+# vSAN has already auto-healed these from redundant copies
+# No action needed — monitor the trend
+
+# Verify auto-heal occurred:
+# Cluster → Monitor → vSAN → Health → Data
+# "Checksum errors corrected" count should match "detected" count</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>For persistent/increasing errors — replace the disk</strong></p>
+                    <pre><code># If a specific disk shows increasing checksum errors:
+# The physical media is degrading — proactive replacement needed
+
+# From vSphere Client:
+# Host → Configure → vSAN → Disk Management
+# Select the failing disk → "Remove Disk with Data Migration"
+# Wait for full data evacuation
+# Physically replace the disk
+# Add the new disk: Disk Management → Claim Disks
+
+# Or if the entire disk group is affected (cache SSD):
+# Remove the disk group with full data migration
+# Replace the SSD → Recreate the disk group</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify and configure proactive scrubbing</strong></p>
+                    <pre><code># Proactive scrubbing is enabled by default but can be verified:
+# From ESXi Shell:
+esxcli system settings advanced list -o /VSAN/ObjectScrubEnabled
+# Expected: "Int Value: 1" (enabled)
+
+# Scrub frequency (default: every 365 days for full scrub):
+esxcli system settings advanced list -o /VSAN/ObjectScrubInterval
+
+# To make scrubbing more frequent (e.g., every 90 days):
+esxcli system settings advanced set -o /VSAN/ObjectScrubInterval -i 90
+
+# From vSphere Client:
+# Cluster → Configure → vSAN → Services → Advanced Options
+# "Object Repair Timer" — keep at default unless advised by GSS</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2108319 — "vSAN end-to-end data integrity with checksums". vSAN's checksum mechanism is one of the strongest data integrity features in HCI. Ensure it is never disabled. Combined with FTT=1+, it provides transparent corruption healing.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #26: vSAN + vCenter HA / Backup Recovery      -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="vCenter backup restore VCSA file-based FBR database postgres appliance management recovery">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">26</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Runs on vSAN — Recovery When vCenter is Lost</div>
+            <div class="kb-entry-subtitle">vCenter VCSA hosted on vSAN becomes unavailable — managing vSAN without vCenter</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vCenter Recovery</span>
+                <span class="tag">VCSA</span>
+                <span class="tag">Bootstrap</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When vCenter runs on the vSAN datastore and becomes unavailable, you lose the management plane. However, <strong>vSAN continues operating independently</strong> — VMs keep running, I/O continues. You lose management visibility and cannot perform cluster-level operations until vCenter is restored.</span>
+        </div>
+
+        <div class="section-label">Key Concept: vSAN Does NOT Require vCenter to Run</div>
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span>vSAN is a <strong>distributed kernel-level service</strong> running on each ESXi host. Once configured, it operates autonomously. vCenter is needed only for:<br>
+            - Initial cluster configuration<br>
+            - Health monitoring and reporting<br>
+            - Policy changes and disk management<br>
+            - Maintenance mode orchestration<br>
+            - Stretched cluster witness configuration<br>
+            <strong>If vCenter is lost, VMs and vSAN I/O continue uninterrupted.</strong></span>
+        </div>
+
+        <div class="section-label">Recovery Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify vSAN is still operational via ESXi direct management</strong></p>
+                    <pre><code># Connect directly to each ESXi host via SSH or Host Client (https://host-ip/ui)
+# From ESXi Shell:
+esxcli vsan cluster get
+# Should show cluster membership is intact
+
+esxcli vsan storage list
+# All disk groups should be mounted
+
+esxcli vsan debug resync summary
+# Verify no unexpected resyncs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Recover VCSA from file-based backup</strong></p>
+                    <pre><code># If you have VCSA file-based backups configured:
+# 1. Deploy a fresh VCSA from the ISO installer
+# 2. During deployment, choose "Restore" instead of "Install"
+# 3. Point to the backup location (FTP/FTPS/HTTP/SCP/NFS/SMB)
+# 4. The restore process recovers the full vCenter database and config
+
+# VCSA backup location check (from a working VCSA):
+# VAMI (https://vcsa:5480) → Backup → Backup Schedule
+# Backup protocol and location are shown here
+
+# IMPORTANT: Deploy the restored VCSA on a host's local datastore FIRST
+# Then Storage vMotion it to vSAN after vCenter is operational</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>If no backup exists — fresh VCSA and re-register hosts</strong></p>
+                    <pre><code># Deploy a new VCSA on a host's local datastore
+# Create a new datacenter and cluster in vCenter
+# Add hosts to the cluster:
+#   Cluster → Add Host → Enter each host's IP/FQDN and root credentials
+
+# CRITICAL: When adding hosts, vSAN configuration is PRESERVED on the hosts
+# vCenter will discover the existing vSAN cluster configuration
+# VMs and data remain intact on the vSAN datastore
+
+# After all hosts are added:
+# Cluster → Configure → vSAN → verify the existing config is detected
+# Run health checks to confirm everything is operational</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Restart vCenter VM from ESXi Host Client (if it just crashed)</strong></p>
+                    <pre><code># If the VCSA VM is on vSAN but just powered off/crashed:
+# Connect to the host managing it: https://&lt;esxi-host-ip&gt;/ui
+# Log in with root credentials
+# Find the VCSA VM → Power On
+
+# If the VCSA VM is not registered on any host:
+# Browse the vSAN datastore from Host Client:
+# Storage → vsanDatastore → Browse → Find VCSA folder → .vmx file
+# Right-click .vmx → Register VM → Power On</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>Prevention:</strong> Configure VCSA file-based backup to an EXTERNAL location (NFS share, FTP server NOT on vSAN). Schedule daily backups. Consider vCenter HA (active/passive/witness) for automatic vCenter failover. VMware KB 2149237 — "File-based backup and restore of vCenter Server Appliance".</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #27: vSAN Host Isolation Response              -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="host isolation response das.isolationaddress isolation heartbeat HA APD PDL all paths down">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">27</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Host Isolation — Incorrect HA Response Causing VM Outages</div>
+            <div class="kb-entry-subtitle">ESXi host becomes network-isolated, HA triggers wrong response (shutdown/power off) — VMs disrupted unnecessarily</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Host Isolation</span>
+                <span class="tag">vSphere HA</span>
+                <span class="tag">APD/PDL</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When a host loses management network connectivity, vSphere HA may declare it isolated and respond based on the configured "Host Isolation Response". Wrong settings can cause VMs to be powered off on a host that still has working vSAN storage — unnecessary disruption.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs unexpectedly powered off or shutdown on an isolated host</li>
+                    <li>vSphere HA event: <strong>"Host declared as isolated"</strong></li>
+                    <li>VMs restarted on other hosts even though the original host was fine</li>
+                    <li>APD (All Paths Down) timeout triggers premature VM failover</li>
+                    <li>Management network down but vSAN network still operational</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Management network failure (switch, VLAN, cable) — not vSAN network</li>
+                    <li>Isolation address not configured or unreachable</li>
+                    <li>"Host Isolation Response" set to "Power off" instead of "Disabled"</li>
+                    <li>PDL (Permanent Device Loss) misdetected on vSAN objects</li>
+                    <li>Network misconfiguration causing false isolation detection</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Correct vSphere HA Settings for vSAN</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure Host Isolation Response</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSphere HA → Edit
+
+# VM Monitoring tab:
+# "Host Isolation Response" → Set to "Disabled"
+# Reason: On vSAN, the isolated host's VMs still have LOCAL
+# access to vSAN storage. Powering them off is unnecessary.
+
+# The VMs will continue running on the isolated host.
+# When the management network recovers, vCenter reconnects
+# and no VM disruption occurred.</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure APD and PDL responses for vSAN</strong></p>
+                    <pre><code># In the same HA settings:
+# "Datastore with APD" (All Paths Down):
+#   Response: "Issue events" (conservative) or "Power off and restart VMs (aggressive)"
+#   APD Timeout: 140 seconds (default — do not reduce)
+
+# "Datastore with PDL" (Permanent Device Loss):
+#   Response: "Power off and restart VMs"
+#   Reason: PDL means the datastore is PERMANENTLY gone — restart elsewhere
+
+# For vSAN specifically:
+# APD occurs when the host loses ALL vSAN network connectivity
+# PDL is rare on vSAN — it means the object is permanently inaccessible</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure isolation addresses</strong></p>
+                    <pre><code># Add a reliable isolation address that's always reachable:
+# Cluster → Configure → vSphere HA → Advanced Options → Add:
+
+# das.isolationaddress0 = &lt;default_gateway_ip&gt;
+# das.isolationaddress1 = &lt;dns_server_ip&gt;
+# das.usedefaultisolationaddress = false
+
+# These IPs are used to determine if a host is truly isolated
+# or if just the vCenter communication is disrupted
+# Use infrastructure IPs that are ALWAYS UP (gateway, DNS, NTP)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Recovery After False Isolation</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Recover VMs if they were incorrectly powered off</strong></p>
+                    <pre><code># If VMs were powered off due to incorrect isolation response:
+# 1. Fix the management network issue first
+# 2. vCenter reconnects to the host automatically
+# 3. Power on the VMs that were affected:
+#    Select VMs → Right-click → Power → Power On
+
+# Prevent recurrence:
+# Set "Host Isolation Response" to "Disabled" (step 1 above)
+# Configure proper isolation addresses (step 3 above)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2004
+106 — "vSphere HA host isolation response recommendations for vSAN". Key takeaway: For vSAN clusters, set Host Isolation Response to <strong>"Disabled"</strong> because isolated hosts still have local access to vSAN data. This is different from traditional SAN/NAS environments.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #28: vSAN Proactive HA / Fault Injection       -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="proactive HA predictive failure hardware health provider vendor DRS pre-emptive migration">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">28</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Proactive HA — Configuring Pre-Emptive VM Migration</div>
+            <div class="kb-entry-subtitle">Hardware health provider detects degradation and triggers automatic VM evacuation before failure</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Proactive HA</span>
+                <span class="tag">Predictive</span>
+                <span class="tag">Hardware Health</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Proactive HA</strong> integrates with server vendor health providers (Dell OMIVV, HPE OneView, Lenovo XCI) to detect hardware degradation (failing fans, PSU, DIMM, disk controllers) BEFORE a full failure occurs. When triggered, DRS automatically vMotions VMs off the degraded host — preventing downtime.</span>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Install the hardware health provider</strong></p>
+                    <pre><code># Each server vendor provides a vCenter plugin:
+#   Dell: Dell OpenManage Integration for VMware vCenter (OMIVV)
+#   HPE: HPE OneView for VMware vCenter
+#   Lenovo: Lenovo XClarity Integrator for VMware vCenter
+
+# Install the vendor plugin via vCenter:
+# Menu → Administration → Client Plugins → Add plugin
+# Follow the vendor's deployment guide
+
+# Verify the health provider is registered:
+# Host → Monitor → Hardware Health
+# Should show component-level health (CPU, Memory, Storage, Power, Fans)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Enable Proactive HA on the cluster</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSphere Availability → Proactive HA → Edit
+
+# Settings:
+#   Proactive HA: Enabled
+#   Remediation: "Mixed Mode" or "Maintenance Mode"
+#     - Mixed Mode: Migrates VMs (DRS) for moderate issues,
+#       enters maintenance for severe issues
+#     - Maintenance Mode: Always evacuates all VMs
+#   Automation Level: "Automated" (recommended)
+#     - VMs are vMotioned automatically without admin intervention
+
+# Select the health provider(s) to use:
+# Check the vendor plugin(s) installed in step 1</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure failure conditions and severity mapping</strong></p>
+                    <pre><code># Proactive HA maps vendor health alerts to two severity levels:
+
+# "Moderately Degraded": Non-critical component issue
+#   Example: Single PSU failed (redundant PSU still running)
+#   Action: DRS migrates VMs to healthier hosts (preventive)
+
+# "Severely Degraded": Critical component about to fail
+#   Example: Memory DIMM correctable errors exceeding threshold
+#   Action: Host enters maintenance mode, all VMs evacuated
+
+# Fine-tune per provider:
+# Cluster → Configure → Proactive HA → Provider-specific settings
+# Map vendor alert categories to Moderate or Severe</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Troubleshooting Proactive HA</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>If Proactive HA is not triggering on hardware issues</strong></p>
+                    <pre><code># Verify the health provider is communicating:
+# Host → Monitor → Hardware Health → Check for recent updates
+
+# Check vCenter logs for Proactive HA events:
+# Menu → Events → Filter by "Proactive HA"
+
+# Common issues:
+# - Vendor plugin lost connection to the vendor management server
+# - Plugin version incompatible with current vCenter version
+# - IPMI/iLO/iDRAC credentials changed — plugin cannot poll hardware
+
+# Fix: Re-configure the vendor plugin with correct credentials
+# and verify connectivity to the management controller (iLO/iDRAC/IMM)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware Best Practice:</strong> Proactive HA is especially valuable for vSAN because storage failures directly impact ALL VMs on the host. Detecting a degrading storage controller or DIMM before it causes a PSOD prevents the vSAN rebuild cascade. Requires DRS to be enabled in "Fully Automated" mode.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #29: vSAN Cluster Shutdown / Startup Order     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="cluster shutdown startup power off power on order sequence graceful datacenter maintenance UPS">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">29</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Cluster Graceful Shutdown &amp; Startup — Correct Order</div>
+            <div class="kb-entry-subtitle">Properly shutting down and powering on the entire vSAN cluster for datacenter maintenance or power events</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Cluster Shutdown</span>
+                <span class="tag">Startup Order</span>
+                <span class="tag">Maintenance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Incorrect shutdown order can cause vSAN data corruption, split-brain scenarios, or objects becoming permanently inaccessible. Incorrect startup order can prevent disk groups from mounting or vSAN from forming the cluster.</span>
+        </div>
+
+        <div class="section-label">Shutdown Procedure (Correct Order)</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Step 1: Shut down all non-essential VMs</strong></p>
+                    <pre><code># From vSphere Client:
+# Shut down all workload VMs gracefully:
+# Select VMs → Right-click → Power → Shut Down Guest OS
+
+# Leave these VMs running for now:
+#   - vCenter Server (VCSA)
+#   - Witness appliance (if stretched cluster)
+#   - Any infrastructure VMs needed for vCenter operation (AD, DNS)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Step 2: Shut down vCenter Server</strong></p>
+                    <pre><code># From VCSA VAMI (https://vcsa-ip:5480):
+# Actions → Shutdown → Confirm
+
+# Or from VCSA SSH:
+shutdown -h now
+
+# IMPORTANT: After this point, you manage hosts directly via
+# ESXi Host Client (https://host-ip/ui) or SSH</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Step 3: Put each host in maintenance mode (No data migration)</strong></p>
+                    <pre><code># For a full cluster shutdown, use "No data migration"
+# because ALL hosts are shutting down — there's nowhere to migrate TO
+
+# From ESXi Shell on each host:
+esxcli system maintenanceMode set -e true -m noAction
+
+# Or from ESXi Host Client:
+# Host → Actions → Enter Maintenance Mode
+# Select "No data migration" (since entire cluster is shutting down)
+
+# Wait for each host to enter maintenance mode before proceeding</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>You MUST use <strong>"No data migration"</strong> for full cluster shutdown. Using "Full data migration" or "Ensure accessibility" will fail because there are no destination hosts available.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Step 4: Shut down ESXi hosts</strong></p>
+                    <pre><code># From ESXi Shell on each host:
+esxcli system shutdown poweroff -r "Datacenter maintenance"
+
+# Or from ESXi Host Client:
+# Host → Actions → Shut Down
+
+# Shut down hosts in any order (all should be in maintenance mode already)
+# Last: shut down the witness host (if stretched cluster)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Startup Procedure (Correct Order)</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Step 1: Power on ALL ESXi hosts (and witness)</strong></p>
+                    <pre><code># Power on all hosts simultaneously (or as quickly as possible)
+# Use IPMI/iLO/iDRAC to remote power-on
+
+# CRITICAL: Power on ALL hosts before exiting maintenance mode on ANY host
+# This ensures vSAN can form the complete cluster and all objects are accessible
+
+# Wait for all hosts to finish booting:
+# Connect via SSH or Host Client to verify
+# Each host should show ESXi login prompt</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Step 2: Verify vSAN cluster formed</strong></p>
+                    <pre><code># From ESXi Shell (on any host):
+esxcli vsan cluster get
+# Verify: All hosts show the SAME "Sub-Cluster Master UUID"
+# Verify: "Sub-Cluster Member Count" matches total host count
+
+# Check disk groups are mounted:
+esxcli vsan storage list
+# All disk groups should show "In CMMDS: true"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Step 3: Exit maintenance mode on all hosts</strong></p>
+                    <pre><code># From ESXi Shell on each host:
+esxcli system maintenanceMode set -e false
+
+# Or from ESXi Host Client on each host:
+# Host → Actions → Exit Maintenance Mode
+
+# vSAN will verify object health and start any necessary resyncs
+# Wait for resync to complete (should be minimal after graceful shutdown)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Step 4: Power on vCenter, then workload VMs</strong></p>
+                    <pre><code># Power on vCenter VCSA first:
+# From ESXi Host Client (on the host where VCSA is registered):
+# Find VCSA VM → Power On → Wait for services to start (5-10 minutes)
+
+# Verify vCenter is operational:
+# Browse to https://vcsa-ip/ui — login should work
+
+# Then power on workload VMs:
+# From vSphere Client: Select VMs → Power On
+# Or use VM startup order if configured:
+# Host → Configure → Virtual Machines → VM Startup/Shutdown</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2142676 — "Shutting down and restarting a vSAN cluster". The golden rule: <strong>ALL hosts must be powered on and cluster-formed BEFORE exiting maintenance mode</strong>. Exiting maintenance on a partial cluster causes unnecessary rebuilds and potential data issues.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #30: vSAN Fault Domain Misconfig               -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="fault domain rack awareness placement topology rack server enclosure failure domain">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">30</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Fault Domain Misconfiguration — Rack Awareness Failures</div>
+            <div class="kb-entry-subtitle">Fault domains incorrectly configured causing all replicas placed in the same rack — single rack failure = data loss</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Fault Domain</span>
+                <span class="tag">Rack Awareness</span>
+                <span class="tag">Placement</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Without fault domains, vSAN may place both replicas of an FTT=1 object on hosts in the SAME rack. If that rack loses power or its TOR switch fails, both replicas are lost simultaneously — resulting in data loss despite having FTT=1 configured.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>After a rack failure, FTT=1 objects become <strong>inaccessible</strong> (not just degraded)</li>
+                    <li>vSAN Health: fault domain configuration warnings</li>
+                    <li>All component replicas placed on hosts in the same physical rack</li>
+                    <li>CLOM placement logs show no fault domain constraints considered</li>
+                    <li>Uneven capacity usage across fault domains</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Fault domains never configured (default: vSAN treats each host as a fault domain)</li>
+                    <li>Hosts added to wrong fault domain (mismatched physical rack)</li>
+                    <li>Too few fault domains for the FTT level (FTT=1 needs 3+ fault domains)</li>
+                    <li>Unbalanced fault domains (1 host in one, 5 in another)</li>
+                    <li>Fault domain deleted and hosts not reassigned</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Architecture: Fault Domain Requirements</div>
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Fault Domain Minimum Requirements:</strong><br>
+            <strong>FTT=1 RAID-1:</strong> Minimum 3 fault domains (2 for replicas + 1 for witness)<br>
+            <strong>FTT=1 RAID-5:</strong> Minimum 4 fault domains<br>
+            <strong>FTT=2 RAID-1:</strong> Minimum 5 fault domains<br>
+            <strong>FTT=2 RAID-6:</strong> Minimum 6 fault domains<br>
+            Each fault domain should map to a <strong>physical rack</strong> or <strong>independent failure boundary</strong> (separate power, separate TOR switch).</span>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Audit current fault domain configuration</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Fault Domains
+# Review which hosts are in which fault domain
+# Cross-reference with your physical rack layout
+
+# If "Fault Domains" shows empty — fault domains are NOT configured
+# vSAN is treating each individual host as a fault domain</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Create fault domains matching physical topology</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Fault Domains
+# Click "+" to create a new fault domain
+# Name it after the physical rack: "Rack-A", "Rack-B", "Rack-C"
+# Drag hosts from "Unassigned" into the correct fault domain
+
+# Example for a 6-host, 3-rack cluster:
+#   Rack-A: esxi-01, esxi-02
+#   Rack-B: esxi-03, esxi-04
+#   Rack-C: esxi-05, esxi-06
+
+# After configuration, vSAN's CLOM engine will ensure replicas
+# are placed across DIFFERENT fault domains</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Trigger rebalance to fix existing object placement</strong></p>
+                    <pre><code># After creating fault domains, existing objects may not comply
+# vSAN does NOT automatically rebalance existing objects
+
+# To fix non-compliant objects:
+# Cluster → Monitor → vSAN → Virtual Objects
+# Filter by "Compliance Status: Non-Compliant"
+
+# For each non-compliant VM:
+# Right-click → VM Policies → Reapply VM Storage Policy
+# This triggers CLOM to re-evaluate placement with fault domain awareness
+
+# Or trigger cluster-wide rebalance:
+# Cluster → Monitor → vSAN → Resyncing Objects → "Rebalance Disks"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Verify fault domain compliance</strong></p>
+                    <pre><code># After rebalance completes:
+# Cluster → Monitor → vSAN → Virtual Objects
+# All objects should show "Compliant"
+
+# Verify replicas are spread across fault domains:
+# Select any VM object → "Physical Disk Placement" tab
+# Component replicas should be on hosts in DIFFERENT fault domains
+
+# Run health check:
+# Cluster → Monitor → vSAN → Health → Run All
+# "Cluster – Fault domain configuration" should be green</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2108574 — "Configuring fault domains in vSAN". Fault domains are ESSENTIAL for production vSAN clusters spanning multiple racks. Without them, vSAN cannot guarantee physical separation of replicas across failure boundaries. Always configure before going live.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base &mdash; Phase 3: Disaster Recovery &amp; Data Protection</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase1.html" style="color:var(--accent-light);text-decoration:none;">← Phase 1</a> &nbsp;|&nbsp; <a href="phase2.html" style="color:var(--accent-light);text-decoration:none;">← Phase 2</a></p>
+</footer>
+
+<script>
+    function toggleEntry(header) { header.closest('.kb-entry').classList.toggle('open'); }
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const et = entry.dataset.type, sv = entry.dataset.severity;
+            if (type === 'all') entry.style.display = '';
+            else if (type === 'break' || type === 'fix') entry.style.display = et === type ? '' : 'none';
+            else entry.style.display = sv === type ? '' : 'none';
+        });
+    }
+    function filterEntries() {
+        const q = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!q) { entry.style.display = ''; return; }
+            entry.style.display = (entry.textContent.toLowerCase().includes(q) || (entry.dataset.keywords||'').includes(q)) ? '' : 'none';
+        });
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { const i = document.getElementById('searchInput'); i.value = ''; filterEntries(); i.blur(); }
+    });
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

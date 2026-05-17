@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Phase 2: Day-2 Operations &amp; Advanced Troubleshooting</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+
+        /* Phase navigation bar */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+
+        .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .search-bar input {
+            width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 1rem center;
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        .stats-bar {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; padding: 1rem 1.25rem; text-align: center;
+        }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .nav-tabs {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1rem;
+            display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+
+        .kb-entry {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+        .kb-entry-header {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.5rem 1.75rem; cursor: pointer; user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+        .kb-number {
+            flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .kb-number.break-num { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
+        .kb-number.fix-num { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .kb-entry-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+        .kb-entry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2); font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+        .kb-chevron {
+            flex-shrink: 0; width: 24px; height: 24px; margin-top: 0.5rem;
+            transition: transform 0.3s; color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+        .kb-entry-body {
+            display: none; padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+        .section-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-muted); margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .kb-entry-body p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .kb-entry-body ul, .kb-entry-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .kb-entry-body li { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .kb-entry-body li strong { color: var(--text-primary); }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto;
+            margin: 0.75rem 0; position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; color: var(--accent-light); line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+            font-size: 0.85rem; color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.3rem 0.6rem; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 5px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+        .alert {
+            padding: 0.85rem 1.1rem; border-radius: 8px; margin: 0.75rem 0;
+            font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.25); color: var(--danger-light); }
+        .alert-warning { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.25); color: var(--warning-light); }
+        .alert-success { background: rgba(46,196,182,0.08); border: 1px solid rgba(46,196,182,0.25); color: var(--success-light); }
+        .alert-info { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent-light); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0.75rem 0; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.15rem; }
+        .info-box-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-number {
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+        .kb-ref {
+            display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+            background: rgba(244,162,97,0.1); color: var(--warning-light);
+            border: 1px solid rgba(244,162,97,0.2); font-size: 0.72rem;
+            font-weight: 600; text-decoration: none; margin-left: 0.3rem;
+        }
+        .kb-ref:hover { background: rgba(244,162,97,0.2); }
+        .footer {
+            text-align: center; padding: 2rem; color: var(--text-muted);
+            font-size: 0.8rem; border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 2 — Day-2 Ops</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ PHASE NAVIGATION ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html" class="active">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html">Phase 4 — VCF Integration</a>
+    <a href="phase5.html">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html">Phase 7 — Networking</a>
+    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);">&#9881; Decision Tree</a>
+</nav>
+
+<!-- ═══════════ SEARCH ═══════════ -->
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search Day-2 operations, symptoms, commands, VMware KB references..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Day-2 Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">4</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">6</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 2</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #11: vSAN ESA Disk Pool Issues               -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="ESA express storage architecture disk pool single tier NVMe storage pool capacity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">11</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN ESA — Storage Pool Failure or NVMe Device Drop</div>
+            <div class="kb-entry-subtitle">NVMe device removed from ESA storage pool causing capacity reduction and potential data inaccessibility</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">ESA</span>
+                <span class="tag">NVMe</span>
+                <span class="tag">Storage Pool</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Unlike OSA disk groups, ESA uses a single-tier storage pool. A single NVMe failure only removes that device's capacity — the pool stays online. However, multiple device failures can breach FTT policy and cause data loss.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Physical disk health – Device has errors"</strong></li>
+                    <li>Storage pool shows reduced device count in vSphere Client</li>
+                    <li>vmkernel.log: <code class="inline">PLOG: Device naa.xxx marked as failed</code></li>
+                    <li>vSAN capacity suddenly drops by the size of the failed NVMe</li>
+                    <li>Resync initiated automatically for affected components</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NVMe device media failure or wear-out</li>
+                    <li>NVMe controller firmware bug (check VMware HCL for updates)</li>
+                    <li>PCIe bus error or slot connectivity issue</li>
+                    <li>Overheating causing NVMe thermal throttle then failure</li>
+                    <li>Drive not on the vSAN ESA HCL (unsupported model)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Key Difference: ESA vs OSA</div>
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>ESA Architecture:</strong> vSAN 8 ESA eliminates the cache/capacity tier split. All NVMe devices form a <strong>single storage pool</strong>. A single device failure does NOT take down an entire disk group — only that device's capacity is lost. This is a major resilience improvement over OSA. However, the NVMe devices must be on the <strong>vSAN ESA HCL</strong> (not the OSA HCL).</span>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check storage pool device status</strong></p>
+                    <pre><code># From ESXi Shell:
+esxcli vsan storage list
+# In ESA mode, all devices show under a single "Storage Pool"
+# Look for devices with "Status: Unmounted" or missing entries
+
+esxcli vsan debug disk list
+# Check for error counts and congestion values per device</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check NVMe device health via SMART</strong></p>
+                    <pre><code>esxcli storage core device smart get -d naa.xxxxxxxxxxxx
+# Key indicators:
+#   - Media and Data Integrity Errors
+#   - Percentage Used (wear level) — alert at >90%
+#   - Available Spare — alert when below threshold</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify ESA mode is active</strong></p>
+                    <pre><code>esxcli vsan cluster get
+# Look for: "Storage Architecture: ESA" (not "OSA")
+
+# From vSphere Client:
+# Cluster → Configure → vSAN → Services
+# "Storage Architecture" should display "Express Storage Architecture"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Remove the failed device from the storage pool</strong></p>
+                    <pre><code># From vSphere Client:
+# Host → Configure → vSAN → Disk Management → Select failed device → Remove Disk
+# vSAN will automatically resync affected components to other devices
+
+# From ESXi Shell:
+esxcli vsan storage remove -d naa.FAILED_DEVICE_NAA_ID</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Physically replace the NVMe device</strong></p>
+                    <p>Follow the server vendor's hot-plug procedure. Verify the replacement drive is on the <strong>vSAN ESA HCL</strong>.</p>
+                    <pre><code># After replacement, verify the new device is visible:
+esxcli storage core device list | grep -B2 -A10 "naa."
+# Confirm model, size, and NVMe transport type</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Add the new device to the storage pool</strong></p>
+                    <pre><code># From vSphere Client:
+# Host → Configure → vSAN → Disk Management → Claim Disks
+# Select the new NVMe device → Add to existing Storage Pool
+
+# From ESXi Shell:
+esxcli vsan storage add -d naa.NEW_DEVICE_NAA_ID</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Monitor resync and rebalance</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Resyncing Objects
+
+# From ESXi Shell:
+esxcli vsan debug resync summary
+# Wait for all objects to return to "Compliant" state</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware KB Reference:</strong> KB 88
+
+
+343 — "vSAN Express Storage Architecture (ESA) overview and requirements". Ensure all NVMe devices are validated on the vSAN ESA-specific HCL at <code class="inline">vmware.com/resources/compatibility</code> (select "vSAN ESA" category).</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #12: vSAN File Services Failure              -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="file services NFS SMB CIFS agent ovf share mount vdfs">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">12</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN File Services — Share Inaccessible or Agent VM Crash</div>
+            <div class="kb-entry-subtitle">NFS/SMB file shares become unreachable due to file service agent VM failure or misconfiguration</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">File Services</span>
+                <span class="tag">NFS</span>
+                <span class="tag">SMB</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> All NFS/SMB clients lose access to vSAN file shares. Applications relying on file shares (user home directories, shared data) stop functioning until the file service agent VMs are recovered.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>NFS/SMB clients: <strong>"mount: connection timed out"</strong> or <strong>"network path not found"</strong></li>
+                    <li>vSAN Health: <strong>"File Service – File service health"</strong> → FAIL</li>
+                    <li>File service agent VMs show <strong>powered off</strong> or <strong>not responding</strong></li>
+                    <li>vSphere Client → Cluster → Configure → vSAN → File Service Shares shows errors</li>
+                    <li>Cannot create new file shares or modify existing ones</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>File service agent VM ran out of disk space</li>
+                    <li>Agent VM's IP address conflicted or network changed</li>
+                    <li>DNS misconfiguration — agents cannot register/resolve</li>
+                    <li>AD integration failure (for SMB/Kerberos shares)</li>
+                    <li>ESXi host running the agent VM went into maintenance mode</li>
+                    <li>OVF deployment of agent VM failed during initial setup</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check file service agent VM status</strong></p>
+                    <pre><code># From vSphere Client:
+# VMs and Templates → Find VMs named "vSAN File Service Node-*"
+# Verify they are powered on and have a valid IP on the file services network
+
+# Check health from the cluster:
+# Cluster → Monitor → vSAN → Health → File Service</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check file service agent logs</strong></p>
+                    <pre><code># SSH into the file service agent VM (default: root / same as vCenter SSO):
+# Check service logs:
+cat /var/log/vdfs/vdfs.log | tail -200
+
+# Check if NFS/SMB daemons are running:
+systemctl status nfs-server
+systemctl status smbd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify DNS and network connectivity</strong></p>
+                    <pre><code># From a file service agent VM:
+nslookup &lt;file-share-fqdn&gt;
+ping &lt;dns_server_ip&gt;
+
+# From a client machine, verify the share IP is reachable:
+# Linux: showmount -e &lt;file_service_ip&gt;
+# Windows: net view \\&lt;file_service_ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart file service agent VMs</strong></p>
+                    <pre><code># From vSphere Client:
+# Right-click each "vSAN File Service Node-*" VM → Power → Reset
+
+# If the VM won't start, check the datastore for capacity:
+# Cluster → Monitor → vSAN → Capacity
+# File service agent VMs need space on the vSAN datastore</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Redeploy file service if agents are corrupted</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → File Service Shares
+# Click "Disable File Services" (this removes agent VMs)
+# Wait for cleanup to complete
+# Click "Enable File Services" → re-enter configuration:
+#   - File services domain (AD domain for SMB)
+#   - DNS server IPs
+#   - File services network (IP pool, subnet, gateway)
+#   - DNS suffixes
+# Agent VMs are redeployed automatically</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Disabling file services does <strong>NOT</strong> delete share data. The data persists on the vSAN datastore. Re-enabling file services and recreating shares with the same names will re-attach to existing data (vSAN 7.0 U1+).</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix AD/DNS integration for SMB shares</strong></p>
+                    <pre><code># Verify AD join status:
+# Cluster → Configure → vSAN → File Service Shares → AD Status
+
+# If "Not joined" or "Error":
+# 1. Verify AD credentials and domain controller reachability
+# 2. Re-join domain:
+#    Cluster → Configure → vSAN → File Service Shares → Edit
+#    Re-enter AD domain admin credentials
+# 3. Verify DNS forward and reverse lookup zones have entries for file agents</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 78))
+
+
+35 — "Troubleshooting vSAN file services". File service agent VMs require dedicated IPs (one per host participating in file services). Ensure your IP pool has sufficient addresses for all hosts in the cluster.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #13: vSAN HCI Mesh (Remote Datastore) Issues -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="HCI Mesh remote datastore client server cross-cluster mount capacity sharing disaggregated">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">13</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN HCI Mesh — Remote Datastore Disconnect or Performance Drop</div>
+            <div class="kb-entry-subtitle">Client cluster loses access to server cluster's remote vSAN datastore or experiences high latency</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">HCI Mesh</span>
+                <span class="tag">Remote Datastore</span>
+                <span class="tag">Cross-Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Remote vSAN datastore shows <strong>"Unmounted"</strong> or <strong>"Inaccessible"</strong> on client cluster</li>
+                    <li>VMs on the remote datastore report I/O errors or hang</li>
+                    <li>vSAN Health: <strong>"HCI Mesh – Remote datastore connectivity"</strong> → FAIL</li>
+                    <li>Latency to remote datastore exceeds 5ms (expected &lt;2ms for same-DC)</li>
+                    <li>Cannot browse or provision VMs to the remote datastore</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Network connectivity lost between client and server clusters</li>
+                    <li>Server cluster's vSAN service disrupted (maintenance, failure)</li>
+                    <li>vSAN VMkernel port group mismatch (different VLANs/subnets)</li>
+                    <li>Firewall blocking TCP port 2233 between clusters</li>
+                    <li>Server cluster exceeded capacity — no space for remote writes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Architecture Overview</div>
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>HCI Mesh (vSAN 7.0 U1+):</strong> A <strong>server cluster</strong> exports its vSAN datastore as a remote datastore. A <strong>client cluster</strong> mounts it. The client cluster's hosts access storage over the vSAN network. Both clusters must be in the same vCenter. The server cluster's storage policies govern the remote data.</span>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify HCI Mesh connectivity</strong></p>
+                    <pre><code># From vSphere Client:
+# Client Cluster → Configure → vSAN → HCI Mesh
+# Check "Remote Datastores" status — should be "Mounted"
+
+# From any client cluster host, ping the server cluster's vSAN IPs:
+vmkping -I vmk1 &lt;server_cluster_host_vsan_ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check server cluster health</strong></p>
+                    <pre><code># From vSphere Client:
+# Server Cluster → Monitor → vSAN → Health
+# All health checks must be green for HCI Mesh to function
+
+# Verify the server cluster's vSAN datastore is operational:
+# Server Cluster → Monitor → vSAN → Capacity
+# Ensure available capacity exists</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check vSAN network reachability between clusters</strong></p>
+                    <pre><code># Ensure vSAN VMkernel adapters on BOTH clusters can communicate:
+# Run from a client cluster host:
+vmkping -I vmk1 -d -s 8972 &lt;server_host_vsan_ip&gt;
+
+# Verify firewall allows port 2233 (vSAN transport):
+nc -zv &lt;server_host_vsan_ip&gt; 2233</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore network connectivity between clusters</strong></p>
+                    <p>Ensure both clusters' vSAN VMkernel adapters are on the same L2 network or have proper L3 routing configured. Verify VLAN tags match and MTU is consistent.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Unmount and remount the remote datastore</strong></p>
+                    <pre><code># From vSphere Client:
+# Client Cluster → Configure → vSAN → HCI Mesh
+# Select the failed remote datastore → "Unmount"
+# Wait 30 seconds
+# Click "Mount Remote Datastores" → Select the server cluster → Mount
+
+# This forces re-establishment of the cross-cluster connection</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>If the server cluster had a failure — VMs auto-recover</strong></p>
+                    <pre><code># Once the server cluster is healthy again:
+# VMs on the remote datastore will automatically resume I/O
+# Check for stale VMs:
+# Client Cluster → Monitor → vSAN → Virtual Objects → Filter "Remote Datastore"
+# If VMs remain stale, power-cycle them (power off → power on)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware KB Reference:</strong> KB 83401 — "Configuring and troubleshooting vSAN HCI Mesh". HCI Mesh requires vSAN 7.0 Update 1+ and both clusters must be in the same vCenter Server instance.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #14: vSAN Data-at-Rest Encryption Key Rotation -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="encryption key rotation DEK KEK shallow deep rekey data-at-rest compliance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">14</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Encryption Key Rotation — Shallow vs Deep Rekey</div>
+            <div class="kb-entry-subtitle">Performing encryption key rotation for compliance without causing outages or data corruption</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Encryption</span>
+                <span class="tag">Key Rotation</span>
+                <span class="tag">Compliance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Understanding vSAN Encryption Keys</div>
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Key Hierarchy:</strong><br>
+            <strong>KEK (Key Encryption Key)</strong> — stored in KMS. Wraps the DEK. Rotated via <strong>shallow rekey</strong> (fast, no data rewrite).<br>
+            <strong>DEK (Data Encryption Key)</strong> — stored encrypted on each host. Actually encrypts data. Rotated via <strong>deep rekey</strong> (requires full data rewrite — very slow).<br>
+            Most compliance frameworks (PCI-DSS, HIPAA) require <strong>KEK rotation (shallow rekey)</strong> annually. Deep rekey is rarely needed.</span>
+        </div>
+
+        <div class="section-label">Shallow Rekey (KEK Rotation) — Recommended</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Pre-checks before key rotation</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Health → Run all checks
+# All checks must be GREEN before proceeding
+# Verify KMS connectivity:
+# Administration → Key Providers → Test connection
+
+# Ensure no active resyncs:
+# Cluster → Monitor → vSAN → Resyncing Objects
+# "Objects Resyncing" must be 0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Perform shallow rekey (KEK rotation)</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Services → Encryption
+# Click "Generate New Encryption Keys" 
+# Select "KEK only (shallow rekey)"
+# Click "Apply"
+
+# This operation:
+# - Generates a new KEK on the KMS
+# - Re-wraps the existing DEK with the new KEK
+# - No data is rewritten — completes in minutes
+# - No VM I/O impact</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify key rotation completed</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Health → Encryption
+# "Encryption health" should be green
+# "KEK ID" should show the NEW key identifier
+
+# Verify from KMS:
+# Check that the new key is active and old key is marked as deactivated</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Deep Rekey (DEK + KEK Rotation) — Use Only When Required</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>When to perform deep rekey</strong></p>
+                    <ul>
+                        <li>A DEK is suspected to be compromised</li>
+                        <li>Regulatory audit explicitly requires DEK rotation</li>
+                        <li>Physical disk was removed without secure erase</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Execute deep rekey</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Services → Encryption
+# Click "Generate New Encryption Keys"
+# Select "DEK and KEK (deep rekey)"
+# Click "Apply"
+
+# WARNING: This triggers a ROLLING disk group re-encryption:
+# - Each disk group is evacuated, reformatted with new DEK, data rewritten
+# - Takes HOURS to DAYS depending on data volume
+# - VM I/O will be impacted during the process
+# - Requires at least 30% free capacity for data migration</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Do NOT</strong> start deep rekey during production hours. Plan for a maintenance window. Ensure vSAN health is fully green and no other operations (upgrades, host maintenance) are in progress.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Monitor deep rekey progress</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Resyncing Objects
+# Deep rekey appears as resync operations
+# Track: "Bytes Remaining to Resync" should decrease over time
+
+# Also check Recent Tasks for "Rekey" task status on each host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #15: vSAN Skyline Health — Persistent Red     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="skyline health check red warning persistent false positive stale outdated HCL vcsa">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">15</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Health Check Persistent Warnings / False Positives</div>
+            <div class="kb-entry-subtitle">vSAN Skyline Health shows red/yellow alerts that persist despite the underlying issue being resolved</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Health Check</span>
+                <span class="tag">Skyline</span>
+                <span class="tag">Monitoring</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Common Persistent Warnings</div>
+                <ul>
+                    <li><strong>"vSAN HCL DB is not up-to-date"</strong> — HCL JSON file outdated</li>
+                    <li><strong>"Controller firmware is not VMware certified"</strong> — firmware updated but DB stale</li>
+                    <li><strong>"SCSI controller is not VMware certified"</strong> — false positive after driver update</li>
+                    <li><strong>"vCenter state is authoritative"</strong> — CMDB mismatch</li>
+                    <li><strong>"Network – Small ping test"</strong> — flapping after resolved issue</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vSAN HCL database on vCenter not updated (offline or proxy blocked)</li>
+                    <li>Health check cache not refreshed after fix</li>
+                    <li>VCSA time skew causing certificate/check failures</li>
+                    <li>vSAN health service (vsanmgmtd) not restarted after configuration change</li>
+                    <li>Skyline Health plugin outdated or corrupted</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Update the vSAN HCL database manually</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Health → Hardware Compatibility
+# Click "Update VCG Database from file"
+
+# Download latest HCL JSON:
+# Go to: https://partnerweb.vmware.com/service/vsan/all.json
+# Upload the downloaded all.json file
+
+# If vCenter has internet access via proxy:
+# Cluster → Configure → vSAN → Health → Internet Connectivity
+# Configure proxy settings → Test → "Update HCL DB from Internet"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Force re-run all health checks</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Health
+# Click "Retest" on the specific failing check
+# Or click "Retest All" to refresh all health checks
+
+# If checks remain stale, restart the health service on ESXi:
+# SSH to each affected host:
+/etc/init.d/vsanmgmtd restart</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix vCenter time synchronization</strong></p>
+                    <pre><code># Many health check false positives are caused by NTP skew
+# From VCSA shell:
+# Check current time sync:
+timedatectl status
+
+# Configure NTP:
+# VCSA VAMI (https://vcsa:5480) → Time → Edit
+# Set NTP servers (e.g., pool.ntp.org or internal NTP)
+# Restart NTP:
+systemctl restart systemd-timesyncd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Reset Skyline Health plugin if persistently broken</strong></p>
+                    <pre><code># From VCSA shell:
+# Restart the vSAN health service:
+vmon-cli -r vsanHealth
+
+# Verify service is running:
+vmon-cli -s vsanHealth
+# Expected: "Status: Running"
+
+# Force plugin re-registration (last resort):
+# vSphere Client → Menu → Administration → Client Plugins
+# Find "vSAN" → Verify version and status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2109870 — "Updating the vSAN Hardware Compatibility List (HCL) database manually". Update the HCL DB after every ESXi upgrade, firmware update, or new hardware addition.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #16: Dedup/Compression Failures              -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="dedup deduplication compression space efficiency on-disk format all-flash overhead savings">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">16</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Dedup/Compression — Space Efficiency Degradation or Failure</div>
+            <div class="kb-entry-subtitle">Space savings drop dramatically or dedup/compression causes excessive latency and disk congestion</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Dedup</span>
+                <span class="tag">Compression</span>
+                <span class="tag">Performance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When dedup/compression overhead exceeds benefit, it causes write amplification, elevated latency, and accelerated SSD wear. In extreme cases, capacity tier can fill up due to dedup metadata overhead exceeding savings.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Space efficiency ratio drops below <strong>1.2x</strong> (minimal savings)</li>
+                    <li>Capacity usage <strong>increases</strong> after enabling dedup (metadata overhead)</li>
+                    <li>Write latency spikes during dedup destage operations</li>
+                    <li>vSAN Performance: capacity tier shows periodic congestion bursts</li>
+                    <li>Disk groups approaching capacity despite expected savings</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Workload is highly random / unique data (DBs, encrypted VMs)</li>
+                    <li>Dedup metadata consuming more space than saved</li>
+                    <li>Insufficient cache-to-capacity ratio (OSA: need 1:7 minimum)</li>
+                    <li>Mixed workloads — some benefit, others create overhead</li>
+                    <li>On-disk format upgrade incomplete — mixed format versions</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current space efficiency ratio</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Capacity
+# Review "Deduplication and Compression Overview":
+#   - "Before" = logical data written
+#   - "After" = physical space used
+#   - Ratio below 1.5x may not justify the overhead
+
+# Per-host view:
+# Cluster → Monitor → vSAN → Capacity → Capacity Overview (per host breakdown)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check dedup metadata overhead</strong></p>
+                    <pre><code># From ESXi Shell:
+esxcli vsan debug disk list
+# Look at "Dedup Overhead" and "Metadata Usage" per disk
+
+# Check vmkernel logs for dedup-related warnings:
+grep -i "dedup\|LSOM.*compress" /var/log/vmkernel.log | tail -50</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Evaluate whether to keep dedup/compression enabled</strong></p>
+                    <p>General guidance from VMware/Broadcom:</p>
+                    <ul>
+                        <li><strong>Good candidates:</strong> VDI desktops, template-heavy environments, test/dev with clones</li>
+                        <li><strong>Poor candidates:</strong> Databases (Oracle, SQL), already-encrypted data, highly random I/O</li>
+                        <li>If space savings ratio is below <strong>1.3x</strong>, the overhead likely exceeds the benefit</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Disable dedup/compression if not beneficial</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → Services → Space Efficiency
+# Click "Edit" → Uncheck "Deduplication and Compression" → Apply
+
+# IMPORTANT: This triggers a ROLLING disk format change:
+# - Each disk group is evacuated one at a time
+# - Data is rewritten WITHOUT dedup/compression
+# - Requires sufficient free capacity (~30% of used space)
+# - Process can take many hours
+
+# Monitor progress:
+# Cluster → Monitor → vSAN → Resyncing Objects</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Disabling dedup/compression requires <strong>re-writing all data</strong> in the cluster. If the cluster is at 70%+ capacity, you may not have enough free space. Add capacity or migrate VMs out first.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Use "Compression Only" mode (vSAN 7.0 U1+)</strong></p>
+                    <pre><code># If dedup adds overhead but compression helps:
+# Cluster → Configure → vSAN → Services → Space Efficiency
+# Click "Edit" → Select "Compression Only" (dedup disabled)
+# This avoids dedup metadata overhead while keeping compression savings
+
+# Note: In vSAN ESA, compression is always enabled and significantly
+# more efficient due to the single-tier architecture</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2110481 — "vSAN space efficiency with deduplication and compression". In vSAN 8 ESA, compression is built into the data path and is far more efficient — consider upgrading to ESA if dedup/compression performance on OSA is problematic.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #17: vSAN Capacity — Slack Space / Overcommit -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="capacity full slack space overcommit thin provision 80% threshold out of space datastore">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">17</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Capacity Critical — Datastore Full / Slack Space Exhausted</div>
+            <div class="kb-entry-subtitle">vSAN datastore reaching 80%+ utilization causing VM provisioning failures and resync blocks</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Capacity</span>
+                <span class="tag">Slack Space</span>
+                <span class="tag">Provisioning</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> At 80% utilization vSAN starts throttling. At 95% vSAN may stop all writes. VMs cannot grow, snapshot operations fail, and resync/rebuild cannot complete — leaving the cluster vulnerable to data loss from any additional failure.</span>
+        </div>
+
+        <div class="section-label">Critical Thresholds</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title orange">vSAN Capacity Warning Levels</div>
+                <ul>
+                    <li><strong>&lt;70% used:</strong> Healthy — normal operations</li>
+                    <li><strong>70–80% used:</strong> Warning — plan capacity expansion</li>
+                    <li><strong>80–95% used:</strong> Critical — throttling begins, no new provisioning</li>
+                    <li><strong>&gt;95% used:</strong> Emergency — writes may halt, data loss risk</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">Why 30% Slack Space?</div>
+                <ul>
+                    <li><strong>Rebuild capacity:</strong> If a host fails, vSAN needs free space to rebuild replicas</li>
+                    <li><strong>Resync overhead:</strong> Temporary copies during rebalance</li>
+                    <li><strong>Snapshot growth:</strong> Snapshots consume space as VMs write data</li>
+                    <li><strong>Operational buffer:</strong> Policy changes, maintenance mode evacuations</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check cluster capacity breakdown</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Capacity
+# Review:
+#   - "Used" vs "Total Capacity"
+#   - "vSAN Overhead" (metadata, checksums)
+#   - "Primary VM Data" vs "Replica Overhead" (FTT copies)
+#   - "Dedup/Compression" savings (if enabled)
+
+# Per-host breakdown to identify imbalanced hosts:
+# Cluster → Monitor → vSAN → Capacity → Per Host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify large consumers</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Virtual Objects
+# Sort by "Physical Space Used" (descending) to find largest VMs
+
+# Check for snapshot sprawl:
+# Each VM → Snapshots → Snapshot Manager
+# Old snapshots consume significant hidden capacity</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Immediate relief — delete old snapshots and unused VMs</strong></p>
+                    <pre><code># From vSphere Client:
+# Identify VMs with snapshots:
+# Menu → VMs → Filter "Has Snapshots: Yes"
+# Delete all non-essential snapshots: VM → Snapshots → Delete All
+
+# Remove orphaned VMDKs and unused templates:
+# Datastore → Files → Browse for .vmdk files not attached to any VM
+
+# Power off and delete decommissioned VMs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Migrate VMs to reduce vSAN utilization</strong></p>
+                    <pre><code># Storage vMotion non-critical VMs to alternative datastores:
+# Right-click VM → Migrate → "Change storage only"
+# Select a non-vSAN datastore (NFS, iSCSI, local)
+
+# Consider changing storage policy from RAID-1 to RAID-5/6:
+# RAID-1 FTT=1 uses 2x capacity (mirror)
+# RAID-5 FTT=1 uses 1.33x capacity (parity)
+# Change via: VM → Policies → Edit VM Storage Policy</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Add capacity to the cluster</strong></p>
+                    <pre><code># Option A — Add disks to existing hosts:
+# Host → Configure → vSAN → Disk Management → Claim Disks
+# Add new capacity disks to existing disk groups
+
+# Option B — Add a new host to the cluster:
+# Datacenter → Add Host → Configure vSAN VMkernel → Add to cluster
+# Create disk group on new host:
+esxcli vsan storage add -s naa.CACHE_SSD -d naa.CAP1 -d naa.CAP2
+
+# After adding capacity, trigger rebalance:
+# Cluster → Monitor → vSAN → Resyncing Objects → "Rebalance Disks"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>VMware Best Practice:</strong> Set vSAN capacity alarm at <strong>70%</strong> utilization. Use <strong>RAID-5/6</strong> erasure coding for capacity-sensitive workloads. Enable <strong>thin provisioning</strong> in storage policies. Schedule regular snapshot audits.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #18: vSAN + vLCM Image-Based Lifecycle Mgmt   -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="vLCM lifecycle manager image cluster firmware driver update baseline remediate compliance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">18</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN + vLCM — Image-Based Update Failures</div>
+            <div class="kb-entry-subtitle">vSphere Lifecycle Manager image remediation fails on vSAN hosts — stuck in maintenance or incompatible image</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">vLCM</span>
+                <span class="tag">Update</span>
+                <span class="tag">Firmware</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vLCM compliance check shows <strong>"Non-Compliant"</strong> for vSAN hosts</li>
+                    <li>Remediation task fails with <strong>"Cannot enter maintenance mode"</strong></li>
+                    <li>Host stuck in <strong>"Entering Maintenance Mode"</strong> during rolling update</li>
+                    <li>Error: <strong>"Hardware support manager unreachable"</strong></li>
+                    <li>Post-update: vSAN disk group fails to mount (driver incompatibility)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vLCM image includes incompatible storage controller driver</li>
+                    <li>Hardware Support Manager (HSM) from vendor not configured</li>
+                    <li>Firmware/driver combination not on vSAN HCL</li>
+                    <li>Insufficient vSAN capacity for maintenance mode evacuation</li>
+                    <li>vLCM depot connectivity issue (offline depot misconfigured)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Validate the vLCM image before remediation</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Updates → Image → "Check Compliance"
+# Review any warnings about driver/firmware conflicts
+
+# CRITICAL: Verify the storage controller driver in the image
+# matches the vSAN HCL entry for your hardware:
+# Cluster → Monitor → vSAN → Health → Hardware Compatibility
+# Cross-reference controller model + driver version + firmware version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure Hardware Support Manager for firmware updates</strong></p>
+                    <pre><code># Each server vendor provides an HSM plugin:
+#   Dell: Dell OpenManage Integration for VMware vCenter (OMIVV)
+#   HPE: HPE OneView for VMware vCenter
+#   Lenovo: Lenovo XClarity Integrator
+
+# From vSphere Client:
+# Menu → Lifecycle Manager → Settings → Hardware Support Managers
+# Add the vendor's HSM → Configure firmware depot
+# Cluster → Updates → Image → Edit → Add "Firmware and Drivers Add-on"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix stuck maintenance mode during remediation</strong></p>
+                    <pre><code># If a host is stuck entering maintenance mode during vLCM update:
+
+# Option 1: Change vSAN data migration mode to "Ensure Accessibility":
+# Cancel the remediation task
+# Right-click host → Maintenance Mode → Enter Maintenance Mode
+# Select "Ensure Accessibility" instead of "Full data migration"
+# Then re-run remediation
+
+# Option 2: Free capacity first (see KB #17 above)
+# Delete snapshots, migrate VMs to other datastores</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Roll back if post-update disk group fails</strong></p>
+                    <pre><code># If after remediation a host's disk groups won't mount:
+# The storage controller driver may be incompatible
+
+# From ESXi Shell (on affected host):
+esxcli software vib list | grep -i "scsi\|sas\|nvme\|raid"
+# Compare driver version with vSAN HCL requirement
+
+# Roll back to previous image:
+# vSphere Client → Cluster → Updates → Image → "Stage and Remediate"
+# Select "Rollback to previous image" (requires previous image saved)
+
+# Or manually install the correct driver VIB:
+esxcli software vib install -v /path/to/correct-driver.vib
+# Reboot the host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 85
+
+
+743 — "Using vSphere Lifecycle Manager with vSAN clusters". Always run a pre-check and validate HCL compliance before remediation. Use a single-host test remediation first before rolling to the entire cluster.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #19: vSAN SPBM Policy Misconfiguration        -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="SPBM storage policy FTT RAID stripe width object format thick thin provision default policy">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">19</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Storage Policy Misconfiguration — Wrong FTT / RAID Level</div>
+            <div class="kb-entry-subtitle">VMs deployed with incorrect storage policies causing unexpected data loss risk or capacity waste</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">SPBM</span>
+                <span class="tag">Storage Policy</span>
+                <span class="tag">FTT</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs with FTT=0 have <strong>NO redundancy</strong> — any single disk or host failure causes permanent data loss. VMs with overly aggressive policies (FTT=2 RAID-1) waste 3x capacity. Both are common misconfigurations.</span>
+        </div>
+
+        <div class="section-label">Common Misconfigurations</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Dangerous Configurations</div>
+                <ul>
+                    <li><strong>FTT=0:</strong> No replicas — single point of failure (NEVER use in production)</li>
+                    <li><strong>FTT=1 RAID-1 on 3-node cluster:</strong> Cannot survive maintenance + failure</li>
+                    <li><strong>"vSAN Default Storage Policy" unmodified:</strong> Ships as FTT=1 RAID-1 which is fine, but admins sometimes change it to FTT=0</li>
+                    <li><strong>Force Provisioning = Yes:</strong> Creates non-compliant objects silently</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Recommended Configurations</div>
+                <ul>
+                    <li><strong>Production VMs:</strong> FTT=1 RAID-1 (4+ nodes) or FTT=1 RAID-5 (4+ nodes, capacity efficient)</li>
+                    <li><strong>Mission-Critical:</strong> FTT=2 RAID-1 (6+ nodes) or FTT=2 RAID-6 (6+ nodes)</li>
+                    <li><strong>Test/Dev:</strong> FTT=1 RAID-1 minimum (FTT=0 only if data is disposable)</li>
+                    <li><strong>Default policy:</strong> Keep at FTT=1 RAID-1, never set to FTT=0</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Audit all VM storage policies</strong></p>
+                    <pre><code># From vSphere Client:
+# Menu → Policies and Profiles → VM Storage Policies
+# Review each policy's vSAN rules:
+#   - "Failures to tolerate" (FTT)
+#   - "Failure tolerance method" (RAID-1 or RAID-5/6)
+#   - "Force provisioning" (should be "No" for production)
+#   - "Object space reservation" (thin vs thick)
+
+# Check which VMs use each policy:
+# Click a policy → "VM Compliance" tab → See all assigned VMs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Find VMs with FTT=0 (no protection)</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Virtual Objects
+# Filter by "Compliance Status" 
+# Any VM with "No protection" has FTT=0
+
+# Also check the default policy:
+# Menu → Policies and Profiles → "vSAN Default Storage Policy"
+# Verify FTT is NOT set to 0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create correct storage policies</strong></p>
+                    <pre><code># From vSphere Client:
+# Menu → Policies and Profiles → VM Storage Policies → Create
+
+# Production Policy example:
+#   Name: "vSAN-Production-FTT1-RAID1"
+#   Datastore rules: vSAN
+#   Failures to tolerate: 1
+#   Failure tolerance method: RAID-1 (Mirroring)
+#   Force provisioning: No
+#   Object space reservation: 0% (thin provisioned)
+
+# Capacity-Efficient Policy example:
+#   Name: "vSAN-Production-FTT1-RAID5"
+#   Failures to tolerate: 1
+#   Failure tolerance method: RAID-5/6 (Erasure Coding)
+#   Requires 4+ hosts in cluster</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reassign policies to existing VMs</strong></p>
+                    <pre><code># From vSphere Client:
+# Select VM → Policies and Profiles → Edit VM Storage Policies
+# Change from the incorrect policy to the correct one
+# Click "Apply to all" to apply to all VMDKs
+
+# For bulk re-assignment:
+# Select multiple VMs → Right-click → VM Policies → Edit VM Storage Policies
+
+# After policy change, vSAN automatically resyncs objects
+# to match the new policy (adds replicas, changes RAID level)
+# Monitor: Cluster → Monitor → vSAN → Resyncing Objects</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Set the correct default storage policy for the datastore</strong></p>
+                    <pre><code># From vSphere Client:
+# Storage → vSAN Datastore → Configure → General
+# "Default Storage Policy" → Edit → Select your production policy
+
+# This ensures any new VM deployed without an explicit policy
+# automatically gets FTT=1 protection</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Capacity Impact of Policy Choices:</strong><br>
+            100 GB VM + FTT=1 RAID-1 = <strong>200 GB</strong> physical (2x)<br>
+            100 GB VM + FTT=1 RAID-5 = <strong>133 GB</strong> physical (1.33x)<br>
+            100 GB VM + FTT=2 RAID-1 = <strong>300 GB</strong> physical (3x)<br>
+            100 GB VM + FTT=2 RAID-6 = <strong>150 GB</strong> physical (1.5x)</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #20: vSAN iSCSI Target Service Failure        -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="iSCSI target service LUN initiator physical workloads bare-metal external access">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">20</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN iSCSI Target Service — LUN Inaccessible or Service Crash</div>
+            <div class="kb-entry-subtitle">Physical servers or external initiators cannot access vSAN iSCSI targets after service failure</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">iSCSI</span>
+                <span class="tag">Target Service</span>
+                <span class="tag">Physical Workloads</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>iSCSI initiators: <strong>"Target not available"</strong> or <strong>"Login failed"</strong></li>
+                    <li>vSAN Health: <strong>"iSCSI target service – Service runtime status"</strong> → FAIL</li>
+                    <li>LUNs disappear from initiator's disk list</li>
+                    <li>vSphere Client: iSCSI target shows <strong>"Offline"</strong> status</li>
+                    <li>Applications on physical servers using vSAN iSCSI LUNs crash</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>iSCSI target service (vitd) crashed on the home host</li>
+                    <li>Network IP for iSCSI target conflicts or becomes unreachable</li>
+                    <li>vSAN datastore issue affecting the backing objects for iSCSI LUNs</li>
+                    <li>ESXi host running the iSCSI target went into maintenance mode</li>
+                    <li>CHAP authentication misconfiguration after credential change</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check iSCSI target service status</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → iSCSI Target Service
+# Review each target's status (Online/Offline) and assigned host
+
+# From the ESXi host running the iSCSI target:
+/etc/init.d/vitd status
+# Expected: "vitd is running"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify iSCSI network connectivity</strong></p>
+                    <pre><code># From the initiator (physical server), verify target is reachable:
+ping &lt;iscsi_target_ip&gt;
+
+# From ESXi host, verify the iSCSI VMkernel IP is up:
+esxcli network ip interface list
+# Check the VMkernel adapter tagged for iSCSI traffic
+
+# Verify from initiator:
+iscsiadm -m discovery -t sendtargets -p &lt;target_ip&gt;:3260</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart the iSCSI target service</strong></p>
+                    <pre><code># From the ESXi host currently assigned as the iSCSI target home:
+/etc/init.d/vitd restart
+
+# Verify service is back:
+/etc/init.d/vitd status
+
+# Initiators should auto-reconnect within 30-60 seconds
+# If not, restart the initiator service on the physical server</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Relocate iSCSI target if the host is failed/maintenance</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → iSCSI Target Service
+# Select the affected target → "Edit" → Change "Home Host" to a healthy host
+
+# The target IP will migrate to the new host
+# Ensure the iSCSI network port group exists on the new host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix CHAP authentication issues</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSAN → iSCSI Target Service → Select target
+# Click "Edit" → Authentication tab
+# Verify CHAP name and secret match the initiator's configuration
+
+# On the initiator side (Linux example):
+cat /etc/iscsi/iscsid.conf | grep -i "chap"
+# Ensure node.session.auth.username and password match the target config</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VMware KB Reference:</strong> KB 2151
+
+
+42 — "Configuring vSAN iSCSI target service". The iSCSI target service supports automatic failover to another host in the cluster if the home host fails. Ensure at least 2 hosts are available for iSCSI target HA.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base &mdash; Phase 2: Day-2 Operations &amp; Advanced Troubleshooting</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase1.html" style="color:var(--accent-light); text-decoration:none;">← Phase 1</a> &nbsp;|&nbsp; Next: Phase 3 — Disaster Recovery &amp; Data Protection</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') { entry.style.display = ''; }
+            else if (type === 'break' || type === 'fix') { entry.style.display = entryType === type ? '' : 'none'; }
+            else if (type === 'critical' || type === 'high') { entry.style.display = severity === type ? '' : 'none'; }
+        });
+    }
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) { entry.style.display = ''; return; }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

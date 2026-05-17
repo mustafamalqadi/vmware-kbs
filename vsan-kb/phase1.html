@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN Knowledge Base — Fix &amp; Break</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header h1 span {
+            font-weight: 300;
+            opacity: 0.7;
+            -webkit-text-fill-color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .badge-break {
+            background: rgba(230,57,70,0.15);
+            color: var(--danger-light);
+            border: 1px solid rgba(230,57,70,0.3);
+        }
+        .badge-fix {
+            background: rgba(46,196,182,0.15);
+            color: var(--success-light);
+            border: 1px solid rgba(46,196,182,0.3);
+        }
+        .badge-phase {
+            background: rgba(0,180,216,0.15);
+            color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.3);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,180,216,0.15);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(0,180,216,0.15);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(230,57,70,0.15);
+            color: var(--danger-light);
+            border: 1px solid rgba(230,57,70,0.25);
+        }
+        .kb-number.fix-num {
+            background: rgba(46,196,182,0.15);
+            color: var(--success-light);
+            border: 1px solid rgba(46,196,182,0.25);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(0,180,216,0.1);
+            color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(230,57,70,0.08);
+            border: 1px solid rgba(230,57,70,0.25);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(244,162,97,0.08);
+            border: 1px solid rgba(244,162,97,0.25);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(46,196,182,0.08);
+            border: 1px solid rgba(46,196,182,0.25);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(0,180,216,0.08);
+            border: 1px solid rgba(0,180,216,0.25);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0,180,216,0.15);
+            border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 1 — Top 10</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ SEARCH ═══════════ -->
+<nav style="max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;">
+    <a href="index.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--warning-light);text-decoration:none;font-size:0.82rem;font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--accent);background:rgba(0,180,216,0.15);color:var(--accent-light);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 4 — VCF Integration</a>
+    <a href="phase5.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.82rem;font-weight:500;">Phase 7 — Networking</a>
+    <a href="decision-tree.html" style="padding:0.5rem 1.1rem;border-radius:8px;border:1px solid rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);color:var(--warning-light);text-decoration:none;font-size:0.82rem;font-weight:600;">&#9881; Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search issues, symptoms, commands, KB articles..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Total Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">5</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 1</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #1: Disk Group Fails / Goes Absent        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="disk group absent degraded failed capacity cache ssd hdd">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">1</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Disk Group Goes Absent / Degraded</div>
+            <div class="kb-entry-subtitle">Entire disk group drops out of the vSAN cluster causing data unavailability</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Disk Group</span>
+                <span class="tag">Data Loss Risk</span>
+                <span class="tag">Storage</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs on affected components go stale. If FTT=1 and a second failure occurs, data loss is possible. Rebuilds consume cluster I/O budget.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health shows <strong>"Disk group – absent"</strong> or <strong>"degraded"</strong></li>
+                    <li>Objects report <strong>reduced availability</strong> in vSAN object health</li>
+                    <li>Cache tier SSD latency spikes &gt;50 ms before failure</li>
+                    <li><code class="inline">esxcli vsan storage list</code> shows disk group as <strong>Unmounted</strong></li>
+                    <li>vmkernel.log: <code class="inline">LSOM: LSOMLostAccess</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Cache-tier SSD failure (most common — kills entire disk group)</li>
+                    <li>Multiple capacity disks fail simultaneously</li>
+                    <li>HBA/controller firmware bug or crash</li>
+                    <li>Cable or backplane connectivity issue</li>
+                    <li>ESXi host PSOD causing ungraceful detach</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>A vSAN disk group is anchored by its <strong>cache-tier SSD</strong>. If that device experiences a media error, the entire disk group (cache + all capacity disks) is removed from the cluster. All vSAN objects with components on that disk group lose a replica. If your storage policy uses <code class="inline">FTT=1</code>, you are now one failure away from data loss.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check disk group status</strong></p>
+                    <pre><code>esxcli vsan storage list
+# Look for "In CMMDS: false" or "Is SSD: true" with Unmounted state</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check SMART data on the suspected disk</strong></p>
+                    <pre><code>esxcli storage core device smart get -d naa.xxxxxxxxxxxx
+# Look for Reallocated Sector Count, Media Errors, Wear Leveling</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Review vmkernel logs for LSOM errors</strong></p>
+                    <pre><code>grep -i "lsom\|VSAN\|diskgroup" /var/log/vmkernel.log | tail -100
+# Key patterns: LSOMLostAccess, congestion, IO error</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Verify object health from vCenter</strong></p>
+                    <pre><code># RVC (Ruby vSphere Console)
+vsan.disks_stats /dc/computers/cluster-name
+vsan.obj_status_report /dc/computers/cluster-name</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>If the cache SSD failed — remove the disk group</strong></p>
+                    <pre><code># From vSphere Client:
+# Host → Configure → vSAN → Disk Management → Select disk group → Remove
+# Choose "Migrate data to other hosts" (Full data migration) if capacity allows
+
+# CLI alternative:
+esxcli vsan storage remove -s naa.CACHE_SSD_NAA_ID</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Always choose <strong>Full data migration</strong> unless the cluster has insufficient capacity. "No data migration" causes immediate data loss for objects with components only on this disk group.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Replace the failed physical disk</strong></p>
+                    <p>Follow your hardware vendor's hot-swap procedure. Verify the new disk is visible:</p>
+                    <pre><code>esxcli storage core device list | grep -A5 "naa."
+# Confirm new device appears with correct size</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Recreate the disk group</strong></p>
+                    <pre><code># From vSphere Client:
+# Host → Configure → vSAN → Disk Management → Create Disk Group
+# Select new cache SSD + existing capacity disks
+
+# CLI:
+esxcli vsan storage add -s naa.NEW_CACHE_SSD -d naa.CAPACITY_DISK_1 -d naa.CAPACITY_DISK_2</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Monitor resync progress</strong></p>
+                    <pre><code># vSphere Client: Cluster → Monitor → vSAN → Resyncing Objects
+# CLI:
+esxcli vsan debug resync summary
+# Wait for "Total Bytes To Resync: 0" before proceeding</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Prevention:</strong> Enable vSAN Health proactive monitoring. Set up SMART-based alerts. Use <code class="inline">FTT=1</code> minimum for production workloads. Keep at least 30% slack space for rebuilds.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #2: vSAN Network Partition                -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="network partition split brain vmkernel vmk1 multicast unicast connectivity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">2</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Network Partition (Split-Brain)</div>
+            <div class="kb-entry-subtitle">Hosts lose vSAN network connectivity causing cluster partition and object inaccessibility</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Network</span>
+                <span class="tag">Split Brain</span>
+                <span class="tag">CMMDS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs become inaccessible when quorum is lost. Both partitions may attempt to own objects, leading to stale data. Storage I/O halts for affected VMs.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Network – All hosts have a vSAN vmkernel"</strong> → FAIL</li>
+                    <li>Hosts show as <strong>partitioned</strong> in vSAN Health &gt; Network</li>
+                    <li>VMs report <strong>"File locked"</strong> or become unresponsive</li>
+                    <li><code class="inline">esxcli vsan cluster get</code> shows different Sub-Cluster Master UUID for different hosts</li>
+                    <li>vmkernel.log: <code class="inline">CMMDS: Node lost</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Physical switch failure or misconfigured VLAN trunking</li>
+                    <li>vSAN VMkernel adapter (vmk1) IP misconfiguration</li>
+                    <li>MTU mismatch between hosts and switches (9000 vs 1500)</li>
+                    <li>NIC firmware/driver bug causing silent drops</li>
+                    <li>Spanning Tree topology change blocking vSAN VLAN</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vSAN relies on a dedicated VMkernel network (typically vmk1) for all cluster communication — CMMDS (Cluster Monitoring, Membership, and Directory Service), object I/O, and resync traffic. When this network is disrupted, hosts form isolated <strong>sub-clusters</strong>. Each sub-cluster elects its own master. Objects that span both partitions lose quorum and become inaccessible.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vSAN cluster membership from each host</strong></p>
+                    <pre><code># Run on EACH host to compare Sub-Cluster Master UUID:
+esxcli vsan cluster get
+
+# If hosts show DIFFERENT "Sub-Cluster Master UUID" → confirmed partition</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Test vSAN network connectivity between hosts</strong></p>
+                    <pre><code># From each host, ping vSAN vmkernel of other hosts:
+vmkping -I vmk1 -d -s 8972 &lt;other_host_vsan_ip&gt;
+# -d = don't fragment, -s 8972 = test jumbo frame (MTU 9000)
+# If this fails, you have an L2/MTU issue</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify VMkernel adapter configuration</strong></p>
+                    <pre><code>esxcli network ip interface list
+# Confirm vmk1 exists and has vSAN traffic enabled
+
+esxcli vsan network list
+# Verify Agent Group and Multicast/Unicast mode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Check MTU end-to-end</strong></p>
+                    <pre><code>esxcfg-vmknic -l
+# Compare MTU across all hosts — must be identical
+# Check physical switch: show interface trunk / show vlan</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore physical network connectivity</strong></p>
+                    <p>Fix the switch port, VLAN configuration, or replace the failed cable/NIC. Verify at the physical layer first.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Fix MTU mismatch (if applicable)</strong></p>
+                    <pre><code># Set consistent MTU on all hosts:
+esxcli network ip interface set -i vmk1 -m 9000
+
+# Also set on the vSwitch/dvSwitch:
+esxcli network vswitch standard set -v vSwitch1 -m 9000
+
+# VERIFY on physical switch that VLAN supports jumbo frames</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify vSAN cluster re-merges</strong></p>
+                    <pre><code># After network is restored, cluster should auto-heal within 60s
+esxcli vsan cluster get
+# All hosts should now show the SAME Sub-Cluster Master UUID
+
+# Monitor resync:
+esxcli vsan debug resync summary</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Validate stale VMs</strong></p>
+                    <pre><code># Check for VMs still reporting inaccessible:
+# vSphere Client → Cluster → Monitor → vSAN → Virtual Objects
+# Filter by "Inaccessible" — if any remain, check their placement</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>Prevention:</strong> Use redundant NICs (active/active or active/standby) for vSAN VMkernel. Use dedicated VLAN and switches. Enable vSAN health network checks. Configure <code class="inline">unicast</code> mode (vSAN 6.6+) instead of multicast.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #3: Objects Inaccessible / Compliance Fail -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="object inaccessible non-compliant compliance policy FTT reduced availability stale">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">3</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Objects Inaccessible or Non-Compliant</div>
+            <div class="kb-entry-subtitle">VM storage objects fail to meet policy requirements — reduced availability or complete inaccessibility</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Objects</span>
+                <span class="tag">Policy Compliance</span>
+                <span class="tag">Data Availability</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Non-compliant objects are at risk — they survive fewer failures than the policy requires. Inaccessible objects cause VM storage errors, snapshots fail, and vMotion is blocked.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"vSAN object health – Reduced availability with no rebuild"</strong></li>
+                    <li>VM storage shows <strong>"Inaccessible"</strong> in Virtual Objects view</li>
+                    <li>Cannot take snapshots or vMotion specific VMs</li>
+                    <li><code class="inline">vsan.obj_status_report</code> shows <strong>NON-COMPLIANT</strong> or <strong>INACCESSIBLE</strong></li>
+                    <li>Events: "vSAN object is non-compliant" for multiple VMs</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Host failure exceeding FTT policy tolerance</li>
+                    <li>Disk group removal or failure</li>
+                    <li>Insufficient cluster capacity for object placement</li>
+                    <li>Storage policy changed but objects not re-synced</li>
+                    <li>CLOM unable to find compliant placement</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Get full object health status</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Monitor → vSAN → Virtual Objects
+# Filter by "Compliance Status" to find Non-Compliant or Inaccessible objects
+
+# From RVC (Ruby vSphere Console):
+vsan.obj_status_report /dc/computers/cluster-name</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check specific object by UUID</strong></p>
+                    <pre><code># From ESXi:
+esxcli vsan debug object health summary get
+
+# Get details on a specific object:
+esxcli vsan debug object list --uuid &lt;object-uuid&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check CLOM placement status</strong></p>
+                    <pre><code># From vmkernel.log:
+grep -i "CLOM\|placement" /var/log/vmkernel.log | tail -50
+# Look for: "Not enough resources" or "Cannot place component"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Bring failed hosts/disks back online</strong></p>
+                    <p>Most non-compliant objects self-heal once the failed component returns. Wait for automatic resync.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Force repair for objects stuck in "Reduced availability with no rebuild"</strong></p>
+                    <pre><code># Option A: Wait 60 minutes — vSAN auto-triggers rebuild after CLOM timeout
+
+# Option B: Trigger immediate repair via RVC:
+vsan.obj_status_report /dc/computers/cluster-name --fix-non-compliant
+
+# Option C: From vSphere Client:
+# Cluster → Monitor → vSAN → Resyncing Objects → "Repair Objects Immediately"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>If cluster lacks capacity — adjust storage policy</strong></p>
+                    <pre><code># Temporarily lower FTT if needed (NOT recommended for production):
+# VM → Policies and Profiles → Edit storage policy
+# FTT=1, RAID-5 uses less capacity than RAID-1 (mirroring)
+
+# Better: Add a host or disk group to increase capacity</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Reapply storage policy to force rebalance</strong></p>
+                    <pre><code># vSphere Client:
+# Select VM → Policies and Profiles → Reapply VM Storage Policy
+# This triggers CLOM to find new compliant placement</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Key Concept:</strong> vSAN objects have a 60-minute CLOM timeout. After a host disappears, vSAN waits 60 minutes before rebuilding. This prevents unnecessary rebuilds during planned maintenance. Use "Repair Objects Immediately" only when you're sure the host is permanently gone.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #4: vSAN Resync / Rebuild Stalled         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="resync rebuild stalled stuck slow resyncing objects progress bandwidth throttle">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">4</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Resync / Rebuild Stalled or Extremely Slow</div>
+            <div class="kb-entry-subtitle">Object resync makes no progress or takes days — cluster remains at risk</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Resync</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Rebuild</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> While resync is stalled, objects remain non-compliant and are vulnerable to additional failures. Extended resync also degrades VM I/O performance.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Resyncing Objects panel shows progress stuck at same % for hours</li>
+                    <li>"Bytes to Resync" not decreasing over time</li>
+                    <li>VM I/O latency elevated (&gt;20ms) during resync</li>
+                    <li>vSAN Performance tab shows resync bandwidth at 0 MB/s</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vSAN resync throttling set too aggressively</li>
+                    <li>Congested or errored vSAN network</li>
+                    <li>Slow/failing disk causing I/O backup</li>
+                    <li>Too many objects resyncing simultaneously</li>
+                    <li>Host-level resource contention (CPU/Memory)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check resync status and bandwidth</strong></p>
+                    <pre><code># From ESXi Shell:
+esxcli vsan debug resync summary
+# Shows: Total Objects Resyncing, Bytes Remaining, Estimated Time
+
+# From vSphere Client:
+# Cluster → Monitor → vSAN → Resyncing Objects
+# Review "Bytes Remaining" and "Active Resync" counts</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check resync throttle settings</strong></p>
+                    <pre><code># On each ESXi host:
+esxcli system settings advanced list -o /LSOM/lsomResyncThrottleThreshold
+# Default: 50 (50% of I/O budget)  — lower = more throttling</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check for congested disks</strong></p>
+                    <pre><code>esxcli vsan debug disk list
+# Look for disks with high congestion values (&gt;0)
+
+vsish -e get /vmkModules/lsom/disks/&lt;disk-uuid&gt;/info
+# Check latency and outstanding I/O count</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Increase resync bandwidth (lower throttle)</strong></p>
+                    <pre><code># From ESXi Shell — run on EACH host in the cluster:
+esxcli system settings advanced set -o /LSOM/lsomResyncThrottleThreshold -i 80
+
+# From vSphere Client (per host):
+# Host → Configure → System → Advanced System Settings
+# Filter: "LSOM.lsomResyncThrottleThreshold" → Edit → Set to 80
+
+# Verify the change:
+esxcli system settings advanced list -o /LSOM/lsomResyncThrottleThreshold</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Increasing this above 80 can cause noticeable latency for running VMs. Reset to 50 after resync completes.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check and fix underlying network issues</strong></p>
+                    <pre><code># Verify no packet drops on vSAN vmkernel:
+esxcli network ip interface stats get -i vmk1
+# Check for TX/RX errors and dropped packets
+
+# Test network throughput between hosts using vmkping:
+vmkping -I vmk1 -d -s 8972 &lt;other_host_vsan_ip&gt;
+# -d = don't fragment, -s 8972 = jumbo frame test
+
+# Check vSAN network performance from vSphere Client:
+# Cluster → Monitor → vSAN → Performance → Network tab</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>If a specific disk is causing I/O stalls — evacuate and replace</strong></p>
+                    <pre><code># Put host in maintenance mode with "Evacuate all data":
+esxcli system maintenanceMode set -e true -m evacuateAllData
+
+# Replace the disk, exit maintenance:
+esxcli system maintenanceMode set -e false</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #5: Host Fails to Join vSAN Cluster       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="host join cluster vmkernel agent cannot node membership cmmds">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">5</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Host Fails to Join vSAN Cluster</div>
+            <div class="kb-entry-subtitle">Host added to cluster but does not participate in vSAN — shown as "Not a vSAN member"</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Cluster Membership</span>
+                <span class="tag">Configuration</span>
+                <span class="tag">Networking</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host in cluster but vSAN shows <strong>"Not a member of vSAN cluster"</strong></li>
+                    <li><code class="inline">esxcli vsan cluster get</code> returns <strong>"Not in a VSAN cluster"</strong></li>
+                    <li>vSAN disk management shows no disks claimed</li>
+                    <li>Cannot create disk groups on the host</li>
+                    <li>vSAN health check: "Cluster health – Host not contributing"</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vSAN VMkernel adapter missing or misconfigured (vmk1 with vSAN tag)</li>
+                    <li>vSAN service not enabled on the host</li>
+                    <li>Host has incompatible ESXi version</li>
+                    <li>Storage controller not on vSAN HCL — disks not visible</li>
+                    <li>Firewall blocking vSAN ports (2233, 12321, 12345)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vSAN cluster membership</strong></p>
+                    <pre><code>esxcli vsan cluster get
+# Expected: Local Node State = AGENT (for non-master) or MASTER
+# If "Not in VSAN cluster" → vSAN service is not active</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check vSAN VMkernel exists</strong></p>
+                    <pre><code>esxcli vsan network list
+# Should show an interface (vmk1 typically) with "Agent Group" set
+
+esxcli network ip interface tag get -i vmk1
+# Must include "VSAN" tag</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify firewall rules</strong></p>
+                    <pre><code>esxcli network firewall ruleset list | grep -i vsan
+# vsanvp2p, vsanEncryption, vsanhealth should be enabled</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create or fix the vSAN VMkernel adapter</strong></p>
+                    <pre><code># If vmk1 is missing:
+esxcli network ip interface add -i vmk1 -p "vSAN-PG"
+esxcli network ip interface ipv4 set -i vmk1 -I 10.10.10.x -N 255.255.255.0 -t static
+
+# Tag it for vSAN:
+esxcli network ip interface tag add -i vmk1 -t VSAN
+
+# Or via vSphere Client:
+# Host → Configure → Networking → VMkernel adapters → Add
+# Enable "vSAN traffic" checkbox</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Restart vSAN agent</strong></p>
+                    <pre><code># Restart the vSAN service to re-attempt cluster join:
+/etc/init.d/vsanmgmtd restart
+/etc/init.d/vsand restart
+
+# Verify:
+esxcli vsan cluster get
+# Should now show "Local Node State: AGENT"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Enable firewall rules if blocked</strong></p>
+                    <pre><code>esxcli network firewall ruleset set -r vsanvp2p -e true
+esxcli network firewall ruleset set -r vsanEncryption -e true
+esxcli network firewall ruleset set -r vsanhealth -e true</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Claim disks and create disk group</strong></p>
+                    <pre><code># After host joins vSAN, create disk group:
+esxcli vsan storage add -s naa.CACHE_SSD -d naa.CAPACITY_1 -d naa.CAPACITY_2
+
+# Or auto-claim via vSphere Client:
+# Host → Configure → vSAN → Disk Management → Claim Disks</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #6: vSAN Stretched Cluster Witness Failure -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="stretched cluster witness failure preferred fault domain site outage two-site">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">6</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Stretched Cluster — Witness Host Failure</div>
+            <div class="kb-entry-subtitle">Witness appliance becomes unreachable, leaving stretched cluster unable to resolve quorum</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Stretched Cluster</span>
+                <span class="tag">Witness</span>
+                <span class="tag">Quorum</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Without the witness, if one site goes down, the surviving site cannot prove quorum. All VMs with components in the failed site become inaccessible. No automatic failover.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Witness host shows <strong>disconnected</strong> in vSphere inventory</li>
+                    <li>vSAN Health: <strong>"Witness host not found"</strong></li>
+                    <li>Objects show <strong>"Reduced availability"</strong> — witness component absent</li>
+                    <li>Fault domain view shows only 2 of 3 fault domains active</li>
+                    <li>Stretched cluster cannot survive a site failure in this state</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Witness appliance VM crashed or its host failed</li>
+                    <li>WAN link between data sites and witness site is down</li>
+                    <li>Witness ESXi version incompatible after upgrade</li>
+                    <li>Witness VMkernel IP changed or network misconfigured</li>
+                    <li>Witness disk full — thin-provisioned disk ran out of datastore space</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore connectivity to the witness</strong></p>
+                    <pre><code># Ping witness from both sites:
+vmkping -I vmk1 &lt;witness_vsan_ip&gt;
+
+# If witness VM is down, power it on from its managing vCenter
+# If WAN is down, work with network team to restore</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>If witness appliance is permanently lost — replace it</strong></p>
+                    <pre><code># Deploy new witness appliance OVA from VMware
+# Configure networking (vmk0 = management, vmk1 = vSAN witness traffic)
+# In vSphere Client:
+# Cluster → Configure → vSAN → Fault Domains → Replace Witness Host
+# Select the new witness appliance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Emergency — force preferred site if witness + one site are down</strong></p>
+                    <pre><code># LAST RESORT — Only if preferred site is up but cannot access witness:
+# This forces the preferred site to assume quorum
+
+# From any host in the preferred site:
+esxcli vsan cluster preferredfaultdomain set --preferred-fault-domain-name "Preferred-Site"
+
+# Then from RVC, force object accessibility:
+# rvc: vsan.obj_status_report /dc/computers/cluster --force-accessible
+# WARNING: This can cause data inconsistency if the non-preferred site had newer writes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Forcing quorum is a <strong>destructive operation</strong>. Only use when both witness AND secondary site are permanently failed. Engage VMware Support (GSS) before performing this.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #7: Encryption Issues / KMS Disconnect    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="encryption kms key management server disconnect locked datastore DEK KEK">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">7</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Encryption — KMS Connectivity Lost</div>
+            <div class="kb-entry-subtitle">Key Management Server unreachable — encrypted vSAN datastore becomes locked after host reboot</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Encryption</span>
+                <span class="tag">KMS</span>
+                <span class="tag">Security</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Hosts that reboot while KMS is unreachable cannot unlock their disk groups. The vSAN datastore on that host becomes inaccessible. If multiple hosts reboot, cluster-wide outage is possible.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>After host reboot, disk groups show <strong>"Locked"</strong> in vSAN Disk Management</li>
+                    <li>vSAN Health: <strong>"Encryption – KMS connection"</strong> → FAIL</li>
+                    <li>vCenter: <strong>"Cannot connect to KMS cluster"</strong> alarm</li>
+                    <li>vmkernel.log: <code class="inline">VSAN: Failed to get key from KMS</code></li>
+                    <li>All VMs on locked disk groups become inaccessible</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>KMS server VM or appliance is down</li>
+                    <li>Network/firewall change blocking port 5696 (KMIP)</li>
+                    <li>KMS certificate expired or trust broken</li>
+                    <li>KMS cluster configuration changed without updating vCenter</li>
+                    <li>vCenter HA failover lost KMS trust anchor</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore KMS connectivity</strong></p>
+                    <pre><code># From vCenter: Administration → Key Providers
+# Check KMS cluster status — test connection
+
+# Verify network:
+# From ESXi host:
+nc -zv &lt;kms_ip&gt; 5696
+# From vCenter:
+curl -k https://&lt;kms_ip&gt;:5696 2>&1 | head</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>If KMS cert expired — re-establish trust</strong></p>
+                    <pre><code># In vCenter:
+# Administration → Key Providers → KMS Cluster → Edit
+# Re-upload the KMS server certificate
+# Re-establish trust by exchanging certificates
+
+# Verify trust:
+# Key Providers → KMS Cluster → "Establish Trust"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Unlock disk groups after KMS is restored</strong></p>
+                    <pre><code># Once KMS is reachable, disk groups should auto-unlock
+# If not, restart vSAN services on the affected host:
+/etc/init.d/vsand restart
+
+# Or put the host in/out of maintenance mode:
+esxcli system maintenanceMode set -e true -m noAction
+esxcli system maintenanceMode set -e false</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10004;</span>
+            <span><strong>Prevention:</strong> Deploy KMS in HA (at least 2 nodes). Use <strong>vSphere Native Key Provider</strong> (vSphere 7.0 U2+) as backup — it stores keys in the ESXi TPM, surviving KMS outages. Never reboot all hosts simultaneously when KMS is unreachable. Back up KMS keys regularly.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #8: vSAN Performance Degradation          -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="performance slow latency high IOPS throughput congestion SSD wear cache capacity tier">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">8</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Performance Degradation — High Latency</div>
+            <div class="kb-entry-subtitle">VMs experience high storage latency (&gt;10ms), low throughput, or intermittent I/O stalls</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Latency</span>
+                <span class="tag">Congestion</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VM disk latency &gt;10ms in vSAN Performance tab</li>
+                    <li>vSAN Health: <strong>"Physical disk – Congestion"</strong> warnings</li>
+                    <li>vSAN Performance: <strong>Backend latency</strong> spikes</li>
+                    <li>Applications (SQL, Exchange) report timeout errors</li>
+                    <li>SSD wear indicator approaching 100%</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Cache tier SSD nearing end of life (high wear)</li>
+                    <li>Capacity tier overloaded — disk group &gt;80% used</li>
+                    <li>Mismatched disk performance (1 slow disk bottlenecks group)</li>
+                    <li>Network congestion on vSAN VMkernel</li>
+                    <li>Active resync consuming I/O budget</li>
+                    <li>Dedup/Compression overhead on all-flash cluster</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check per-disk congestion and latency</strong></p>
+                    <pre><code># vSAN Performance service must be enabled:
+# Cluster → Monitor → vSAN → Performance → Physical Disks tab
+
+# CLI:
+esxcli vsan debug disk list
+# Look for: "Congestion" value > 0 (scale: 0-255)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check SSD wear level</strong></p>
+                    <pre><code>esxcli storage core device smart get -d naa.xxxxxxxxxxxx
+# "Wear Leveling Count" — threshold is typically 90-95%
+
+# From vSphere Client:
+# Cluster → Monitor → vSAN → Physical Disks → Filter by "Wear Level"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check disk space utilization</strong></p>
+                    <pre><code>esxcli vsan storage list
+# Check "Capacity" vs "Used" per disk
+
+# Overall:
+# Cluster → Monitor → vSAN → Capacity
+# Warning threshold: &gt;80% used</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Replace worn SSDs proactively</strong></p>
+                    <p>If cache SSD wear &gt;80%, plan replacement during a maintenance window. Remove disk group with full data migration, replace SSD, recreate disk group.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Add capacity to reduce utilization</strong></p>
+                    <pre><code># Add new disk group or capacity disks:
+esxcli vsan storage add -s naa.NEW_CACHE -d naa.NEW_CAP1 -d naa.NEW_CAP2
+
+# Or add a new host to the cluster to distribute load</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Evaluate and tune dedup/compression</strong></p>
+                    <pre><code># Check dedup/compression savings:
+# Cluster → Configure → vSAN → Services → Space Efficiency
+
+# If savings are minimal (&lt;1.5x) and latency is high:
+# Consider disabling — this requires a rolling evacuation
+# vSphere Client → Cluster → Configure → vSAN → Services → Edit</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Disabling dedup/compression triggers a <strong>full data rewrite</strong> (rolling format change). This takes hours and requires sufficient free capacity. Plan during low-I/O windows.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Rebalance objects across the cluster</strong></p>
+                    <pre><code># Proactive rebalance (vSAN 6.7+):
+# Cluster → Monitor → vSAN → Resyncing Objects → "Rebalance Disks"
+
+# CLI (trigger manual rebalance):
+esxcli vsan debug object rebalance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #9: vSAN Upgrade Failure / Disk Format    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="upgrade on-disk format version rolling upgrade compatibility pre-check failed">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">9</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Upgrade Failure / On-Disk Format Incompatibility</div>
+            <div class="kb-entry-subtitle">vSAN on-disk format upgrade fails or cluster runs mixed versions after ESXi upgrade</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Upgrade</span>
+                <span class="tag">On-Disk Format</span>
+                <span class="tag">Compatibility</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"vSAN disk format version"</strong> shows mixed versions</li>
+                    <li>On-disk format upgrade stuck or fails partway through</li>
+                    <li>New features (dedup, encryption, file services) cannot be enabled</li>
+                    <li>ESXi upgrade succeeded but vSAN format remains at old version</li>
+                    <li>Error: "On-disk format upgrade failed – Insufficient resources"</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>On-disk format upgrade was not triggered after ESXi upgrade</li>
+                    <li>Insufficient free capacity to evacuate a disk group during format change</li>
+                    <li>One host in cluster still on old ESXi version</li>
+                    <li>Pre-check failures (health check not green before upgrade)</li>
+                    <li>Controller/driver not updated to compatible version</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify all hosts are on the same ESXi version</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Hosts → Review "Version" column for all hosts
+# All hosts MUST be at the same ESXi version before on-disk format upgrade
+
+# From ESXi Shell (run on each host):
+vmware -vl
+# Shows: VMware ESXi x.x.x build-XXXXXXX</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Run pre-upgrade health checks</strong></p>
+                    <pre><code># Ensure ALL vSAN health checks are green:
+# Cluster → Monitor → vSAN → Health → Run all checks
+
+# Key checks:
+# ✓ Network connectivity
+# ✓ Disk health  
+# ✓ Object health — no inaccessible objects
+# ✓ Capacity — at least 30% free</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Trigger on-disk format upgrade</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSAN → Disk Management → "Upgrade Pre-check"
+# If pre-check passes → "Upgrade" button
+
+# This performs a ROLLING upgrade:
+# - Evacuates one disk group at a time
+# - Reformats to new on-disk version
+# - Re-adds disk group
+# - Moves to next disk group</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-info">
+                        <span class="alert-icon">&#128712;</span>
+                        <span>On-disk format upgrade is <strong>non-reversible</strong>. Back up critical VMs before proceeding. The process can take several hours depending on data volume and cluster size.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>If upgrade fails midway — recover</strong></p>
+                    <pre><code># Check which disk groups completed and which are pending:
+esxcli vsan storage list
+# "vSAN Disk Group Format Version" shows current version per group
+
+# If a specific disk group fails:
+# 1. Remove the failed disk group (Full Data Migration)
+# 2. Recreate it — it will use the new format automatically
+# 3. Continue upgrade for remaining groups</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #10: vSAN Maintenance Mode Stuck          -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="maintenance mode stuck enter exit evacuate data migration ensure accessibility full">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">10</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Host Stuck Entering / Exiting vSAN Maintenance Mode</div>
+            <div class="kb-entry-subtitle">Host cannot enter maintenance mode due to vSAN data evacuation constraints or exits with errors</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Maintenance Mode</span>
+                <span class="tag">Evacuation</span>
+                <span class="tag">Operations</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host shows <strong>"Entering Maintenance Mode"</strong> for hours with no progress</li>
+                    <li>Task stuck at specific percentage (often 0% or 99%)</li>
+                    <li>Error: <strong>"Cannot evacuate data — insufficient resources"</strong></li>
+                    <li>Error: <strong>"There are VMs with vSAN policy that cannot be satisfied"</strong></li>
+                    <li>Pre-check reports objects that cannot be moved</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Not enough capacity on remaining hosts for "Full data migration"</li>
+                    <li>Objects already degraded — cannot afford another component loss</li>
+                    <li>VM with local-only storage policy (FTT=0) blocks evacuation</li>
+                    <li>Orphaned or stranded objects on the host</li>
+                    <li>vSAN resync already in progress consuming resources</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check maintenance mode pre-check</strong></p>
+                    <pre><code># vSphere Client:
+# Right-click host → Maintenance Mode → "Pre-Check vSAN Data Migration"
+# This shows EXACTLY which objects cannot be migrated and why
+
+# CLI:
+esxcli vsan debug object list --filter-on-host
+# Shows objects that would be affected</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check for inaccessible/orphaned objects</strong></p>
+                    <pre><code># RVC:
+vsan.check_state /dc/computers/cluster-name
+
+# Look for orphaned objects (no parent VM):
+vsan.obj_status_report /dc/computers/cluster-name | grep -i orphan</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Use "Ensure Accessibility" instead of "Full Data Migration"</strong></p>
+                    <pre><code># If full migration is not possible due to capacity:
+esxcli system maintenanceMode set -e true -m ensureObjectAccessibility
+
+# This only moves objects where the host has the ONLY copy
+# Objects with replicas on other hosts stay (reduced redundancy during maintenance)
+# Much faster and uses less capacity</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-info">
+                        <span class="alert-icon">&#128712;</span>
+                        <span><strong>Maintenance Mode Options:</strong><br>
+                        <strong>Full data migration:</strong> Moves all data off host. Safest but needs capacity.<br>
+                        <strong>Ensure accessibility:</strong> Only moves data where host is the sole owner. Fast, less capacity needed.<br>
+                        <strong>No data migration:</strong> Leaves data in place. Risk of data loss if another failure occurs during maintenance.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Cancel stuck maintenance and retry</strong></p>
+                    <pre><code># Cancel from vSphere Client:
+# Recent Tasks → Right-click "Enter Maintenance Mode" → Cancel
+
+# If task is orphaned and cancel doesn't work:
+# Restart management agents:
+/etc/init.d/hostd restart
+/etc/init.d/vpxa restart
+
+# Then retry with a less aggressive migration mode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Remove orphaned objects blocking evacuation</strong></p>
+                    <pre><code># Identify orphaned objects:
+# RVC:
+vsan.obj_status_report /dc/computers/cluster-name --filter-type orphan
+
+# Delete orphaned objects (careful — verify they are truly orphaned):
+# Contact VMware/Broadcom Support (GSS) for safe orphan removal
+# Never delete objects attached to running VMs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Free capacity by migrating VMs to other storage (if available)</strong></p>
+                    <pre><code># Storage vMotion large VMs to non-vSAN datastore temporarily:
+# This frees vSAN capacity for evacuation
+
+# From vSphere Client:
+# Right-click VM → Migrate → Change storage only
+# Select a non-vSAN datastore (local/NFS/iSCSI) → Finish
+# Repeat for largest VMs until sufficient vSAN space is freed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base &mdash; Phase 1: Top 10 Common Fix &amp; Break Issues</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; Next: Phase 2 — Advanced Troubleshooting &amp; Day-2 Operations</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

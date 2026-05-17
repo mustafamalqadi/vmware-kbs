@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Phase 4: VCF Integration &amp; Lifecycle</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .search-bar input {
+            width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 1rem center;
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .stats-bar {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+        }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-tabs { max-width: 1400px; margin: 0 auto; padding: 0 2rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-tab {
+            padding: 0.55rem 1.2rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+        .kb-entry {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+        .kb-entry-header {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.5rem 1.75rem; cursor: pointer; user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+        .kb-number {
+            flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .kb-number.break-num { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
+        .kb-number.fix-num { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .kb-entry-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+        .kb-entry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2); font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+        .kb-chevron { flex-shrink: 0; width: 24px; height: 24px; margin-top: 0.5rem; transition: transform 0.3s; color: var(--text-muted); }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+        .kb-entry-body { display: none; padding: 0 1.75rem 1.75rem; border-top: 1px solid var(--border); }
+        .kb-entry.open .kb-entry-body { display: block; }
+        .section-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-muted); margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .kb-entry-body p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .kb-entry-body ul, .kb-entry-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .kb-entry-body li { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .kb-entry-body li strong { color: var(--text-primary); }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto;
+            margin: 0.75rem 0; position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; color: var(--accent-light); line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+            font-size: 0.85rem; color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.3rem 0.6rem; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 5px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+        .alert {
+            padding: 0.85rem 1.1rem; border-radius: 8px; margin: 0.75rem 0;
+            font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.25); color: var(--danger-light); }
+        .alert-warning { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.25); color: var(--warning-light); }
+        .alert-success { background: rgba(46,196,182,0.08); border: 1px solid rgba(46,196,182,0.25); color: var(--success-light); }
+        .alert-info { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent-light); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0.75rem 0; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.15rem; }
+        .info-box-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-number {
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+        .footer {
+            text-align: center; padding: 2rem; color: var(--text-muted);
+            font-size: 0.8rem; border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 4 — VCF Integration &amp; Lifecycle</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html" class="active">Phase 4 — VCF Integration</a>
+    <a href="phase5.html">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html">Phase 7 — Networking</a>
+    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);">&#9881; Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search VCF, SDDC Manager, workload domain, lifecycle, bundle, NSX, vRealize..." oninput="filterEntries()">
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">VCF &amp; Lifecycle Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 4</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #31: SDDC Manager Bring-Up Fails on vSAN     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="SDDC Manager bring-up bringup VCF deployment management domain vSAN initialization">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">31</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">SDDC Manager Bring-Up Fails — vSAN Cluster Not Formed</div>
+            <div class="kb-entry-subtitle">VCF management domain deployment stalls during vSAN datastore creation or disk claiming</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">SDDC Manager</span>
+                <span class="tag">Bring-Up</span>
+                <span class="tag">VCF</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VCF management domain cannot be deployed. No workload domains can be created. Entire VCF stack is blocked at Day 0.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>SDDC Manager bring-up wizard stalls at <strong>"Create vSAN Cluster"</strong> step</li>
+                    <li>Bring-up JSON validation passes, but task fails at ~40-60%</li>
+                    <li>SDDC Manager logs show <strong>"vSAN disk group creation failed"</strong></li>
+                    <li>ESXi hosts show disks but vSAN cannot claim them</li>
+                    <li>Cloud Builder VM reports timeout waiting for vSAN datastore</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Common Root Causes</div>
+                <ul>
+                    <li>Disk controller not in VMware HCL for vSAN (firmware/driver mismatch)</li>
+                    <li>Disks have existing partition tables (not wiped before bring-up)</li>
+                    <li>vSAN VMkernel (vmk1) IP mismatch in bring-up JSON vs. actual config</li>
+                    <li>Time sync (NTP) skew &gt;5 minutes between hosts</li>
+                    <li>ESXi build not matching VCF Bill of Materials (BoM)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify disk eligibility from ESXi Shell on each host</strong></p>
+<pre><code># List all disks visible to vSAN
+esxcli vsan storage list
+
+# Check for existing partitions blocking claim
+esxcli storage core device partition list
+
+# Identify vSAN-eligible disks
+esxcli vsan storage automode get</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Wipe stale partitions on unclaimed disks (ESXi Shell)</strong></p>
+<pre><code># Remove existing partition table from disk (replace naa.xxx with actual device ID)
+# WARNING: This destroys ALL data on the disk
+partedUtil delete "/vmfs/devices/disks/naa.xxxxxxxxxxxxxxxxxxxx" 1
+
+# For GPT-formatted disks, delete all partitions
+partedUtil mklabel "/vmfs/devices/disks/naa.xxxxxxxxxxxxxxxxxxxx" gpt</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify NTP sync and VMkernel config before retrying</strong></p>
+<pre><code># Check NTP synchronization
+esxcli system ntp get
+
+# Verify vSAN VMkernel adapter IP
+esxcli network ip interface ipv4 get
+
+# Confirm vSAN traffic tag on vmk adapter
+esxcli vsan network list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Validate ESXi build matches VCF BoM, then retry bring-up</strong></p>
+<pre><code># Check ESXi version on host
+vmware -vl
+
+# Compare output against VCF compatibility matrix
+# Navigate to: SDDC Manager UI &gt; Lifecycle Management &gt; Bundle Management
+# Ensure ESXi ISO/build matches BoM for your target VCF version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always run the VCF Pre-Check tool from Cloud Builder before initiating bring-up. This validates network, NTP, DNS, ESXi version, and disk eligibility in advance.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #32: Workload Domain Expansion — vSAN Stretch -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="workload domain expansion cluster add host commission SDDC stretch vSAN WLD">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">32</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Workload Domain Expansion Fails — Host Commission Stuck</div>
+            <div class="kb-entry-subtitle">Adding new ESXi hosts to a VCF workload domain fails during vSAN disk claiming or network validation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Workload Domain</span>
+                <span class="tag">Host Commission</span>
+                <span class="tag">Expansion</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Cluster cannot scale out. New VMs cannot be placed. Capacity constraints grow until expansion completes. Pending host sits in "Error" state in SDDC Manager.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>SDDC Manager shows host commission task at <strong>"Validating Host"</strong> or <strong>"Adding Host to Cluster"</strong> indefinitely</li>
+                    <li>Host appears in vCenter but not joined to vSAN cluster</li>
+                    <li>vSAN Health shows <strong>"Network: vSAN cluster partition"</strong></li>
+                    <li>SDDC Manager task log: <strong>"Failed to claim disks"</strong> or <strong>"Network validation failed"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>New host ESXi version not in VCF BoM (even minor patch mismatch)</li>
+                    <li>Host network profile mismatch (VLAN ID, MTU, vmk IP range)</li>
+                    <li>Disks on new host have stale VMFS/vSAN partitions from prior use</li>
+                    <li>Host not in SDDC Manager host inventory (needs commissioning first)</li>
+                    <li>DNS PTR record missing for the new host IP</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Validate host prerequisites from ESXi Shell</strong></p>
+<pre><code># Confirm ESXi version and build
+vmware -vl
+
+# Check all disks are clean
+esxcli storage core device list | grep -i "Display Name"
+
+# Verify no existing vSAN disk groups
+esxcli vsan storage list
+
+# Check NTP sync
+esxcli system ntp get</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify network profile matches existing cluster hosts</strong></p>
+<pre><code># Check vmk interfaces and VLAN assignments
+esxcli network ip interface list
+esxcli network ip interface ipv4 get
+
+# Verify vSAN vmk has correct traffic type
+esxcli vsan network list
+
+# Test MTU end-to-end (must match cluster — typically 9000 for jumbo)
+vmkping -I vmk1 -d -s 8972 &lt;existing-host-vSAN-IP&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Commission host properly in SDDC Manager</strong></p>
+<pre><code># In SDDC Manager UI:
+# 1. Navigate to Inventory &gt; Hosts
+# 2. Click "Commission Hosts"
+# 3. Provide host FQDN, credentials, and storage/network pool
+# 4. Wait for validation — all checks must pass (green)
+
+# If commission fails, check SDDC Manager logs:
+# SSH to SDDC Manager VM
+cat /var/log/vmware/vcf/domainmanager/domainmanager.log | grep -i "commission"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Retry host addition after fixing prerequisites</strong></p>
+<pre><code># In SDDC Manager UI:
+# Inventory &gt; Workload Domains &gt; Select Domain &gt; Select Cluster &gt; Add Host
+# Ensure "Retry" on the failed task or start fresh after decommission
+
+# After host joins, verify vSAN membership:
+esxcli vsan cluster get
+esxcli vsan storage list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Important:</strong> Never manually add hosts to vCenter in a VCF environment. All host operations must go through SDDC Manager to maintain desired state consistency.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #33: VCF Bundle Download / Apply Failure      -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="VCF bundle download apply update patch lifecycle LCM SDDC Manager depot">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">33</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VCF Lifecycle Bundle Download or Apply Failure</div>
+            <div class="kb-entry-subtitle">SDDC Manager fails to download update bundles from depot or apply them to workload domains</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Lifecycle</span>
+                <span class="tag">Bundle</span>
+                <span class="tag">Update</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VCF environment cannot be patched or upgraded. Security vulnerabilities remain unpatched. Compliance drift grows. Downstream bundle dependencies may be blocked.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>SDDC Manager &gt; Lifecycle Management shows <strong>"Bundle download failed"</strong></li>
+                    <li>Update pre-check passes but apply task fails at <strong>"Staging"</strong> or <strong>"Installing"</strong></li>
+                    <li>Error: <strong>"Unable to connect to VMware Depot"</strong> or <strong>"Checksum mismatch"</strong></li>
+                    <li>Bundle stuck in <strong>"Downloading"</strong> state for hours</li>
+                    <li>Offline bundle upload via SCP rejected by SDDC Manager</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>SDDC Manager cannot reach <code class="inline">depot.vmware.com</code> (firewall or proxy)</li>
+                    <li>Expired or invalid My VMware credentials in SDDC Manager depot settings</li>
+                    <li>Insufficient space on SDDC Manager <code class="inline">/nfs/vmware/vcf/nfs-mount</code></li>
+                    <li>Bundle version skipped — VCF requires sequential upgrade path</li>
+                    <li>SSL interception proxy corrupting bundle checksums</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify depot connectivity from SDDC Manager</strong></p>
+<pre><code># SSH to SDDC Manager appliance
+curl -v https://depot.vmware.com 2>&amp;1 | head -30
+
+# If using a proxy, verify proxy settings
+cat /etc/vmware/vcf/domainmanager/application.properties | grep proxy
+
+# Check DNS resolution
+nslookup depot.vmware.com
+
+# Verify NTP sync (certificate validation will fail if clock is off)
+timedatectl status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check storage space and clean stale downloads</strong></p>
+<pre><code># Check disk usage on SDDC Manager
+df -h /nfs/vmware/vcf/nfs-mount
+
+# List downloaded bundles
+ls -lah /nfs/vmware/vcf/nfs-mount/bundle/
+
+# Remove stale/incomplete bundle files if space is low
+# Navigate to SDDC Manager UI &gt; Lifecycle &gt; Bundle Management
+# Delete any bundles in "Failed" state before retrying</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>For air-gapped environments — use offline bundle transfer</strong></p>
+<pre><code># Download bundle from my.vmware.com on a connected machine
+# Transfer to SDDC Manager via SCP:
+scp VCF-*.tar vcf@sddc-manager:/nfs/vmware/vcf/nfs-mount/bundle/
+
+# In SDDC Manager UI:
+# Lifecycle Management &gt; Bundle Management &gt; Upload Bundle
+# Select the transferred .tar file
+
+# Alternatively, use the VCF Bundle Transfer Utility (BTU)
+# from Broadcom support portal for structured offline transfers</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Verify upgrade path and retry</strong></p>
+<pre><code># In SDDC Manager UI:
+# Lifecycle &gt; Bundle Management — verify bundle order
+# VCF REQUIRES sequential upgrades: e.g., 4.5 → 5.0 → 5.1 → 5.2
+# You CANNOT skip intermediate versions
+
+# Run pre-check before apply:
+# Lifecycle &gt; Updates &gt; Select Update &gt; Run Pre-Check
+# Fix any failures, then Apply</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Note:</strong> VCF 5.x bundles are available exclusively through the Broadcom Support Portal. Ensure your Broadcom entitlement is properly linked to your organization's VCF licenses.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #34: NSX Integration — vSAN + NSX Overlay     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="NSX overlay VXLAN GENEVE transport zone TEP edge node vSAN traffic NSX-T">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">34</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NSX-T Transport Node Breaks vSAN Connectivity</div>
+            <div class="kb-entry-subtitle">NSX transport node preparation disrupts vSAN VMkernel traffic causing cluster partition or data unavailability</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">NSX-T</span>
+                <span class="tag">Transport Node</span>
+                <span class="tag">Network</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN cluster partitions when NSX VDS migration moves vSAN VMkernel to an N-VDS or misconfigured VDS. All objects become inaccessible. VMs freeze with I/O errors. This is a Day 1/Day 2 top killer in VCF deployments.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Immediately after NSX transport node prep: <strong>vSAN health alarm — "Network: All hosts have unicast connectivity"</strong> fails</li>
+                    <li>VMs report <strong>disk I/O errors</strong> or become unresponsive</li>
+                    <li>vSAN objects show <strong>"Inaccessible"</strong> in vSphere Client</li>
+                    <li>ESXi <code class="inline">vmkernel.log</code>: <strong>"Lost access to vSAN network"</strong></li>
+                    <li>NSX Manager shows transport node as <strong>"Partial Success"</strong> or <strong>"Failed"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Transport Node Profile (TNP) incorrectly maps vSAN VMkernel to wrong uplink</li>
+                    <li>VDS uplink failover order changed during NSX preparation</li>
+                    <li>TEP (Tunnel Endpoint) VLAN overlaps with vSAN VLAN</li>
+                    <li>MTU reduced below 1600 for overlay traffic, starving vSAN jumbo frames</li>
+                    <li>Physical switch LACP/static LAG config mismatch after NSX VDS changes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Immediately verify vSAN VMkernel connectivity</strong></p>
+<pre><code># On each ESXi host — check vSAN vmk is reachable
+vmkping -I vmk1 &lt;other-host-vSAN-IP&gt; -d -s 8972
+
+# If vmk1 is down, check the port group and uplink
+esxcli network ip interface list
+esxcli network vswitch dvs vmware list
+
+# Check vSAN network membership
+esxcli vsan network list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>If vSAN vmk lost its uplink — emergency fix from ESXi Shell</strong></p>
+<pre><code># List current VDS port group assignments
+esxcli network vswitch dvs vmware list
+
+# If vmk1 has no active uplinks, check the physical NIC assignment
+esxcli network nic list
+
+# In vSphere Client (if accessible):
+# Host &gt; Configure &gt; Networking &gt; VMkernel adapters
+# Verify vmk1 is on the correct VDS port group with active uplinks
+
+# CRITICAL: Do NOT reboot the host — fix networking in-place</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix the Transport Node Profile before re-applying</strong></p>
+<pre><code># In NSX Manager UI:
+# System &gt; Fabric &gt; Profiles &gt; Transport Node Profiles
+# Edit the TNP:
+#   - Verify uplink mapping: vSAN vmk must remain on a dedicated uplink
+#   - TEP VLAN must NOT overlap with vSAN VLAN
+#   - MTU must be ≥9000 for vSAN (if using jumbo frames)
+
+# Recommended VDS layout for VCF:
+#   Uplink 1+2: Management + vMotion + vSAN (active/standby)
+#   Uplink 3+4: NSX overlay TEP + Edge uplinks
+# NEVER share the same physical uplinks for TEP and vSAN without proper teaming</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Re-apply TNP and validate vSAN health</strong></p>
+<pre><code># After fixing TNP, re-apply from NSX Manager:
+# System &gt; Fabric &gt; Nodes &gt; Host Transport Nodes
+# Select the failed node &gt; Resolve or Re-apply
+
+# Verify vSAN health post-fix:
+esxcli vsan health cluster list
+
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# All network tests must show green</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Prevention:</strong> ALWAYS take a configuration backup of the VDS and host network config BEFORE applying NSX Transport Node Profiles. Test TNP on a single host first (remove from TNP auto-apply), validate vSAN health, then roll out to remaining hosts.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #35: vSAN Stretched Cluster in VCF            -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="VCF stretched cluster witness site affinity cross-site SDDC Manager workload domain stretched">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">35</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Configuring vSAN Stretched Cluster in VCF — Correct Workflow</div>
+            <div class="kb-entry-subtitle">Proper SDDC Manager workflow for deploying and maintaining stretched vSAN clusters across two sites with a witness</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Stretched Cluster</span>
+                <span class="tag">VCF</span>
+                <span class="tag">Multi-Site</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> VCF supports stretched vSAN clusters for workload domains. However, the setup requires specific SDDC Manager workflows — manual vSAN stretched cluster configuration outside SDDC Manager will cause desired-state drift and future lifecycle failures.</span>
+        </div>
+
+        <div class="section-label">Prerequisites &amp; Architecture</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Requirements</div>
+                <ul>
+                    <li>Minimum 3+3 hosts (3 per site) + 1 witness host</li>
+                    <li>L2 stretched VLAN for vSAN between sites (or L3 with routing)</li>
+                    <li>RTT between sites ≤ 5ms (vSAN requirement)</li>
+                    <li>Witness host at a third site (cannot be at either data site)</li>
+                    <li>SDDC Manager 5.x with stretched cluster support enabled</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Architecture</div>
+                <ul>
+                    <li><strong>Preferred site:</strong> Primary read locality (Site A)</li>
+                    <li><strong>Secondary site:</strong> Replica site (Site B)</li>
+                    <li><strong>Witness site:</strong> Tiebreaker — hosts only witness components (Site C)</li>
+                    <li>Objects stored as: <strong>RAID-1 (site-mirror)</strong> across Site A + Site B + witness vote at Site C</li>
+                    <li>VM placement governed by vSphere HA admission control &amp; DRS affinity</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Deploy witness host and validate connectivity</strong></p>
+<pre><code># Deploy the vSAN Witness Appliance OVA (from Broadcom downloads)
+# In vSphere Client: Deploy OVF Template &gt; select witness OVA
+# Assign witness to management vCenter (NOT workload vCenter)
+
+# After deployment, SSH to witness and verify:
+esxcli vsan network list
+vmkping -I vmk1 &lt;site-A-vSAN-IP&gt; -d -s 8972
+vmkping -I vmk1 &lt;site-B-vSAN-IP&gt; -d -s 8972</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure stretched cluster via SDDC Manager</strong></p>
+<pre><code># In SDDC Manager UI:
+# Inventory &gt; Workload Domains &gt; Create Workload Domain
+#   (or modify existing domain)
+# Select "Stretched Cluster" deployment type
+# Assign hosts to Site A (preferred) and Site B (secondary)
+# Specify witness host FQDN and credentials
+
+# SDDC Manager will:
+# 1. Configure fault domains (preferred / secondary)
+# 2. Set up witness traffic routing
+# 3. Apply correct vSAN storage policies (Site Disaster Tolerance = 1)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Validate health after stretch configuration</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# Check these critical tests:
+#   - "Stretched cluster: Witness host within vCenter cluster" — MUST be green
+#   - "Stretched cluster: Preferred fault domain healthy"
+#   - "Stretched cluster: Secondary fault domain healthy"
+#   - "Stretched cluster: Witness host healthy"
+
+# From ESXi on any data host:
+esxcli vsan cluster get
+# Look for: "Sub-Cluster Master Mode: PREFERRED" or "SECONDARY"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Configure DRS affinity rules for site awareness</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Configure &gt; VM/Host Rules
+# Create rules to pin critical VMs to preferred site:
+#   Rule Type: "Virtual Machines to Hosts"
+#   VMs: [select VMs]
+#   Host Group: "Preferred-Site-Hosts"
+#   Constraint: "Should run on hosts in group" (soft) or "Must run" (hard)
+
+# This ensures VMs read from local site for lowest latency
+# HA will still failover to secondary site if preferred site is lost</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> Never manually modify fault domains or witness host assignment outside SDDC Manager. Always use SDDC Manager workflows for stretched cluster changes to maintain desired state integrity.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #36: vLCM Image-Based Mgmt in VCF             -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="vLCM image lifecycle management firmware driver ESXi baseline cluster image VCF">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">36</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vLCM Image-Based Cluster Management in VCF</div>
+            <div class="kb-entry-subtitle">Setting up and troubleshooting vSphere Lifecycle Manager image-based management for VCF workload domains</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vLCM</span>
+                <span class="tag">Image</span>
+                <span class="tag">Lifecycle</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> VCF 5.x mandates vLCM image-based management for all clusters. This replaces legacy baselines. The cluster image defines the exact ESXi version, vendor add-on (firmware/drivers), and component versions for every host in the cluster.</span>
+        </div>
+
+        <div class="section-label">Common Failures &amp; Root Causes</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Failure Scenarios</div>
+                <ul>
+                    <li>vLCM compliance check shows <strong>"Non-compliant"</strong> after VCF bundle apply</li>
+                    <li>Remediation fails with <strong>"Host cannot enter maintenance mode"</strong></li>
+                    <li>Firmware update skipped — <strong>"Hardware Support Manager not configured"</strong></li>
+                    <li>Image export fails: <strong>"Depot not reachable"</strong> or <strong>"Missing component"</strong></li>
+                    <li>Cluster image shows different ESXi build than VCF BoM expects</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Hardware Support Manager (HSM) plugin not registered for vendor (Dell, HPE, Lenovo)</li>
+                    <li>Vendor depot URL inaccessible from vCenter (firewall / proxy)</li>
+                    <li>Host has VIBs installed manually (outside vLCM) causing image drift</li>
+                    <li>vSAN objects blocking maintenance mode (insufficient spare capacity)</li>
+                    <li>SDDC Manager and vCenter image definitions out of sync</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check cluster image compliance</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Updates &gt; Image
+# Click "Check Compliance" — wait for scan
+
+# Review non-compliant hosts — expand to see:
+#   - Missing components (drivers, firmware)
+#   - Extra VIBs (manually installed, not in image)
+#   - Version mismatch
+
+# From ESXi Shell on non-compliant host:
+esxcli software vib list | grep -v "VMware"
+# This shows any non-VMware VIBs that may cause drift</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Register Hardware Support Manager for firmware management</strong></p>
+<pre><code># In vSphere Client:
+# Administration &gt; vCenter Server Settings &gt; vSphere Lifecycle Manager
+# Under "Hardware Support Managers" — register the vendor plugin:
+#   - Dell: Dell OpenManage Integration for VMware vCenter (OMIVV)
+#   - HPE: HPE OneView for VMware vCenter
+#   - Lenovo: Lenovo XClarity Integrator for VMware vCenter
+
+# After registration, edit the cluster image:
+# Cluster &gt; Updates &gt; Image &gt; Edit
+# Add "Firmware and Drivers Add-on" from vendor depot
+# Save and Check Compliance again</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Handle maintenance mode failures during remediation</strong></p>
+<pre><code># If host cannot enter maintenance mode due to vSAN:
+# Check vSAN data migration mode in remediation settings:
+# Cluster &gt; Updates &gt; Image &gt; Remediate &gt; Settings
+# Options:
+#   "Ensure data accessibility" (fastest, reduced redundancy)
+#   "Full data migration" (safest, requires spare capacity)
+#   "No data migration" (DANGEROUS — only for single-host test)
+
+# Verify vSAN has capacity to evacuate:
+esxcli vsan storage list
+# Ensure remaining hosts have enough free space
+
+# Check if DRS can migrate all VMs off the host:
+# vSphere Client &gt; Host &gt; VMs tab — look for pinned VMs or anti-affinity rules</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Sync SDDC Manager with vCenter image state</strong></p>
+<pre><code># If SDDC Manager shows different image than vCenter:
+# SSH to SDDC Manager
+cat /var/log/vmware/vcf/lcm/lcm.log | grep -i "image"
+
+# In SDDC Manager UI:
+# Lifecycle Management &gt; check for "Configuration Drift" alerts
+# If drift detected — use "Sync Inventory" to re-read from vCenter
+
+# NEVER change cluster image directly in vCenter for VCF domains
+# Always apply updates through SDDC Manager Lifecycle workflow</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Best Practice:</strong> Before every VCF upgrade, export the current cluster image as a backup. In vSphere Client: Cluster &gt; Updates &gt; Image &gt; Export Image. This allows rollback if the new image causes issues.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #37: vSAN + Aria (vRealize) Integration       -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="Aria vRealize Operations vROps Aria Operations monitoring vSAN metrics alerts dashboard VCF">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">37</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Aria Operations (vROps) Not Collecting vSAN Metrics in VCF</div>
+            <div class="kb-entry-subtitle">Aria Operations fails to display vSAN health data, capacity forecasts, or performance metrics for VCF workload domains</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Aria Operations</span>
+                <span class="tag">Monitoring</span>
+                <span class="tag">vROps</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> No visibility into vSAN health, capacity, or performance from Aria. Capacity planning becomes guesswork. Alerts for degraded objects, resync, or capacity thresholds are missing. Compliance dashboards are incomplete.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Aria Operations dashboard shows <strong>"No data available"</strong> for vSAN objects</li>
+                    <li>vSAN-specific dashboards (capacity, resync, health) are empty</li>
+                    <li>Adapter status shows <strong>"Data receiving — Off"</strong> for vCenter cloud account</li>
+                    <li>Alerts for vSAN capacity or health never fire</li>
+                    <li>vSAN metrics missing from custom dashboards and reports</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vSAN Management Pack not installed in Aria Operations</li>
+                    <li>vCenter cloud account configured with limited permissions (missing vSAN read)</li>
+                    <li>Aria collector cannot reach vCenter API (port 443) or ESXi hosts (port 443)</li>
+                    <li>Metric collection interval too long — vSAN metrics lagging by hours</li>
+                    <li>Aria Operations version incompatible with vSAN/VCF version</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify Management Pack and adapter status</strong></p>
+<pre><code># In Aria Operations UI:
+# Administration &gt; Solutions &gt; VMware vSAN
+# Verify status is "Installed" and "Collecting"
+
+# If not installed:
+# Administration &gt; Solutions &gt; Add Solution
+# Search for "VMware vSAN" pack — install the matching version
+
+# Check adapter instance:
+# Administration &gt; Solutions &gt; VMware vSAN &gt; Adapter Instances
+# Verify "Collection Status: Data Receiving"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Validate vCenter cloud account permissions</strong></p>
+<pre><code># In Aria Operations:
+# Data Sources &gt; Cloud Accounts &gt; vCenter account
+# Click "Test Connection" — must return success
+
+# Required permissions on the vCenter service account:
+#   - Host.Config.Storage (vSAN disk operations read)
+#   - VirtualMachine.Config.Settings (VM policy read)
+#   - StorageProfile.View (SPBM policy read)
+#   - vSAN: Read-only at minimum (Cluster-level permission)
+
+# In vSphere Client:
+# Administration &gt; Access Control &gt; Roles
+# Verify the Aria service account role includes vSAN privileges</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify collector network connectivity</strong></p>
+<pre><code># SSH to Aria Operations collector node
+# Test connectivity to vCenter:
+curl -k https://&lt;vcenter-fqdn&gt;/sdk -o /dev/null -w "%{http_code}"
+# Expected: 200 or 301
+
+# Test connectivity to ESXi hosts (required for host-level metrics):
+curl -k https://&lt;esxi-host-ip&gt;/sdk -o /dev/null -w "%{http_code}"
+
+# If blocked — open firewall rules:
+#   Aria Collector → vCenter: TCP 443
+#   Aria Collector → ESXi hosts: TCP 443</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Configure vSAN-specific dashboards and alerts</strong></p>
+<pre><code># In Aria Operations:
+# Dashboards &gt; vSAN &gt; enable built-in dashboards:
+#   - vSAN Cluster Overview
+#   - vSAN Capacity Planning
+#   - vSAN Performance
+#   - vSAN Resync Activity
+
+# Configure alert policies:
+# Alerts &gt; Alert Definitions &gt; search "vSAN"
+# Enable and tune thresholds:
+#   - vSAN Capacity Used > 70% (Warning), > 80% (Critical)
+#   - vSAN Resync ETA > 4 hours (Warning)
+#   - vSAN Object Health Degraded (Critical — immediate)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>VCF Integration:</strong> When Aria is deployed via SDDC Manager (Aria Suite Lifecycle), the vSAN management pack and vCenter cloud account are auto-configured. If you deployed Aria manually, you must configure these yourself.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #38: vSAN Datastore on Mgmt Domain — Recovery -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="management domain vSAN datastore SDDC vCenter PSC recovery bootstrap VCF management cluster">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">38</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VCF Management Domain vSAN Datastore Degraded — Recovery</div>
+            <div class="kb-entry-subtitle">Management domain vSAN issues jeopardize SDDC Manager, vCenter, NSX Manager, and all VCF control plane components</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Management Domain</span>
+                <span class="tag">vSAN</span>
+                <span class="tag">Recovery</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical Impact:</strong> The management domain vSAN datastore hosts ALL VCF control plane VMs: SDDC Manager, vCenter, NSX Manager, Aria Suite. If this datastore degrades or fails, the ENTIRE VCF stack becomes unmanageable. This is a Severity 1 event requiring immediate action.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Impact Assessment</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>SDDC Manager UI unreachable or extremely slow</li>
+                    <li>vCenter connection drops intermittently</li>
+                    <li>NSX Manager cluster shows split-brain or node offline</li>
+                    <li>Management VMs report <strong>disk I/O latency &gt; 100ms</strong></li>
+                    <li>vSAN Health on management cluster: <strong>objects degraded or absent</strong></li>
+                    <li>Cannot manage workload domains from SDDC Manager</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Host failure in 4-node management cluster (FTT=1 tolerance exceeded)</li>
+                    <li>Disk group failure on management host (cache or capacity disk)</li>
+                    <li>Network partition isolating management hosts</li>
+                    <li>Management cluster ran out of vSAN capacity (logs, snapshots)</li>
+                    <li>Firmware bug on management host storage controller</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Emergency Recovery — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Assess the damage — connect directly to ESXi hosts</strong></p>
+<pre><code># If vCenter is down, connect directly to each management host via ESXi Shell
+# Check vSAN cluster status:
+esxcli vsan cluster get
+
+# Check vSAN health (local view):
+esxcli vsan health cluster list 2>/dev/null
+
+# Check disk group health:
+esxcli vsan storage list
+
+# Check for partitioned nodes:
+esxcli vsan cluster get | grep "Partition"
+
+# List all VMs and their power state:
+vim-cmd vmsvc/getallvms
+vim-cmd vmsvc/power.getstate &lt;vmid&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>If host is down — bring it back online immediately</strong></p>
+<pre><code># If host had a PSOD or power loss:
+# 1. Power on the physical server via iLO/iDRAC/IMM
+# 2. Wait for ESXi to boot completely
+# 3. Verify it rejoins vSAN:
+esxcli vsan cluster get
+
+# If disk group failed, recreate it:
+# First identify the failed disk group:
+esxcli vsan storage list | grep -A5 "Status"
+
+# If cache disk failed — the entire disk group is lost
+# New cache disk required. In vSphere Client (if available):
+# Host &gt; Configure &gt; vSAN &gt; Disk Management &gt; Create Disk Group
+
+# If vSphere Client is down, use RVC or wait for vCenter recovery</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Recover vCenter first (highest priority)</strong></p>
+<pre><code># vCenter must be recovered first — all other components depend on it
+
+# If vCenter VM is powered off, start it from ESXi host directly:
+vim-cmd vmsvc/getallvms | grep -i "vcenter\|vcsa"
+vim-cmd vmsvc/power.on &lt;vcenter-vmid&gt;
+
+# Wait for vCenter services to start (can take 10-15 minutes)
+# From vCenter SSH (once accessible):
+service-control --status --all
+
+# If vCenter cannot start due to I/O errors:
+# 1. Check the vSAN datastore is accessible
+# 2. Use vSAN RVC to investigate object health:
+#    rvc root@localhost &gt; vsan.check_state &lt;cluster&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Recover SDDC Manager and validate VCF state</strong></p>
+<pre><code># After vCenter is up, verify SDDC Manager VM:
+vim-cmd vmsvc/getallvms | grep -i "sddc"
+vim-cmd vmsvc/power.on &lt;sddc-vmid&gt;
+
+# Wait for SDDC Manager services to start
+# SSH to SDDC Manager:
+systemctl status domainmanager
+systemctl status operationsmanager
+systemctl status lcm
+
+# If services are degraded, restart:
+systemctl restart domainmanager
+
+# Verify VCF inventory sync:
+# SDDC Manager UI &gt; Dashboard
+# Check for "Configuration Drift" or "Inventory Sync Failure" alerts</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Prevention:</strong> Management domain must have FTT=1 minimum with 4+ hosts. Use RAID-1 mirroring (not erasure coding) for management datastore — it provides faster rebuild and better I/O under degradation. Monitor management vSAN capacity separately with strict 70% threshold.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #39: vSAN HCI Mesh Cross-Domain in VCF        -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="HCI Mesh cross-domain datastore sharing vSAN remote mount workload domain disaggregate VCF">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">39</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN HCI Mesh — Cross-Workload Domain Storage Sharing in VCF</div>
+            <div class="kb-entry-subtitle">Mounting vSAN datastores across workload domains for disaggregated compute/storage in a VCF environment</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">HCI Mesh</span>
+                <span class="tag">Cross-Domain</span>
+                <span class="tag">Storage Sharing</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSAN HCI Mesh allows a "client cluster" to mount the vSAN datastore of a remote "server cluster" as additional storage. In VCF, this enables cross-workload-domain storage disaggregation — compute-heavy domains can consume storage from storage-rich domains.</span>
+        </div>
+
+        <div class="section-label">Prerequisites &amp; Limitations</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Requirements</div>
+                <ul>
+                    <li>vSAN 7.0 U1+ on both server and client clusters</li>
+                    <li>Both clusters managed by the same vCenter instance</li>
+                    <li>L3 routable vSAN network between clusters</li>
+                    <li>Client cluster must also be vSAN-enabled (even if minimal local storage)</li>
+                    <li>VCF 4.3+ with HCI Mesh support in SDDC Manager</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Limitations</div>
+                <ul>
+                    <li>Cross-vCenter HCI Mesh is <strong>NOT supported</strong> — clusters must be in same vCenter</li>
+                    <li>Management domain vSAN should NOT be shared via HCI Mesh</li>
+                    <li>Performance depends on inter-cluster network bandwidth (25GbE+ recommended)</li>
+                    <li>Storage policies on remote datastore are controlled by the server cluster</li>
+                    <li>VCF stretched clusters do NOT support HCI Mesh</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify network reachability between clusters</strong></p>
+<pre><code># From a host in the CLIENT cluster, ping a host in the SERVER cluster via vSAN vmk:
+vmkping -I vmk1 &lt;server-cluster-host-vSAN-IP&gt; -d -s 8972
+
+# Verify both clusters have vSAN services enabled:
+# On server cluster host:
+esxcli vsan cluster get
+
+# On client cluster host:
+esxcli vsan cluster get
+
+# Confirm both report "Cluster UUID" and "Local Node State: MASTER" or "AGENT"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Mount the remote vSAN datastore</strong></p>
+<pre><code># In vSphere Client:
+# Navigate to the CLIENT cluster
+# Cluster &gt; Configure &gt; vSAN &gt; Services &gt; Datastore Sharing
+# Click "Mount Remote Datastores"
+# Select the SERVER cluster's vSAN datastore
+# Click "Mount"
+
+# Verify mount:
+# Client Cluster &gt; Datastores — the remote vSAN DS should appear
+# Hosts in the client cluster can now place VMs on the remote datastore
+
+# From ESXi on client cluster host:
+esxcli storage filesystem list | grep -i vsan</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot mount failures</strong></p>
+<pre><code># If mount fails, check these:
+
+# 1. Verify vSAN datastore sharing is enabled on SERVER cluster:
+# Server Cluster &gt; Configure &gt; vSAN &gt; Services &gt; Datastore Sharing
+# "Allow access to remote datastores" must be ENABLED
+
+# 2. Check network connectivity between ALL host pairs:
+# Every host in client must reach every host in server via vSAN vmk
+vmkping -I vmk1 &lt;each-server-host-IP&gt; -d -s 8972
+
+# 3. Check firewall rules on both clusters:
+esxcli network firewall ruleset list | grep -i vsan
+
+# 4. Ensure no IP conflicts on vSAN vmk subnet across clusters</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>VCF-specific considerations</strong></p>
+<pre><code># In VCF environments, HCI Mesh must be configured via SDDC Manager:
+# SDDC Manager UI &gt; Workload Domains &gt; Select Client Domain
+# Configure &gt; Storage &gt; Mount Remote vSAN Datastore
+
+# IMPORTANT VCF RULES:
+# 1. Never share the management domain vSAN datastore
+# 2. Both workload domains must be under the same SDDC Manager
+# 3. HCI Mesh operations will appear in SDDC Manager audit log
+# 4. Lifecycle updates to the server cluster may temporarily
+#    affect I/O on the client cluster (plan maintenance windows)
+
+# Monitor cross-cluster latency:
+# vSphere Client &gt; Server Cluster &gt; Monitor &gt; vSAN &gt; Performance
+# Check "Backend Latency" for HCI Mesh traffic</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Use Case:</strong> HCI Mesh is ideal when you have a storage-heavy cluster with excess capacity and a compute-heavy cluster needing more storage — without buying additional disks. Common in VDI workload domains consuming storage from a general-purpose domain.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #40: VCF Certificate Rotation + vSAN Impact   -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="certificate rotation TLS SSL VMCA expiry vSAN encryption KMS VCF SDDC certificate management">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">40</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VCF Certificate Rotation Breaks vSAN Encryption or Services</div>
+            <div class="kb-entry-subtitle">Certificate renewal in VCF causes vSAN encryption, KMS connectivity, or inter-host communication failures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Certificates</span>
+                <span class="tag">Encryption</span>
+                <span class="tag">VCF</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> After certificate rotation, vSAN encryption may lose connectivity to the KMS (Key Management Server). Hosts may fail to unlock encrypted disk groups on reboot. Inter-host vSAN communication may drop if VMCA-signed certs are not trusted. This can cause complete data unavailability on encrypted vSAN clusters.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>After cert rotation: vSAN Health shows <strong>"KMS connection failure"</strong></li>
+                    <li>Host reboot results in <strong>"Locked disk group — encryption key unavailable"</strong></li>
+                    <li>vSAN Health: <strong>"vSAN encryption — cluster KMS connection"</strong> fails</li>
+                    <li>ESXi logs: <strong>"SSL handshake failed"</strong> to KMS endpoint</li>
+                    <li>SDDC Manager certificate management task shows <strong>"Partial Success"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>KMS trust store not updated with new VMCA root certificate</li>
+                    <li>Certificate rotation skipped ESXi host certificates (incomplete rollout)</li>
+                    <li>KMS client certificate on vCenter expired and was not renewed</li>
+                    <li>SDDC Manager rotated certs but did not restart vSAN services</li>
+                    <li>Custom CA (enterprise PKI) certificate chain incomplete after rotation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current certificate status across VCF components</strong></p>
+<pre><code># On vCenter (VCSA SSH):
+# Check VMCA root certificate expiry:
+/usr/lib/vmware-vmca/bin/certool --getrootca | openssl x509 -noout -dates
+
+# Check ESXi host certificate status:
+# vSphere Client &gt; Host &gt; Configure &gt; Certificate
+# Verify "Valid To" date and issuer matches VMCA or custom CA
+
+# On SDDC Manager:
+# Inventory &gt; Certificates
+# Review all component certificate expiry dates</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Re-establish KMS trust with new certificates</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Configure &gt; Security &gt; Key Management Servers
+# Select the KMS provider
+# Click "Establish Trust" — re-exchange certificates
+
+# For KMIP-based KMS:
+# 1. Export the new VMCA root cert:
+/usr/lib/vmware-vmca/bin/certool --getrootca --cert=/tmp/vmca-root.pem
+
+# 2. Import this cert into the KMS trust store
+#    (procedure varies by KMS vendor — HyTrust, Thales, etc.)
+
+# 3. Re-establish trust in vSphere Client
+# 4. Verify: Cluster &gt; Configure &gt; Security &gt; "KMS connection status: Connected"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify vSAN encryption health after cert fix</strong></p>
+<pre><code># Check vSAN encryption status on each host:
+esxcli vsan encryption info get
+
+# Expected output:
+#   Encryption Active: true
+#   KMS Cluster Name: &lt;your-kms-cluster&gt;
+#   DEK Generation ID: &lt;number&gt;
+
+# Run vSAN health check:
+esxcli vsan health cluster list | grep -i "encrypt"
+
+# In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# "Encryption" section — all tests must be green:
+#   - "vCenter and all hosts are connected to Key Management Servers"
+#   - "CPU AES-NI is supported on all hosts"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Prevent future cert rotation issues</strong></p>
+<pre><code># ALWAYS use SDDC Manager for certificate operations in VCF:
+# SDDC Manager UI &gt; Inventory &gt; Certificates &gt; Rotate Certificates
+# This ensures ALL components are updated in the correct order
+
+# Set up certificate expiry monitoring:
+# SDDC Manager &gt; Lifecycle &gt; Certificate Dashboard
+# Configure alerts for certificates expiring within 60 days
+
+# Before any cert rotation:
+# 1. Backup vCenter (file-based backup)
+# 2. Snapshot SDDC Manager VM
+# 3. Document current KMS trust state
+# 4. Schedule a maintenance window — do NOT rotate certs in production hours
+
+# After rotation, validate ALL of these:
+# - vCenter accessible
+# - ESXi hosts connected to vCenter
+# - vSAN health green
+# - KMS connected
+# - NSX Manager cluster healthy</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical:</strong> NEVER let VMCA root certificate expire in a VCF environment. Plan rotation at least 6 months before expiry. An expired VMCA root certificate requires full certificate infrastructure rebuild — a multi-day recovery effort.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base — Phase 4: VCF Integration &amp; Lifecycle | 10 entries (KB #31–40)</p>
+    <p style="margin-top:0.5rem;">Official VMware/Broadcom tooling only — ESXCLI, vSphere Client UI, RVC, ESXi Shell, VCSA CLI, SDDC Manager</p>
+</footer>
+
+<script>
+function toggleEntry(header) {
+    const entry = header.closest('.kb-entry');
+    entry.classList.toggle('open');
+}
+
+function copyCode(btn) {
+    const code = btn.parentElement.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+
+function filterEntries() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        const keywords = entry.dataset.keywords ? entry.dataset.keywords.toLowerCase() : '';
+        entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+    });
+}
+
+function filterByType(type, btn) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        if (type === 'all') { entry.style.display = ''; return; }
+        if (type === 'critical' || type === 'high') {
+            entry.style.display = entry.dataset.severity === type ? '' : 'none';
+        } else {
+            entry.style.display = entry.dataset.type === type ? '' : 'none';
+        }
+    });
+}
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+
+</body>
+</html>

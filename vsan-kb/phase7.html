@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Phase 7: Networking for vSAN</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .search-bar input {
+            width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 1rem center;
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .stats-bar {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+        }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-tabs { max-width: 1400px; margin: 0 auto; padding: 0 2rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-tab {
+            padding: 0.55rem 1.2rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+        .kb-entry {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+        .kb-entry-header {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.5rem 1.75rem; cursor: pointer; user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+        .kb-number {
+            flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .kb-number.break-num { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
+        .kb-number.fix-num { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .kb-entry-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+        .kb-entry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2); font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+        .kb-chevron { flex-shrink: 0; width: 24px; height: 24px; margin-top: 0.5rem; transition: transform 0.3s; color: var(--text-muted); }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+        .kb-entry-body { display: none; padding: 0 1.75rem 1.75rem; border-top: 1px solid var(--border); }
+        .kb-entry.open .kb-entry-body { display: block; }
+        .section-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-muted); margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .kb-entry-body p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .kb-entry-body ul, .kb-entry-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .kb-entry-body li { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .kb-entry-body li strong { color: var(--text-primary); }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto;
+            margin: 0.75rem 0; position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; color: var(--accent-light); line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+            font-size: 0.85rem; color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.3rem 0.6rem; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 5px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+        .alert {
+            padding: 0.85rem 1.1rem; border-radius: 8px; margin: 0.75rem 0;
+            font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.25); color: var(--danger-light); }
+        .alert-warning { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.25); color: var(--warning-light); }
+        .alert-success { background: rgba(46,196,182,0.08); border: 1px solid rgba(46,196,182,0.25); color: var(--success-light); }
+        .alert-info { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent-light); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0.75rem 0; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.15rem; }
+        .info-box-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-number {
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+        .footer {
+            text-align: center; padding: 2rem; color: var(--text-muted);
+            font-size: 0.8rem; border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 7 — Networking for vSAN</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html">Phase 4 — VCF Integration</a>
+    <a href="phase5.html">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html" class="active">Phase 7 — Networking for vSAN</a>
+    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);">&#9881; Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search NIC teaming, jumbo frames, MTU, VMkernel, multicast, LACP, vDS, NSX, RDMA..." oninput="filterEntries()">
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Networking Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 7</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #61: VMkernel Misconfiguration Breaks vSAN    -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="VMkernel vmk adapter port group vSAN traffic tag misconfiguration IP subnet wrong interface network connectivity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">61</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VMkernel Adapter Misconfiguration Breaks vSAN Traffic</div>
+            <div class="kb-entry-subtitle">Wrong VMkernel adapter tagging, subnet mismatch, or missing vSAN service tag causes hosts to lose cluster membership</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">VMkernel</span>
+                <span class="tag">Configuration</span>
+                <span class="tag">Connectivity</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN requires a dedicated VMkernel adapter tagged with the "vSAN" service. If this tag is missing, the adapter is on the wrong subnet, or the wrong vmk is tagged, vSAN traffic cannot flow between hosts. Objects become inaccessible, hosts show as partitioned, and the cluster enters a degraded state.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"vSAN cluster members do not have vSAN network connectivity"</strong></li>
+                    <li>Host shows <strong>"Not connected"</strong> in vSAN cluster member list</li>
+                    <li>Objects on the affected host show <strong>"Inaccessible"</strong></li>
+                    <li>VM I/O stalls for VMs with components on the disconnected host</li>
+                    <li>esxcli vsan cluster get — shows the host is not a member</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VMkernel adapter missing the "vSAN" traffic service tag</li>
+                    <li>vSAN VMkernel on different subnet from other cluster hosts</li>
+                    <li>Multiple VMkernel adapters with vSAN tag — only one should be tagged</li>
+                    <li>VMkernel placed on wrong VLAN or port group</li>
+                    <li>IP address conflict — two hosts sharing the same vSAN VMkernel IP</li>
+                    <li>After vDS migration — VMkernel lost its service tags</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify VMkernel adapter configuration on each host</strong></p>
+<pre><code># SSH to the affected ESXi host:
+
+# List all VMkernel adapters and their service tags:
+esxcli network ip interface tag get
+# Look for:
+#   vmk1 (or whichever is for vSAN):
+#     Tags: VSAN
+# If "VSAN" tag is missing — that's the problem
+
+# List VMkernel adapter IPs and subnets:
+esxcli network ip interface ipv4 get
+# Verify:
+#   All hosts' vSAN VMkernel IPs are on the SAME subnet
+#   No IP duplicates across hosts
+#   Subnet mask is consistent (e.g., all /24 or all /25)
+
+# Check which port group the VMkernel is on:
+esxcli network ip interface list
+# "Portgroup" column shows the associated port group/vDS portgroup
+# Verify it is the correct vSAN-designated port group</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Add or fix the vSAN service tag</strong></p>
+<pre><code># If the vSAN tag is missing from the correct VMkernel adapter:
+
+# Add vSAN traffic tag to vmk1:
+esxcli vsan network ipv4 add -i vmk1
+
+# Verify the tag was applied:
+esxcli vsan network list
+# Should show:
+#   Interface: vmk1
+#   VsanVmknicUuid: (a UUID)
+#   IP Protocol: IP
+
+# If the wrong VMkernel has the vSAN tag (e.g., vmk0 instead of vmk1):
+# Remove from wrong adapter:
+esxcli vsan network ipv4 remove -i vmk0
+# Add to correct adapter:
+esxcli vsan network ipv4 add -i vmk1
+
+# From vSphere Client (non-CLI alternative):
+# Host &gt; Configure &gt; Networking &gt; VMkernel adapters
+# Select the correct vmk &gt; Edit &gt; check "vSAN" under Services
+# Uncheck "vSAN" from any incorrect vmk adapters</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify L2/L3 connectivity between all vSAN VMkernel interfaces</strong></p>
+<pre><code># From the affected host, ping every other host's vSAN VMkernel IP:
+vmkping -I vmk1 &lt;host2-vSAN-IP&gt; -d -s 8972
+vmkping -I vmk1 &lt;host3-vSAN-IP&gt; -d -s 8972
+vmkping -I vmk1 &lt;host4-vSAN-IP&gt; -d -s 8972
+
+# -I vmk1: use the vSAN VMkernel adapter
+# -d: set don't-fragment bit
+# -s 8972: test jumbo frames (9000 MTU - 28 byte header)
+
+# If ping fails:
+#   Check physical switch VLAN configuration
+#   Check vDS/vSS port group VLAN ID matches physical switch
+#   Check physical switch port is trunking the correct VLAN
+#   If L3 (routed): verify gateway and routing between subnets
+
+# After fixing, run vSAN Health check:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Retest
+# "Network" section should turn green</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always use a dedicated VMkernel adapter (vmk1+) for vSAN — never share vmk0 (management) with vSAN traffic. Use a dedicated VLAN for vSAN. Document the VMkernel-to-VLAN-to-subnet mapping in your runbook.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #62: MTU / Jumbo Frames Mismatch              -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="MTU jumbo frames 9000 1500 mismatch packet loss fragmentation switch port group vDS end-to-end path">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">62</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">MTU / Jumbo Frame Mismatch — Silent vSAN Performance Killer</div>
+            <div class="kb-entry-subtitle">Inconsistent MTU settings across hosts, switches, and port groups cause packet drops, retransmits, and severe latency</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">MTU</span>
+                <span class="tag">Jumbo Frames</span>
+                <span class="tag">Packet Loss</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN strongly recommends MTU 9000 (jumbo frames) for optimal performance. If ANY hop in the network path — VMkernel, vSwitch, physical switch port, inter-switch link — does not support MTU 9000, large packets are silently dropped or fragmented. The result is intermittent latency spikes, retransmits, and in severe cases, vSAN network partition events.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"vSAN: MTU check (ping with large packet size)"</strong> FAILS</li>
+                    <li>Intermittent VM latency spikes — not constant, not predictable</li>
+                    <li>Large I/O operations (resync, migrations) are extremely slow</li>
+                    <li>Small I/O (4KB reads) works fine — only large I/O is affected</li>
+                    <li>esxtop: network dropped packets (DRPTX/DRPRX) &gt; 0 on vSAN vmk</li>
+                    <li>TCP retransmits visible in packet captures</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VMkernel adapter MTU set to 9000 but physical switch port at 1500</li>
+                    <li>vDS/vSS MTU set to 9000 but one host's physical NIC at 1500</li>
+                    <li>Inter-switch link (ISL/uplink) between ToR switches at 1500</li>
+                    <li>One host added later with different MTU than existing hosts</li>
+                    <li>After switch firmware upgrade — MTU reset to defaults on some ports</li>
+                    <li>LACP bond with mismatched member MTU</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Test end-to-end MTU from every host to every other host</strong></p>
+<pre><code># SSH to each ESXi host and test jumbo frames to all other vSAN hosts:
+
+# Test with 8972 byte payload (9000 MTU - 28 bytes IP+ICMP header):
+vmkping -I vmk1 &lt;host2-vSAN-IP&gt; -d -s 8972
+vmkping -I vmk1 &lt;host3-vSAN-IP&gt; -d -s 8972
+vmkping -I vmk1 &lt;host4-vSAN-IP&gt; -d -s 8972
+
+# -d = Don't Fragment flag (critical — forces end-to-end MTU validation)
+# -s 8972 = payload size
+
+# SUCCESS: "8972 bytes from x.x.x.x: ..."
+# FAILURE: "PING x.x.x.x: sendto() No buffer space available"
+#      or: "Request timeout" or "Packet needs to be fragmented"
+
+# If ANY host pair fails — there is an MTU mismatch on that path
+# You must test EVERY combination: host1→host2, host1→host3, etc.
+# A single broken link can be between specific switch ports only</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Audit MTU at every layer — end to end</strong></p>
+<pre><code># Layer 1: Physical NIC MTU on each ESXi host:
+esxcli network nic list
+# Shows: Name, MTU, Link Status, Speed
+# Every NIC carrying vSAN traffic must show MTU: 9000
+
+# Layer 2: vSwitch / vDS MTU:
+esxcli network vswitch dvs vmware list
+# Check: MTU per vDS — must be 9000
+# For standard vSwitch:
+esxcli network vswitch standard list
+# Check: MTU per vSS — must be 9000
+
+# Layer 3: VMkernel adapter MTU:
+esxcli network ip interface list
+# Check: MTU for vmk1 (vSAN) — must be 9000
+
+# Layer 4: Physical switch (from switch CLI):
+# Cisco: show interface &lt;port&gt; | include MTU
+# Arista: show interfaces &lt;port&gt; | include MTU
+# Dell: show interfaces &lt;port&gt; status
+# Verify EVERY port connected to ESXi hosts AND inter-switch links
+
+# Common miss: inter-switch link / spine-leaf uplink at default 1500
+# This breaks jumbo frames between hosts on different switches</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix MTU — set 9000 end-to-end</strong></p>
+<pre><code># Fix VMkernel adapter MTU (if wrong):
+# vSphere Client &gt; Host &gt; Configure &gt; Networking &gt; VMkernel adapters
+# Select vmk1 &gt; Edit &gt; set MTU to 9000
+
+# Fix vDS MTU:
+# vSphere Client &gt; Networking &gt; select vDS &gt; Configure &gt; Settings
+# Edit &gt; MTU: 9000
+
+# Fix standard vSwitch MTU (from ESXi Shell):
+esxcli network vswitch standard set -v vSwitch1 -m 9000
+
+# Fix physical switch (example Cisco NX-OS):
+# interface Ethernet1/1
+#   mtu 9216
+#   (use 9216 on physical switches — slightly larger for L2 headers)
+
+# After fixing all layers, retest:
+vmkping -I vmk1 &lt;host2-vSAN-IP&gt; -d -s 8972
+
+# Then rerun vSAN Health:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Retest
+# "Network &gt; vSAN: MTU check" should turn green
+
+# IMPORTANT: If you cannot set 9000 everywhere, set ALL to 1500
+# Mixed MTU is worse than consistent 1500 MTU everywhere</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical Rule:</strong> MTU must be consistent end-to-end: VMkernel adapter, vSwitch/vDS, physical NIC, every physical switch port, and every inter-switch link. A single device at 1500 on the path silently kills jumbo frame performance. For ESA clusters with 25GbE+, jumbo frames provide up to 20% throughput improvement.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #63: NIC Teaming & Failover Policies           -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="NIC teaming failover policy active standby load balancing route based originating port IP hash LACP vDS uplink failover order">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">63</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NIC Teaming &amp; Failover — Best Practices for vSAN Traffic</div>
+            <div class="kb-entry-subtitle">Configuring uplink teaming policies to maximize vSAN bandwidth, ensure failover, and avoid split-brain scenarios</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">NIC Teaming</span>
+                <span class="tag">Failover</span>
+                <span class="tag">Uplinks</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSAN traffic is bandwidth-intensive and latency-sensitive. The NIC teaming policy determines how vSAN traffic is distributed across physical uplinks and how failover occurs. A wrong teaming policy can cause asymmetric bandwidth, traffic black-holes during failover, or even vSAN network partitions.</span>
+        </div>
+
+        <div class="section-label">Teaming Policy Options for vSAN</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">Recommended Policies</div>
+                <ul>
+                    <li><strong>Route based on originating virtual port (default):</strong> Each VMkernel binds to one uplink. Simple, predictable. vSAN uses ONE uplink at a time, failover to second.</li>
+                    <li><strong>Route based on IP hash (with LACP):</strong> Distributes traffic across uplinks based on IP src/dst hash. Requires LACP on physical switch. Can use both uplinks simultaneously.</li>
+                    <li><strong>Route based on physical NIC load (vDS only):</strong> Dynamically balances VMkernel traffic across uplinks based on utilization. Best for vSAN on vDS.</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title red">Avoid These for vSAN</div>
+                <ul>
+                    <li><strong>Route based on source MAC hash:</strong> vSAN VMkernel has ONE MAC — all traffic goes to one uplink. No load balancing. Failover only.</li>
+                    <li><strong>Explicit failover order:</strong> Same as active/standby — no load balancing. Acceptable only if you have dedicated vSAN NICs.</li>
+                    <li><strong>Beacon probing without physical switch support:</strong> Can cause false failovers and flapping.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current teaming policy for vSAN port group</strong></p>
+<pre><code># For vDS (Distributed Switch):
+# vSphere Client &gt; Networking &gt; vDS &gt; Port Groups
+# Select the vSAN port group &gt; Edit Settings &gt; Teaming and Failover
+
+# Shows:
+#   Load Balancing: (current policy)
+#   Network Failure Detection: Link status / Beacon probing
+#   Failover Order: Active / Standby uplinks
+
+# From ESXi Shell (for vSS):
+esxcli network vswitch standard policy failover get -v vSwitch1
+# Shows: Load Balancing Policy, Active/Standby NICs
+
+# Verify which physical NIC is currently carrying vSAN traffic:
+esxcli network vswitch dvs vmware lacp status get
+# Or check via esxtop (press 'n' for network view):
+# Look at MbTX/s and MbRX/s per uplink — the active one has traffic</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure recommended teaming for vSAN on vDS</strong></p>
+<pre><code># Option A: Route based on physical NIC load (RECOMMENDED for vDS):
+# vDS &gt; vSAN Port Group &gt; Edit Settings &gt; Teaming and Failover
+# Load Balancing: "Route based on physical NIC load"
+# Network Failure Detection: "Link status only"
+# Failover Order: Both uplinks Active
+
+# This dynamically moves VMkernel port bindings between uplinks
+# based on 30-second utilization sampling — best bandwidth utilization
+
+# Option B: LACP (requires switch configuration):
+# vDS &gt; Configure &gt; LACP
+# New LAG &gt; 2 ports &gt; Mode: Active &gt; Hash: L3+L4
+# vSAN Port Group &gt; Teaming: "Route based on IP hash"
+# Failover Order: LAG1 Active, individual uplinks Unused
+
+# Physical switch (Cisco NX-OS example):
+# interface port-channel10
+#   switchport mode trunk
+#   switchport trunk allowed vlan 100
+#   mtu 9216
+#   vpc 10
+# interface Ethernet1/1-2
+#   channel-group 10 mode active
+
+# IMPORTANT: LACP requires both sides configured simultaneously
+# Misconfigured LACP causes complete traffic loss</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Test failover behavior</strong></p>
+<pre><code># After configuring teaming, test NIC failover:
+
+# 1. Start a continuous ping from another host to verify connectivity:
+# (On host2):
+vmkping -I vmk1 &lt;host1-vSAN-IP&gt; -c 100 -i 1
+
+# 2. On host1, simulate uplink failure by disabling one NIC:
+esxcli network nic down -n vmnic2
+
+# 3. Verify traffic fails over:
+# Ping should see 1-3 lost packets, then resume
+# If more than 5 seconds of loss — failover is too slow
+
+# 4. Re-enable the NIC:
+esxcli network nic up -n vmnic2
+
+# 5. Verify failback:
+# Traffic should return to original distribution
+
+# Check vSAN Health after test:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Network
+# All checks should be green
+
+# IMPORTANT: Test failover during a maintenance window
+# Do NOT test during production hours on a live vSAN cluster</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>ESA Recommendation:</strong> ESA clusters with 25GbE NICs should use "Route based on physical NIC load" on vDS for maximum bandwidth utilization. With 2×25GbE, this gives up to 50 Gbps aggregate vSAN bandwidth. LACP is equally valid if your switching infrastructure supports it.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #64: vSAN Multicast → Unicast Migration       -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="multicast unicast migration IGMP snooping cluster communication heartbeat discovery vSAN 6.6 7.0 switch flooding PIM">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">64</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Multicast to Unicast Migration &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">Understanding the transition from multicast-based to unicast-based cluster communication and resolving legacy multicast issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Multicast</span>
+                <span class="tag">Unicast</span>
+                <span class="tag">Cluster Communication</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> Prior to vSAN 6.6, cluster member discovery and heartbeats required multicast. This caused endless issues with physical switches (IGMP snooping, PIM, multicast flooding). Starting with vSAN 6.6+ (and mandatory in vSAN 7.0+), vSAN uses <strong>unicast</strong> for cluster communication. If you are on vSAN 7.0+, multicast is no longer needed — but legacy configurations may still have multicast-related switch settings causing problems.</span>
+        </div>
+
+        <div class="section-label">Multicast vs Unicast</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Legacy Multicast Issues (vSAN &lt;6.6)</div>
+                <ul>
+                    <li>Physical switches must support IGMP snooping — misconfigured = cluster partition</li>
+                    <li>Multicast flooding on VLAN — excessive broadcast traffic</li>
+                    <li>PIM configuration required for L3 vSAN networks</li>
+                    <li>Switch firmware bugs causing multicast group drops</li>
+                    <li>Complex troubleshooting — packet captures needed to diagnose</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Unicast Benefits (vSAN 6.6+)</div>
+                <ul>
+                    <li>No multicast configuration on physical switches required</li>
+                    <li>Works over L3 routed networks natively</li>
+                    <li>Simpler switch configuration — standard unicast forwarding</li>
+                    <li>No IGMP snooping issues</li>
+                    <li>Better compatibility with public cloud underlay networks</li>
+                    <li>Automatic in vSAN 7.0+ — no configuration needed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Verification &amp; Troubleshooting</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check if your cluster uses multicast or unicast</strong></p>
+<pre><code># From any ESXi host in the cluster:
+esxcli vsan cluster get
+# Look for:
+#   "Sub-Cluster Master UUID" — if present, cluster is formed
+#   "Multicast" or "Unicast" in the member list type
+
+# Check vSAN version — determines communication mode:
+esxcli vsan maintenancemode cancelrecoverytask
+# If vSAN 7.0+ — always unicast (multicast not used)
+# If vSAN 6.6-6.7 — unicast by default, multicast as fallback
+
+# In vSphere Client:
+# Cluster &gt; Configure &gt; vSAN &gt; General
+# If you see "Advanced Options" with multicast address — legacy mode
+
+# vSAN on-disk format version:
+esxcli vsan storage list | grep "On-Disk Format"
+# Format 10+ = vSAN 7.0+ = always unicast
+# Format 6-9 = vSAN 6.x = may use multicast</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Resolve legacy multicast issues (vSAN 6.x environments)</strong></p>
+<pre><code># If you are on vSAN 6.6+ and experiencing multicast-related partition:
+
+# Option A: Upgrade to vSAN 7.0+ (recommended)
+# This eliminates multicast entirely
+# Follow standard vSAN upgrade path via vLCM
+
+# Option B: Verify multicast on physical switches (if stuck on 6.x):
+# Check IGMP snooping is enabled on the vSAN VLAN:
+# Cisco: show ip igmp snooping vlan &lt;vsan-vlan-id&gt;
+# Arista: show ip igmp snooping
+
+# Check multicast group membership:
+# Cisco: show ip igmp snooping groups vlan &lt;vsan-vlan-id&gt;
+# The vSAN multicast address (default 224.1.2.3) should be listed
+
+# If multicast is not working:
+# Ensure IGMP querier exists on the VLAN
+# Cisco: ip igmp snooping querier (on SVI for that VLAN)
+
+# For L3 routed vSAN (across subnets):
+# PIM must be configured on all L3 interfaces in the path
+# This is complex — another reason to upgrade to 7.0+ for unicast</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Post-upgrade: clean up legacy multicast switch config</strong></p>
+<pre><code># After upgrading to vSAN 7.0+ (unicast), clean up switch configs:
+
+# 1. IGMP snooping on the vSAN VLAN is no longer needed for vSAN
+#    (keep it if other services on the same VLAN use multicast)
+
+# 2. PIM configuration for vSAN multicast group — remove:
+#    no ip pim sparse-mode (on vSAN VLAN SVI)
+#    no ip igmp snooping querier (if only used for vSAN)
+
+# 3. Multicast group reservations on switches — remove:
+#    no ip igmp snooping group 224.1.2.3
+
+# Verify vSAN cluster is healthy after switch changes:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Retest all
+# Network checks should all be green
+
+# IMPORTANT: Make switch changes during maintenance window
+# Even though vSAN 7.0+ doesn't use multicast, removing switch config
+# during production is still a change control item</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Summary:</strong> If you're on vSAN 7.0+ or vSAN 8.x — multicast is NOT used. You do not need IGMP snooping, PIM, or multicast group configuration on your physical switches for vSAN. If your switches have these legacy configs, they won't hurt but can be safely removed.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #65: vSAN Network Partition — Split Brain      -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="network partition split brain two sub-clusters quorum data loss inaccessible objects cluster split connectivity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">65</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Network Partition (Split Brain) — Detection &amp; Recovery</div>
+            <div class="kb-entry-subtitle">Cluster splits into sub-clusters that cannot communicate — causing object inaccessibility and potential data divergence</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Network Partition</span>
+                <span class="tag">Split Brain</span>
+                <span class="tag">Quorum</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> A network partition splits the vSAN cluster into two or more sub-clusters that cannot see each other. Objects whose components span the partition lose quorum and become <strong>inaccessible</strong>. VMs with components on both sides of the partition stall with I/O errors. This is the most dangerous vSAN failure scenario.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Cluster health &gt; Network: All hosts have vSAN vmknic configured"</strong> — some hosts missing</li>
+                    <li>Cluster shows <strong>two sub-cluster masters</strong> (normally only one)</li>
+                    <li>Objects show <strong>"Inaccessible"</strong> or <strong>"Reduced availability"</strong></li>
+                    <li>VMs freeze, BSOD, or report disk errors</li>
+                    <li>vCenter may see some hosts as "Disconnected" (but hosts are actually running)</li>
+                    <li>esxcli vsan cluster get — shows different member lists on different hosts</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Physical switch failure — ToR switch reboot, port channel flap</li>
+                    <li>VLAN misconfiguration — switch admin changed VLAN on vSAN ports</li>
+                    <li>SFP/cable failure on inter-switch link</li>
+                    <li>Spanning tree topology change isolating a switch</li>
+                    <li>NIC firmware bug causing link flap</li>
+                    <li>Firewall or ACL blocking vSAN traffic between subnets (L3 deployments)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Detection &amp; Recovery</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Detect the partition — identify which hosts can see which</strong></p>
+<pre><code># SSH to each ESXi host and check cluster membership:
+
+# On Host 1:
+esxcli vsan cluster get
+# Note: Sub-Cluster Master UUID and member list
+
+# On Host 2:
+esxcli vsan cluster get
+# Compare member lists
+
+# If Host1 sees {Host1, Host2} but Host3 sees {Host3, Host4}
+# → You have a 2+2 partition
+
+# Quick connectivity matrix — from Host1:
+vmkping -I vmk1 &lt;host2-vSAN-IP&gt;  # Should succeed (same sub-cluster)
+vmkping -I vmk1 &lt;host3-vSAN-IP&gt;  # Will FAIL (other sub-cluster)
+vmkping -I vmk1 &lt;host4-vSAN-IP&gt;  # Will FAIL (other sub-cluster)
+
+# Check vSAN health from each side:
+esxcli vsan health cluster list
+# Each sub-cluster thinks the other hosts are "absent"
+
+# CRITICAL: Do NOT reboot hosts or restart services
+# This makes recovery harder. Fix the network first.</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify and fix the network break</strong></p>
+<pre><code># The partition is ALWAYS caused by a network issue. Find it:
+
+# Check physical NIC link status on each host:
+esxcli network nic list
+# If "Link Status: Down" on vSAN NIC — cable/SFP/switch port issue
+
+# Check switch port status (from switch CLI):
+# Cisco: show interface status | include connected
+# Look for err-disabled, notconnect, or down ports
+
+# Check spanning tree:
+# Cisco: show spanning-tree vlan &lt;vsan-vlan-id&gt;
+# If a port is in "Blocking" state — STP is isolating the path
+
+# Check inter-switch links:
+# Cisco: show port-channel summary
+# If the port-channel to another switch is "down" — that's the break
+
+# Check for ACLs/firewall rules:
+# If vSAN is on an L3 network, verify no firewall/ACL blocks:
+#   TCP/UDP 2233 (vSAN transport)
+#   TCP 443 (vSAN management)
+
+# Common fix actions:
+#   - Reseat SFP/cable on failed inter-switch link
+#   - Re-enable err-disabled port: (Cisco) shut / no shut
+#   - Fix VLAN trunk: switchport trunk allowed vlan add &lt;vsan-vlan&gt;
+#   - Fix spanning tree: clear spanning-tree detected-protocols</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div name="step-content">
+                    <p><strong>Verify cluster reconvergence after network restoration</strong></p>
+<pre><code># After fixing the network break:
+
+# 1. Verify full connectivity:
+# From every host, ping every other host's vSAN VMkernel:
+vmkping -I vmk1 &lt;every-other-host-vSAN-IP&gt;
+
+# 2. Wait for cluster to reconverge (1-5 minutes):
+esxcli vsan cluster get
+# Member list should now show ALL hosts
+# Sub-Cluster Master should be a single UUID
+
+# 3. Check object health:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Retest
+# Objects should transition from "Inaccessible" to "Healthy"
+# Resync may start for stale components — this is expected
+
+# 4. Verify VMs are operational:
+# VMs that were frozen should resume automatically
+# Some VMs may need a reset if guest OS detected disk timeout
+
+# 5. Run full vSAN Health check:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health
+# All network tests should be green
+
+# If cluster does NOT reconverge after 10 minutes:
+# Restart vSAN agent on the hosts that are not joining:
+/etc/init.d/vsanmgmtd restart
+# Wait 2-3 minutes and recheck</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Prevention:</strong> Use redundant physical switches (dual ToR), redundant uplinks per host, and LACP or active/active NIC teaming. A single ToR switch serving all vSAN hosts is a single point of failure that can partition the entire cluster. For production, always have two independent network paths for vSAN traffic.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #66: vDS Migration Pitfalls for vSAN           -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="vDS distributed switch migration vSS standard switch VMkernel lost connectivity uplink move port group migrate">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">66</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vDS Migration Pitfalls — Losing vSAN Connectivity During Switch Move</div>
+            <div class="kb-entry-subtitle">Migrating vSAN VMkernel from vSS to vDS or between vDS can drop vSAN traffic if done incorrectly</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vDS</span>
+                <span class="tag">Migration</span>
+                <span class="tag">vSS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Migrating the vSAN VMkernel adapter from a vSS to a vDS (or between vDS versions) requires moving physical uplinks AND VMkernel adapters simultaneously. If the uplink is moved without the VMkernel, or the VMkernel loses its vSAN service tag during migration, the host loses vSAN connectivity and objects become inaccessible.</span>
+        </div>
+
+        <div class="section-label">Common Migration Mistakes</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">What Goes Wrong</div>
+                <ul>
+                    <li>Moving physical uplink to vDS before the VMkernel — vmk loses connectivity</li>
+                    <li>VMkernel loses its "vSAN" service tag after migration</li>
+                    <li>Port group VLAN ID differs between source and destination switch</li>
+                    <li>MTU not set on the new vDS — falls back to 1500 from 9000</li>
+                    <li>Teaming/failover policy not configured on new port group</li>
+                    <li>Moving all uplinks at once — no rollback path if it fails</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Correct Migration Order</div>
+                <ul>
+                    <li><strong>Step 1:</strong> Create vDS with correct MTU (9000), port groups, and VLAN</li>
+                    <li><strong>Step 2:</strong> Move ONE uplink from vSS to vDS (keep one on vSS for safety)</li>
+                    <li><strong>Step 3:</strong> Migrate VMkernel adapter from vSS to vDS port group</li>
+                    <li><strong>Step 4:</strong> Verify vSAN connectivity (vmkping with jumbo frames)</li>
+                    <li><strong>Step 5:</strong> Move second uplink from vSS to vDS</li>
+                    <li><strong>Step 6:</strong> One host at a time — verify before moving to next</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Safe Migration Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Pre-migration checklist</strong></p>
+<pre><code># Before starting migration, document current config:
+
+# Record VMkernel config per host:
+esxcli network ip interface list
+esxcli network ip interface ipv4 get
+esxcli network ip interface tag get
+# Save: vmk name, IP, subnet, MTU, VLAN, service tags (vSAN, vMotion, etc.)
+
+# Record vSS config:
+esxcli network vswitch standard list
+# Save: MTU, port groups, uplink NICs, failover policy
+
+# Record physical switch port config:
+# Document which switch port connects to which NIC on each host
+
+# Pre-create the vDS:
+# vSphere Client &gt; Networking &gt; New Distributed Switch
+# Set MTU: 9000
+# Create port groups matching vSS configuration:
+#   vSAN port group — same VLAN ID as vSS vSAN port group
+#   Management port group — same VLAN ID
+# Set teaming policy on vSAN port group (Route based on physical NIC load)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Migrate one host at a time using the vDS wizard</strong></p>
+<pre><code># In vSphere Client:
+# Networking &gt; vDS &gt; Add and Manage Hosts &gt; Add Hosts
+# Select ONE host
+
+# Step 1 — Assign uplinks:
+# Move ONLY ONE physical NIC (e.g., vmnic2) from vSS to vDS
+# Leave vmnic3 on vSS as a safety net
+
+# Step 2 — Migrate VMkernel adapters:
+# Map the vSAN VMkernel (vmk1) from vSS port group → vDS vSAN port group
+# The wizard preserves IP, subnet, and service tags
+
+# Step 3 — Complete and verify:
+# After migration completes:
+esxcli network ip interface tag get
+# Verify vmk1 still has "VSAN" tag
+
+vmkping -I vmk1 &lt;other-host-vSAN-IP&gt; -d -s 8972
+# Verify jumbo frame connectivity
+
+# If connectivity fails — immediately roll back:
+# Move vmk1 back to vSS port group
+# Move vmnic2 back to vSS
+# Investigate the issue before retrying</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Complete migration and move second uplink</strong></p>
+<pre><code># After vmk1 is verified on vDS with one uplink:
+
+# Move the second NIC (vmnic3) from vSS to vDS:
+# vDS &gt; Add and Manage Hosts &gt; Manage Hosts
+# Select the host &gt; Assign vmnic3 to vDS uplink2
+
+# Verify both uplinks are active:
+esxcli network vswitch dvs vmware list
+# Should show both uplinks assigned
+
+# Verify teaming is working:
+# esxtop &gt; 'n' &gt; check both uplinks show traffic
+
+# Repeat for each host — ONE HOST AT A TIME
+# Always verify vSAN health after each host migration:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Retest
+
+# After ALL hosts are migrated:
+# Remove the old vSS (if no longer needed):
+# Host &gt; Configure &gt; Networking &gt; Virtual switches
+# Delete vSwitch1 (only if all port groups are migrated)
+
+# Final verification:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Full retest
+# ALL network checks must be green</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical:</strong> NEVER move all physical uplinks to the vDS before migrating the VMkernel. If the VMkernel is still on the vSS with no uplinks, the host loses ALL vSAN and management connectivity. Recovery requires physical console access (DCUI) to reconfigure networking.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #67: vSAN over RDMA (RoCE v2) Configuration   -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="RDMA RoCE v2 PVRDMA low latency NVMe-oF high performance ESA network adapter offload lossless ECN PFC DCB">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">67</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN over RDMA (RoCE v2) — Configuration &amp; Requirements</div>
+            <div class="kb-entry-subtitle">Enabling RDMA-based vSAN transport for ultra-low latency using RoCE v2 network adapters and lossless Ethernet</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">RDMA</span>
+                <span class="tag">RoCE v2</span>
+                <span class="tag">Low Latency</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSAN 8 ESA supports RDMA (Remote Direct Memory Access) via RoCE v2 as the network transport. RDMA bypasses the kernel TCP/IP stack, reducing CPU overhead and latency. This is optional and only applicable to ESA clusters with RDMA-capable NICs and lossless Ethernet fabric.</span>
+        </div>
+
+        <div class="section-label">Requirements</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Hardware Requirements</div>
+                <ul>
+                    <li><strong>NICs:</strong> RoCE v2 capable — Mellanox ConnectX-5/6, Broadcom P2100G (check vSAN HCL)</li>
+                    <li><strong>Speed:</strong> 25GbE minimum (100GbE recommended for RDMA benefit)</li>
+                    <li><strong>Switches:</strong> Must support lossless Ethernet: PFC (Priority Flow Control) and ECN (Explicit Congestion Notification)</li>
+                    <li><strong>ESXi version:</strong> vSphere 8.0 Update 1+ with ESA enabled</li>
+                    <li><strong>Architecture:</strong> ESA only — OSA does not support RDMA transport</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Network Fabric Requirements</div>
+                <ul>
+                    <li><strong>PFC:</strong> Priority Flow Control on a dedicated traffic class (e.g., TC3)</li>
+                    <li><strong>ECN:</strong> Explicit Congestion Notification enabled end-to-end</li>
+                    <li><strong>DCBX:</strong> Data Center Bridging Exchange for auto-negotiation of PFC/ETS settings</li>
+                    <li><strong>Lossless:</strong> The vSAN RDMA traffic class must be lossless — any packet drop causes retransmit and negates the RDMA benefit</li>
+                    <li><strong>Jumbo frames:</strong> MTU 9000 required</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify hardware compatibility and enable RDMA on NICs</strong></p>
+<pre><code># Check if NICs support RDMA:
+esxcli rdma device list
+# Should show RDMA-capable devices:
+#   Name: vmrdma0
+#   Driver: mlx5_core (Mellanox) or bnxt_re (Broadcom)
+#   State: Active
+
+# Verify NIC firmware supports RoCE v2:
+esxcli network nic get -n vmnic0
+# Check firmware version against VMware HCL RDMA compatibility list
+
+# If no RDMA devices show — NIC doesn't support it or driver is wrong
+# Check VMware Compatibility Guide for the specific NIC model + firmware + driver
+
+# Verify ESA is enabled:
+# Cluster &gt; Configure &gt; vSAN &gt; General
+# Architecture: "Express Storage Architecture" must be active</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure lossless Ethernet on physical switches</strong></p>
+<pre><code># This must be done by the network team on physical switches.
+# Example: Cisco Nexus 9000 configuration for RoCE v2:
+
+# Enable PFC on traffic class 3 (for RDMA):
+# interface Ethernet1/1
+#   priority-flow-control mode on
+#   priority-flow-control priority 3 no-drop
+
+# Enable ECN:
+# policy-map type queuing rdma-policy
+#   class type queuing c-out-8q-q3
+#     bandwidth percent 50
+#     random-detect minimum-threshold 150 kbytes maximum-threshold 3000 kbytes
+#     congestion-control ecn
+
+# Enable DCBX:
+# interface Ethernet1/1
+#   dcbx version auto
+
+# IMPORTANT: Every switch in the path must be configured for lossless
+# If any hop is lossy, RDMA performance will be worse than TCP
+
+# Verify PFC counters (after enabling):
+# show interface Ethernet1/1 priority-flow-control
+# Watch for "Rx Pause" and "Tx Pause" — some pauses are normal
+# High pause counts indicate congestion in the fabric</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Enable RDMA transport in vSAN</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Configure &gt; vSAN &gt; Services
+# Network &gt; Transport: change from "TCP" to "RDMA"
+
+# This change is non-disruptive — vSAN switches transport protocol
+# on all hosts in the cluster
+
+# After enabling, verify RDMA is active:
+esxcli vsan network list
+# Look for: "Transport: RDMA"
+
+# Check RDMA device binding:
+esxcli rdma device stats get -d vmrdma0
+# Should show active connections and data transfer
+
+# Monitor RDMA performance vs TCP baseline:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance
+# Compare latency before and after — expect:
+#   TCP: 200-500µs average latency
+#   RDMA: 50-150µs average latency (2-4x improvement)
+
+# If performance does NOT improve or gets worse:
+# Check for packet drops in the fabric:
+esxcli rdma device stats get -d vmrdma0
+# Look for "RNR Retry" or "Transport Retry" — indicates lossy fabric</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Important:</strong> RDMA for vSAN is only beneficial if the ENTIRE network path is lossless. If your switching fabric cannot guarantee lossless Ethernet (PFC + ECN), stick with TCP transport. RDMA over a lossy fabric performs WORSE than TCP due to expensive retransmits at the RDMA layer.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #68: vSAN Stretched Cluster Networking          -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="stretched cluster witness network latency RTT bandwidth inter-site link ISL WAN dark fiber site awareness fault domain">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">68</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Stretched Cluster Networking — Inter-Site Link Requirements</div>
+            <div class="kb-entry-subtitle">Network design, latency limits, and bandwidth sizing for stretched vSAN clusters across two data center sites</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Stretched Cluster</span>
+                <span class="tag">Inter-Site</span>
+                <span class="tag">Latency</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> A vSAN stretched cluster spans two physical sites with a witness at a third site. Every write is synchronously replicated to both sites before acknowledgment. The inter-site link (ISL) is the most critical infrastructure component — if it is undersized, too high latency, or unreliable, the entire stretched cluster suffers.</span>
+        </div>
+
+        <div class="section-label">Network Requirements</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Inter-Site Link (Data ↔ Data)</div>
+                <ul>
+                    <li><strong>Latency:</strong> ≤5ms RTT (recommended ≤1ms for best performance)</li>
+                    <li><strong>Bandwidth:</strong> Must handle: all VM writes × FTT multiplier + resync traffic</li>
+                    <li><strong>Minimum:</strong> 10 Gbps dedicated for vSAN (not shared with other traffic)</li>
+                    <li><strong>Redundancy:</strong> Dual diverse paths (separate fiber routes if possible)</li>
+                    <li><strong>MTU:</strong> 9000 end-to-end across the ISL (or 1500 consistently)</li>
+                    <li><strong>L2 stretched or L3 routed:</strong> Both supported (L3 recommended for modern deployments)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Witness Link (Data ↔ Witness)</div>
+                <ul>
+                    <li><strong>Latency:</strong> ≤200ms RTT (witness carries only metadata, not data)</li>
+                    <li><strong>Bandwidth:</strong> 2 Mbps per vSAN host (metadata + heartbeats only)</li>
+                    <li><strong>Minimum:</strong> 100 Mbps is sufficient for most deployments</li>
+                    <li><strong>Redundancy:</strong> Recommended but not as critical as ISL</li>
+                    <li><strong>MTU:</strong> 1500 is sufficient (jumbo frames not needed for witness)</li>
+                    <li><strong>Routing:</strong> L3 routed — witness is at a separate site</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration &amp; Validation</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Validate inter-site link latency and bandwidth</strong></p>
+<pre><code># Test inter-site latency from ESXi host at Site A to Site B:
+vmkping -I vmk1 &lt;siteB-host-vSAN-IP&gt; -c 100
+# Average RTT should be ≤5ms
+# Jitter (variation) should be &lt;1ms — high jitter causes I/O inconsistency
+
+# Test MTU across the ISL:
+vmkping -I vmk1 &lt;siteB-host-vSAN-IP&gt; -d -s 8972
+# Must succeed — if it fails, MTU is not 9000 end-to-end
+
+# Test witness connectivity from both sites:
+# From Site A host:
+vmkping -I vmk1 &lt;witness-vSAN-IP&gt; -c 20
+# From Site B host:
+vmkping -I vmk1 &lt;witness-vSAN-IP&gt; -c 20
+# RTT should be ≤200ms from both sites
+
+# Bandwidth test (schedule during maintenance):
+# Use vSAN Performance Service after cluster is running:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; "Backend"
+# Check inter-site throughput during peak I/O</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure site awareness and fault domains</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Configure &gt; vSAN &gt; Fault Domains and Stretched Cluster
+
+# Create fault domains:
+#   Preferred: Site A (hosts at primary site)
+#   Secondary: Site B (hosts at secondary site)
+#   Witness: Witness host at third location
+
+# Assign hosts to their respective fault domains:
+# Drag Host1, Host2, Host3 → "Site A" domain
+# Drag Host4, Host5, Host6 → "Site B" domain
+# Assign witness appliance → "Witness" domain
+
+# Set site preference:
+# "Preferred fault domain": Site A
+# This determines which site keeps running if the ISL fails:
+#   - Site A (preferred) keeps objects accessible
+#   - Site B VMs become inaccessible until ISL restores
+
+# IMPORTANT: Preferred site + witness must be able to communicate
+# for quorum. If both ISL and witness link fail, all objects are lost.</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Size inter-site bandwidth for your workload</strong></p>
+<pre><code># Formula: ISL Bandwidth = VM Write Rate × FTT Multiplier + Resync Headroom
+
+# Step 1: Measure current VM write throughput:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; "Backend"
+# Peak Write Throughput: e.g., 2 GB/s aggregate across all VMs
+
+# Step 2: Calculate ISL requirement:
+#   Stretched cluster with FTT=1 (site-level mirror):
+#   Every write goes to BOTH sites synchronously
+#   ISL bandwidth needed = Peak Write Rate = 2 GB/s = 16 Gbps
+#   + 20% resync headroom = ~20 Gbps
+
+# Step 3: Add non-vSAN traffic if ISL is shared:
+#   vMotion, replication, management traffic: add 2-4 Gbps
+
+# Total ISL: 20 + 4 = 24 Gbps → need 25GbE or dual 10GbE bonded
+
+# IMPORTANT: vSAN writes are SYNCHRONOUS across the ISL
+# Write latency = local SSD latency + ISL RTT
+# If ISL RTT = 3ms → every write adds 3ms latency
+# This is why ≤1ms RTT is recommended for performance-sensitive workloads</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical:</strong> If the inter-site link fails, only the <strong>preferred site</strong> retains data access (with witness quorum). The secondary site's VMs become inaccessible. Plan accordingly — place critical workloads on the preferred site, or use HA admission control to ensure both sites can run all VMs if needed.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #69: vSAN Firewall & Port Requirements         -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="firewall port requirements TCP UDP 2233 blocked ACL security rule ESXi vCenter traffic flow blocked connection refused">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">69</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Firewall &amp; Port Requirements — Blocked Traffic Diagnosis</div>
+            <div class="kb-entry-subtitle">ESXi firewall rules or physical firewall/ACL blocking vSAN ports causes cluster communication failure</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Firewall</span>
+                <span class="tag">Ports</span>
+                <span class="tag">ACL</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN uses multiple TCP and UDP ports for data transport, cluster communication, and health monitoring. If ANY required port is blocked by an ESXi firewall rule, physical firewall, or switch ACL, vSAN traffic fails. Symptoms range from health check failures to complete cluster partition.</span>
+        </div>
+
+        <div class="section-label">Required vSAN Ports</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Host ↔ Host (vSAN Data Path)</div>
+                <ul>
+                    <li><strong>TCP 2233:</strong> vSAN Transport (primary data traffic)</li>
+                    <li><strong>UDP 12321:</strong> vSAN Clustering Service (CMMDS)</li>
+                    <li><strong>UDP 12345:</strong> vSAN Clustering Service</li>
+                    <li><strong>TCP 8080:</strong> vSAN VASA vendor provider (storage policy)</li>
+                    <li><strong>UDP 23451:</strong> vSAN unicast agent</li>
+                    <li><strong>TCP 443:</strong> vSAN management (HTTPS)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Host ↔ vCenter / Witness</div>
+                <ul>
+                    <li><strong>TCP 443:</strong> vCenter API (management)</li>
+                    <li><strong>TCP 8006:</strong> vSAN health service</li>
+                    <li><strong>TCP 6999:</strong> NSX + vSAN (if NSX is used)</li>
+                    <li><strong>TCP 2233:</strong> vSAN transport to witness (metadata only)</li>
+                    <li><strong>UDP 12321, 12345:</strong> CMMDS to witness</li>
+                    <li><strong>ICMP:</strong> Required for vSAN health MTU check (ping)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check ESXi firewall rules for vSAN</strong></p>
+<pre><code># List all ESXi firewall rules related to vSAN:
+esxcli network firewall ruleset list | grep -i vsan
+# Should show:
+#   vsanvp         true    (vSAN VASA vendor provider)
+#   vsanEncryption true    (vSAN encryption KMS traffic)
+#   vsanhealth     true    (vSAN health check)
+#   vSAN           true    (vSAN data transport)
+
+# If any vSAN ruleset is "false" (disabled):
+esxcli network firewall ruleset set -r vSAN -e true
+esxcli network firewall ruleset set -r vsanvp -e true
+esxcli network firewall ruleset set -r vsanhealth -e true
+
+# Verify firewall is allowing vSAN traffic:
+esxcli network firewall ruleset rule list -r vSAN
+# Should show TCP 2233 allowed
+
+# Check if the ESXi firewall is enabled at all:
+esxcli network firewall get
+# "Enabled: true" is recommended (don't disable the entire firewall)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Test port connectivity between hosts</strong></p>
+<pre><code># Test TCP 2233 (vSAN transport) between hosts:
+# From Host1, test connectivity to Host2 on port 2233:
+nc -z &lt;host2-vSAN-IP&gt; 2233
+# Or use:
+esxcli network diag connection test --host=&lt;host2-vSAN-IP&gt; --port=2233
+
+# If connection fails — something is blocking port 2233:
+#   1. Physical firewall between hosts
+#   2. Switch ACL on the vSAN VLAN
+#   3. ESXi firewall on the destination host
+
+# Test UDP 12321 (CMMDS):
+nc -zu &lt;host2-vSAN-IP&gt; 12321
+
+# Test from vCenter to hosts:
+# Ensure vCenter can reach all hosts on TCP 443 and TCP 8006
+
+# For stretched clusters — test ports across the ISL:
+nc -z &lt;siteB-host-vSAN-IP&gt; 2233
+nc -z &lt;witness-IP&gt; 2233
+
+# If ports are blocked by physical firewall:
+# Request the network team to open these ports on the vSAN VLAN/subnet</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve and verify</strong></p>
+<pre><code># After opening blocked ports:
+
+# 1. Restart vSAN health service to re-check connectivity:
+# From ESXi Shell:
+/etc/init.d/vsanmgmtd restart
+
+# 2. Run vSAN Health checks:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; Retest
+# "Network health" section should show all green:
+#   ✓ All hosts have vSAN vmknic configured
+#   ✓ All hosts have matching subnets
+#   ✓ vSAN MTU check (ping with large packet size)
+#   ✓ vSAN cluster members network connectivity
+
+# 3. If a host was partitioned due to blocked ports:
+# After ports are opened, the host should rejoin automatically
+# Check: esxcli vsan cluster get
+# Member list should show all hosts
+
+# 4. Document the required ports in your firewall change request:
+# Port matrix:
+#   Host ↔ Host: TCP 2233, UDP 12321, UDP 12345, UDP 23451
+#   Host ↔ vCenter: TCP 443, TCP 8006
+#   Host ↔ Witness: TCP 2233, UDP 12321, UDP 12345
+#   ICMP: Allow between all vSAN hosts (for health checks)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> vSAN traffic should be on a dedicated VLAN with NO firewall between hosts on the same VLAN. Firewalls should only be between vSAN and non-vSAN networks. If your security policy requires inter-host firewalling, create a specific allow-list for vSAN ports rather than blocking by default.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #70: 25/100GbE Network Design for ESA          -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="25GbE 100GbE network design ESA spine leaf ToR switch architecture bandwidth NIC selection SmartNIC DPU high speed">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">70</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">25/100GbE Network Design for vSAN ESA Clusters</div>
+            <div class="kb-entry-subtitle">Designing high-speed network infrastructure to support ESA's full NVMe throughput potential</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">25GbE</span>
+                <span class="tag">100GbE</span>
+                <span class="tag">Network Design</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> ESA clusters with NVMe storage can generate significantly more I/O throughput than OSA. A single NVMe drive can deliver 3+ GB/s — with 8 NVMe drives per host, the storage can produce 20+ GB/s aggregate throughput. If the network is only 10GbE (1.25 GB/s), it becomes the bottleneck. ESA requires 25GbE minimum, with 100GbE recommended for large clusters.</span>
+        </div>
+
+        <div class="section-label">Network Bandwidth Guidelines</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Minimum Requirements</div>
+                <ul>
+                    <li><strong>ESA minimum:</strong> 2× 25GbE per host (50 Gbps aggregate)</li>
+                    <li><strong>ESA recommended:</strong> 2× 100GbE per host (200 Gbps aggregate)</li>
+                    <li><strong>OSA minimum:</strong> 2× 10GbE per host (adequate for HDD/SSD tier)</li>
+                    <li><strong>Dedicated vSAN traffic:</strong> At least 25 Gbps exclusively for vSAN</li>
+                    <li><strong>vMotion + Management:</strong> Can share the same physical NICs via port groups</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Recommended Topology</div>
+                <ul>
+                    <li><strong>Spine-Leaf:</strong> Preferred for ESA — non-blocking fabric, predictable latency</li>
+                    <li><strong>Dual ToR switches:</strong> Each host connects to BOTH leaf switches</li>
+                    <li><strong>Oversubscription:</strong> 3:1 or lower leaf-to-spine ratio for vSAN workloads</li>
+                    <li><strong>Non-blocking:</strong> Ideal — leaf uplink bandwidth ≥ total host downlink bandwidth</li>
+                    <li><strong>Same rack preferred:</strong> Minimize inter-switch hops for vSAN traffic</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Design &amp; Implementation</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Select NICs from the vSAN HCL</strong></p>
+<pre><code># Check VMware Compatibility Guide for supported 25/100GbE NICs:
+# https://www.vmware.com/resources/compatibility
+# Filter: I/O Devices &gt; Network &gt; vSAN
+
+# Popular validated NICs for ESA:
+#   Mellanox ConnectX-6 Dx — 2×25GbE or 2×100GbE (supports RDMA)
+#   Broadcom BCM57508 — 2×100GbE (P2100G)
+#   Intel E810 — 2×25GbE or 4×25GbE
+
+# Key selection criteria:
+#   - On the vSAN HCL with your specific ESXi version
+#   - RDMA support (RoCE v2) if you plan to use RDMA transport
+#   - Matching firmware and driver version per HCL
+#   - Dual-port minimum for redundancy
+
+# Verify NIC after installation:
+esxcli network nic list
+# Check: Speed, MTU, Driver, Firmware Version
+# Cross-reference with HCL entry</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Design the physical topology</strong></p>
+<pre><code># Recommended: Spine-Leaf with dual ToR per rack
+
+# Per-host cabling (2×25GbE example):
+#   NIC Port 1 (vmnic0) → Leaf Switch A, Port X
+#   NIC Port 2 (vmnic1) → Leaf Switch B, Port Y
+# This gives full redundancy — either switch can fail
+
+# Switch configuration per port:
+#   MTU 9216 (jumbo frames)
+#   Trunk: vSAN VLAN + Management VLAN + vMotion VLAN
+#   Spanning tree: edge port (portfast)
+#   Storm control: enable on access ports
+
+# Leaf-to-Spine uplinks:
+#   Minimum: 4×25GbE or 2×100GbE from each leaf to each spine
+#   Oversubscription: calculate per rack:
+#     40 hosts × 25 Gbps = 1000 Gbps downlink
+#     Uplink to spine: 400 Gbps = 2.5:1 oversubscription (acceptable)
+
+# vDS configuration on ESXi:
+#   vDS MTU: 9000
+#   vSAN Port Group: VLAN X, teaming = Route based on physical NIC load
+#   vMotion Port Group: VLAN Y
+#   Management Port Group: VLAN Z</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Validate network throughput after deployment</strong></p>
+<pre><code># After cluster deployment, validate actual throughput:
+
+# Check link speed on each host:
+esxcli network nic list
+# Verify: Speed = 25000 Mb/s (25GbE) or 100000 Mb/s (100GbE)
+# If showing 10000 — SFP or autoneg issue
+
+# Verify jumbo frames end-to-end:
+vmkping -I vmk1 &lt;other-host-vSAN-IP&gt; -d -s 8972
+# Must succeed on all host pairs
+
+# Monitor actual vSAN throughput:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; "Backend"
+# Check:
+#   Throughput: should scale beyond 10 Gbps during heavy I/O
+#   If capped at ~10 Gbps with 25GbE NICs — check NIC teaming
+#   If capped at ~1.2 GB/s — likely only one NIC active (teaming misconfigured)
+
+# Check for network-related vSAN congestion:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance
+# If congestion appears but disk latency is low → network bottleneck
+# See KB #51 for congestion diagnosis
+
+# Monitor NIC utilization via esxtop:
+esxtop
+# Press 'n' — check MbTX/s and MbRX/s per uplink
+# If one NIC at 25 Gbps and other at 0 → teaming is active/standby, not load-balanced</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Summary:</strong> For ESA clusters: 25GbE is the minimum, 100GbE is optimal. Use spine-leaf topology with dual ToR for redundancy. Always validate MTU 9000 end-to-end. If your ESA cluster shows congestion but NVMe latency is low, the network is your bottleneck — upgrade to higher-speed NICs or add more bandwidth.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base — Phase 7: Networking for vSAN | 10 entries (KB #61–70)</p>
+    <p style="margin-top:0.5rem;">Official VMware/Broadcom tooling only — ESXCLI, vSphere Client UI, esxtop, vmkping, RVC</p>
+</footer>
+
+<script>
+function toggleEntry(header) {
+    const entry = header.closest('.kb-entry');
+    entry.classList.toggle('open');
+}
+
+function copyCode(btn) {
+    const code = btn.parentElement.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+
+function filterEntries() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        const keywords = entry.dataset.keywords ? entry.dataset.keywords.toLowerCase() : '';
+        entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+    });
+}
+
+function filterByType(type, btn) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        if (type === 'all') { entry.style.display = ''; return; }
+        if (type === 'critical' || type === 'high') {
+            entry.style.display = entry.dataset.severity === type ? '' : 'none';
+        } else {
+            entry.style.display = entry.dataset.type === type ? '' : 'none';
+        }
+    });
+}
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSAN KB — Phase 6: Performance &amp; Capacity Planning</title>
+    <style>
+        :root {
+            --bg-primary: #0f1923;
+            --bg-secondary: #1a2733;
+            --bg-card: #1e2d3d;
+            --bg-card-hover: #243547;
+            --accent: #00b4d8;
+            --accent-light: #48cae4;
+            --danger: #e63946;
+            --danger-light: #ff6b6b;
+            --success: #2ec4b6;
+            --success-light: #52d6c8;
+            --warning: #f4a261;
+            --warning-light: #f4c089;
+            --text-primary: #e8edf2;
+            --text-secondary: #8fa3b8;
+            --text-muted: #5c7a94;
+            --border: #2a3f52;
+            --code-bg: #0d1520;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+        .header {
+            background: linear-gradient(135deg, #0d1520 0%, #1a2733 50%, #0d2137 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2.5rem 0;
+            position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.8rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .header h1 span { font-weight: 300; opacity: 0.7; -webkit-text-fill-color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
+        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
+        .badge-phase { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto;
+            padding: 1.25rem 2rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .phase-nav a:hover { border-color: var(--accent); color: var(--text-primary); }
+        .phase-nav a.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .search-bar { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+        .search-bar input {
+            width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 1rem center;
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .stats-bar {
+            max-width: 1400px; margin: 0 auto; padding: 0 2rem 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;
+        }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+        .stat-card .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .nav-tabs { max-width: 1400px; margin: 0 auto; padding: 0 2rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .nav-tab {
+            padding: 0.55rem 1.2rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem 2rem 4rem; }
+        .kb-entry {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .kb-entry:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+        .kb-entry-header {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1.5rem 1.75rem; cursor: pointer; user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+        .kb-number {
+            flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+        }
+        .kb-number.break-num { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
+        .kb-number.fix-num { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .kb-entry-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+        .kb-entry-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .tag {
+            font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+            background: rgba(0,180,216,0.1); color: var(--accent-light);
+            border: 1px solid rgba(0,180,216,0.2); font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border-color: rgba(230,57,70,0.2); }
+        .tag-severity-high { background: rgba(244,162,97,0.1); color: var(--warning-light); border-color: rgba(244,162,97,0.2); }
+        .tag-severity-medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border-color: rgba(0,180,216,0.2); }
+        .kb-chevron { flex-shrink: 0; width: 24px; height: 24px; margin-top: 0.5rem; transition: transform 0.3s; color: var(--text-muted); }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+        .kb-entry-body { display: none; padding: 0 1.75rem 1.75rem; border-top: 1px solid var(--border); }
+        .kb-entry.open .kb-entry-body { display: block; }
+        .section-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-muted); margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .kb-entry-body p { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 0.5rem; }
+        .kb-entry-body ul, .kb-entry-body ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+        .kb-entry-body li { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.4rem; }
+        .kb-entry-body li strong { color: var(--text-primary); }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 1rem 1.25rem; overflow-x: auto;
+            margin: 0.75rem 0; position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem; color: var(--accent-light); line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg); padding: 0.15rem 0.45rem; border-radius: 4px;
+            font-size: 0.85rem; color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.3rem 0.6rem; background: var(--bg-card);
+            border: 1px solid var(--border); color: var(--text-muted);
+            border-radius: 5px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+        .alert {
+            padding: 0.85rem 1.1rem; border-radius: 8px; margin: 0.75rem 0;
+            font-size: 0.88rem; display: flex; align-items: flex-start; gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.25); color: var(--danger-light); }
+        .alert-warning { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.25); color: var(--warning-light); }
+        .alert-success { background: rgba(46,196,182,0.08); border: 1px solid rgba(46,196,182,0.25); color: var(--success-light); }
+        .alert-info { background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.25); color: var(--accent-light); }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0.75rem 0; }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+        .info-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.15rem; }
+        .info-box-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-number {
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            background: rgba(0,180,216,0.15); border: 1px solid rgba(0,180,216,0.3);
+            color: var(--accent-light); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+        .footer {
+            text-align: center; padding: 2rem; color: var(--text-muted);
+            font-size: 0.8rem; border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs, .phase-nav { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSAN <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 6 — Performance &amp; Capacity</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" style="color:var(--warning-light);font-weight:600;">&#9776; Dashboard</a>
+    <a href="phase1.html">Phase 1 — Top 10 Common Issues</a>
+    <a href="phase2.html">Phase 2 — Day-2 Operations</a>
+    <a href="phase3.html">Phase 3 — DR &amp; Data Protection</a>
+    <a href="phase4.html">Phase 4 — VCF Integration</a>
+    <a href="phase5.html">Phase 5 — ESA Deep Dive</a>
+    <a href="phase6.html" class="active">Phase 6 — Performance &amp; Capacity</a>
+    <a href="phase7.html">Phase 7 — Networking</a>
+    <a href="decision-tree.html" style="color:var(--warning-light);font-weight:600;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.08);">&#9881; Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search latency, IOPS, congestion, capacity, sizing, resync, throttle, esxtop..." oninput="filterEntries()">
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Performance &amp; Capacity Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 6</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #51: vSAN Congestion — Diagnosis & Relief     -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="congestion backpressure throttle IOPS latency slow SSD overload queue depth write buffer">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">51</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Congestion (Backpressure) — Diagnosis &amp; Immediate Relief</div>
+            <div class="kb-entry-subtitle">VMs experience severe latency spikes and I/O stalls due to vSAN congestion throttling — the #1 performance killer</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Congestion</span>
+                <span class="tag">Latency</span>
+                <span class="tag">Performance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSAN congestion is an internal throttling mechanism that slows VM I/O when backend storage cannot keep up. VMs see latency jump from sub-millisecond to <strong>50-500ms+</strong>. Applications time out. Databases hang. This is NOT a bug — it is vSAN protecting data integrity, but it signals a serious capacity or performance bottleneck.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client &gt; vSAN Performance: <strong>"Congestion"</strong> value &gt; 0</li>
+                    <li>VM latency spikes to <strong>50ms–500ms+</strong> (normal: &lt;2ms)</li>
+                    <li>Applications report timeouts, slow queries, or connection drops</li>
+                    <li>esxtop shows <strong>KAVG (kernel average latency) &gt; 20ms</strong></li>
+                    <li>vSAN Health: no alarm — congestion is NOT flagged as a health issue</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes (in priority order)</div>
+                <ul>
+                    <li><strong>1. OSA write buffer full:</strong> Cache SSD write buffer at 30% capacity — destage to capacity disks too slow</li>
+                    <li><strong>2. Capacity disk overload:</strong> HDD or SSD capacity tier saturated with I/O</li>
+                    <li><strong>3. Active resync:</strong> Object rebuild competing with VM I/O</li>
+                    <li><strong>4. Component congestion:</strong> Remote host's disk group is the bottleneck</li>
+                    <li><strong>5. Network latency:</strong> vSAN VMkernel RTT too high (&gt;1ms between hosts)</li>
+                    <li><strong>6. Snapshot chain:</strong> Deep snapshot chain causing read amplification</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify congestion using esxtop (real-time)</strong></p>
+<pre><code># SSH to each ESXi host and run esxtop:
+esxtop
+
+# Press 'u' for disk device view (vSAN)
+# Key columns:
+#   DAVG — Device Average latency (should be &lt;2ms for SSD, &lt;10ms for HDD)
+#   KAVG — Kernel Average latency (includes vSAN overhead, &lt;5ms normal)
+#   GAVG — Guest Average latency (what the VM sees)
+#   QUED — Queue depth (high = saturation)
+
+# If KAVG &gt;&gt; DAVG, the bottleneck is in the vSAN stack (congestion)
+# If DAVG is high, the physical device is the bottleneck
+
+# For vSAN-specific view, press 'v' for vSAN stats:
+#   Look for "CONGESTION" column — any value &gt; 0 is active throttling</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check vSAN Performance Service for congestion history</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance
+
+# Key charts:
+#   "Congestion" — shows congestion value over time (0-255 scale)
+#      0 = no congestion
+#      1-30 = light throttling (may be imperceptible)
+#      31-60 = moderate (applications notice)
+#      61+ = severe (applications time out)
+
+#   "Latency" — Read/Write latency graph
+#   "IOPS" — drops during congestion (throttled)
+#   "Throughput" — drops correlate with congestion spikes
+
+# Per-host breakdown:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; Host
+# Identify which host(s) are the congestion source</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Identify the root cause tier</strong></p>
+<pre><code># Check OSA write buffer fill level (OSA clusters only):
+esxcli vsan storage list
+# Look for "Write Buffer Free %" — if below 20%, write buffer is causing congestion
+
+# Check capacity disk utilization:
+esxtop
+# Press 'd' — look at %BUSY for capacity devices
+# If HDD at 100% busy — capacity tier overload
+
+# Check active resync:
+# Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# If resync is active, it competes with VM I/O — see KB #52 for throttling
+
+# Check network RTT between hosts:
+vmkping -I vmk1 &lt;other-host-vSAN-IP&gt;
+# RTT should be &lt;1ms on same rack, &lt;5ms cross-rack
+# If &gt;5ms — investigate physical network
+
+# Check snapshot chains:
+# VM &gt; Snapshots &gt; Manage Snapshots
+# If chain depth &gt; 3 — consolidate immediately</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Immediate relief actions</strong></p>
+<pre><code># Action 1: If resync is causing congestion — throttle it:
+# Cluster &gt; Configure &gt; vSAN &gt; Services &gt; Resync Throttle → "Low"
+# This prioritizes VM I/O over resync
+
+# Action 2: If a single VM is generating excessive I/O:
+# VM &gt; Edit Settings &gt; Hard Disk &gt; Shares: "Low" (temporary)
+# Or set IOPS Limit in the VM storage policy
+
+# Action 3: If capacity disk is saturated (OSA with HDD):
+# Long-term: Replace HDD capacity with SSD
+# Short-term: Migrate heavy I/O VMs to hosts with less-loaded disk groups
+
+# Action 4: If write buffer is full (OSA):
+# Check cache SSD health — SMART wear level approaching 100% = replace
+esxcli vsan storage list | grep -A5 "Cache Tier"
+# Replace the cache SSD with a higher endurance model
+
+# Action 5: For ESA clusters:
+# ESA rarely has congestion — if it does, check NVMe SMART health
+# A failing NVMe causes latency spikes before it fully fails</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Key Insight:</strong> vSAN congestion is always a symptom, never the root cause. The fix is always to address the underlying bottleneck: faster storage, more capacity, less resync load, or better network. Adding more RAM or CPU will NOT fix vSAN congestion.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #52: Resync Throttle — Balancing Recovery + IO -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="resync throttle rebuild recovery rebalance bandwidth limit repair object rebuild performance impact">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">52</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Resync Throttle — Balancing Object Recovery vs VM Performance</div>
+            <div class="kb-entry-subtitle">Controlling vSAN resync bandwidth to minimize VM performance impact during disk rebuilds and rebalance operations</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Resync</span>
+                <span class="tag">Throttle</span>
+                <span class="tag">Performance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Trade-off:</strong> vSAN resync rebuilds data redundancy after a failure or maintenance operation. Faster resync = quicker return to full protection, but more I/O impact on VMs. Slower resync = less VM impact, but extended window of reduced redundancy. Finding the right balance is critical.</span>
+        </div>
+
+        <div class="section-label">Understanding Resync Types</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Resync Categories</div>
+                <ul>
+                    <li><strong>Repair resync:</strong> After disk/host failure — rebuilds missing components on other hosts</li>
+                    <li><strong>Rebalance resync:</strong> Redistributes data for even capacity utilization</li>
+                    <li><strong>Policy compliance resync:</strong> After storage policy change — restructures objects</li>
+                    <li><strong>Stale component resync:</strong> After host returns from maintenance — syncs missed writes</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Resync Timing</div>
+                <ul>
+                    <li><strong>60-minute delay:</strong> After host failure, vSAN waits 60 min before full rebuild (configurable)</li>
+                    <li><strong>Immediate:</strong> After host exits maintenance mode — stale component sync starts immediately</li>
+                    <li><strong>On-demand:</strong> Rebalance only triggers when disk usage variance exceeds 30%</li>
+                    <li><strong>Parallel:</strong> Multiple resync operations can run simultaneously</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Throttle Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current resync status and throttle setting</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# Shows:
+#   - Total objects being resynced
+#   - Bytes remaining
+#   - Estimated time to completion
+
+# Current throttle setting:
+# Cluster &gt; Configure &gt; vSAN &gt; Services
+# "Resync throttle" setting: Low / Medium / High
+
+# From ESXi Shell:
+esxcli vsan health cluster list | grep -i "resync"
+
+# Check resync bandwidth consumption:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; "Resync"
+# Shows MB/s dedicated to resync operations</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Adjust resync throttle during business hours</strong></p>
+<pre><code># During production hours — minimize VM impact:
+# Cluster &gt; Configure &gt; vSAN &gt; Services
+# Set Resync Throttle to: "Low"
+# This limits resync to ~30% of available bandwidth
+
+# During maintenance windows — maximize resync speed:
+# Set Resync Throttle to: "High"
+# This allows resync to consume up to ~90% of available bandwidth
+
+# Medium (default): ~60% bandwidth for resync
+
+# There is no automated schedule — you must change it manually
+# Consider creating a scheduled task or alarm action to switch</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Adjust the 60-minute repair delay timer</strong></p>
+<pre><code># The default 60-minute delay before full rebuild can be changed:
+# This is useful if you know a host will return quickly (planned reboot)
+
+# In vSphere Client:
+# Cluster &gt; Configure &gt; vSAN &gt; Advanced Options
+# Setting: "ObjectRepairTimer"
+# Default: 60 (minutes)
+# Range: 0-120 minutes
+
+# Set to 0: Immediate rebuild (risky — waste of I/O if host returns soon)
+# Set to 120: Wait 2 hours (use if host replacement takes time but you have
+#              sufficient fault tolerance in the meantime)
+
+# For ESA clusters, the repair timer works the same way
+# ESA resyncs are faster due to NVMe speed — shorter delay is less risky</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Monitor resync impact on VM workloads</strong></p>
+<pre><code># During active resync, monitor these in parallel:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance
+
+# Watch for:
+#   Congestion &gt; 0 → resync is impacting VMs
+#   VM Latency &gt; 5ms → applications may notice
+#   Resync MB/s → how fast data is rebuilding
+
+# If congestion appears during resync:
+# 1. Switch throttle to "Low" immediately
+# 2. Identify which VMs are most impacted:
+#    VM &gt; Monitor &gt; Performance &gt; Virtual Disk &gt; Latency
+# 3. Consider temporarily migrating critical VMs to a less-impacted host
+
+# Resync completion estimate:
+# Cluster &gt; Monitor &gt; vSAN &gt; Resyncing Objects
+# "ETA" column — plan your throttle changes around this</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Best Practice:</strong> During planned maintenance (host reboot, firmware update), use "Ensure data accessibility" mode instead of "Full data migration". This skips the full rebuild and only resyncs stale components when the host returns — much faster and less I/O impact.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #53: Capacity Planning — Sizing & Thresholds  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="capacity planning sizing threshold overhead slack space FTT usable raw effective reserve">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">53</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Capacity Planning — Sizing Formulas &amp; Threshold Alerts</div>
+            <div class="kb-entry-subtitle">Correctly calculating usable capacity, understanding overhead, and setting proactive alerts before running out of space</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Capacity</span>
+                <span class="tag">Sizing</span>
+                <span class="tag">Planning</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical:</strong> Running out of vSAN capacity is the #1 preventable cluster-killing event. At 80% used, performance degrades. At 95%, vSAN stops accepting new writes. At 100%, VMs freeze. Recovery from a full datastore is extremely difficult and may require emergency disk adds or VM deletion.</span>
+        </div>
+
+        <div class="section-label">Capacity Overhead Breakdown</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Overhead Components</div>
+                <ul>
+                    <li><strong>vSAN on-disk format:</strong> ~1-2% for metadata, checksums, witness components</li>
+                    <li><strong>Slack space:</strong> 25-30% reserved for component rebuild during failure (the biggest consumer)</li>
+                    <li><strong>FTT overhead:</strong> RAID-1 FTT=1 = 2x, RAID-5 FTT=1 = 1.33x, RAID-6 FTT=2 = 1.5x</li>
+                    <li><strong>Swap files:</strong> Each running VM creates a swap file = VM memory size (if not reserved)</li>
+                    <li><strong>Snapshots:</strong> Consume space proportional to changed blocks</li>
+                    <li><strong>OSA cache tier:</strong> Not counted as usable capacity</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Sizing Formula</div>
+                <ul>
+                    <li><strong>Raw Capacity</strong> = Sum of all capacity devices (excluding OSA cache)</li>
+                    <li><strong>After FTT</strong> = Raw ÷ FTT multiplier (2x for RAID-1, 1.33x for RAID-5)</li>
+                    <li><strong>After Slack</strong> = After FTT × 0.70 (reserve 30% for rebuild)</li>
+                    <li><strong>Usable</strong> = After Slack − metadata overhead (~2%)</li>
+                    <li><strong>Example:</strong> 4 hosts × 6 × 1.92TB = 46.08TB raw</li>
+                    <li>RAID-5: 46.08 ÷ 1.33 = 34.6TB → × 0.70 = <strong>24.2TB usable</strong></li>
+                    <li>RAID-1: 46.08 ÷ 2.0 = 23.0TB → × 0.70 = <strong>16.1TB usable</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Monitoring &amp; Alert Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current capacity status</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Key metrics:
+#   Total Raw Capacity
+#   Used Capacity (after dedup/compress for ESA)
+#   Free Capacity
+#   Dedup/Compression savings (ESA)
+
+# Per-host usage breakdown:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity &gt; "Used Capacity Breakdown"
+# Shows: VM data, vSAN overhead, Swap objects, Performance mgmt objects
+
+# From ESXi Shell:
+esxcli vsan storage list
+# Shows per-device: Total Capacity, Used, Free</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure capacity threshold alarms</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Configure &gt; Alarm Definitions
+# Find: "vSAN Datastore Usage on Disk" (or create custom)
+
+# Recommended thresholds:
+#   Warning: 70% used (start planning expansion)
+#   Critical: 80% used (immediate action required)
+#   Emergency: 90% used (VMs at risk — add disks NOW)
+
+# Custom alarm creation:
+# Cluster &gt; Configure &gt; Alarm Definitions &gt; Add
+# Trigger: Metric &gt; vSAN &gt; Capacity &gt; "Percentage Used"
+# Warning: &gt; 70%
+# Critical: &gt; 80%
+# Action: Send email notification
+
+# vSAN Health also monitors capacity:
+# Cluster &gt; Monitor &gt; vSAN &gt; Health &gt; "Capacity"
+# "Space efficiency usage health" — flags underperforming dedup ratio</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Calculate growth rate and forecast exhaustion</strong></p>
+<pre><code># In vSphere Client:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Set time range to 30/60/90 days
+# Look at the capacity trend graph:
+#   - Linear growth → predictable exhaustion date
+#   - Exponential growth → faster action needed
+
+# Manual calculation:
+#   Current Free: 10 TB
+#   30-day growth rate: 500 GB/month
+#   Time to exhaustion: 10TB ÷ 0.5TB/month = 20 months
+#   Time to 80% threshold: calculate accordingly
+
+# Aria Operations (if available):
+# Dashboards &gt; vSAN Capacity Planning
+# Shows automated "Days Remaining" forecast
+# Much more accurate with ML-based trending
+
+# IMPORTANT: Account for one host failure scenario
+# If a host fails, its capacity is lost AND its objects rebuild on remaining hosts
+# This can consume 2x the host's used capacity temporarily</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Emergency: cluster approaching 95%+ used</strong></p>
+<pre><code># IMMEDIATE ACTIONS when capacity is critical:
+
+# 1. Identify and delete unnecessary snapshots:
+# Cluster &gt; VMs &gt; sort by "Snapshot" column
+# Delete all non-essential snapshots immediately
+
+# 2. Identify orphaned VMDKs:
+# Datastore Browser &gt; look for .vmdk files not attached to any VM
+# Delete orphaned disks after verification
+
+# 3. Storage vMotion VMs to external storage (if available):
+# Right-click VM &gt; Migrate &gt; Change Storage Only
+# Move to NFS/iSCSI/FC datastore
+
+# 4. Reduce VM swap overhead:
+# Set memory reservation on VMs = allocated memory
+# This eliminates the swap file (saves GB per VM)
+# VM &gt; Edit Settings &gt; Resources &gt; Memory Reservation = full
+
+# 5. Add capacity disks:
+# If hardware available, hot-add NVMe/SSD to hosts
+# Host &gt; Configure &gt; vSAN &gt; Disk Management &gt; Claim Unused Disks
+
+# 6. Change storage policy to more efficient type:
+# RAID-1 → RAID-5 saves 33% capacity (requires policy change per VM)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Never let a vSAN cluster exceed 80% capacity.</strong> The 20% headroom is not optional — it is required for object rebuilds, resyncs, and ongoing operations. A cluster at 90% cannot safely tolerate a host failure without risking data loss.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #54: esxtop Deep Dive for vSAN Diagnostics    -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="esxtop vscsiStats performance diagnostic latency IOPS throughput device queue depth command line troubleshoot">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">54</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">esxtop Deep Dive — vSAN Performance Diagnostics from CLI</div>
+            <div class="kb-entry-subtitle">Using esxtop to identify storage bottlenecks, measure latency components, and diagnose vSAN performance issues in real-time</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">esxtop</span>
+                <span class="tag">Diagnostics</span>
+                <span class="tag">CLI</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> esxtop is the most powerful real-time diagnostic tool for vSAN performance. It provides per-device, per-VM, and per-world latency breakdowns that are NOT available in vSphere Client. When you need to pinpoint exactly WHERE latency is coming from, esxtop is the answer.</span>
+        </div>
+
+        <div class="section-label">Essential esxtop Views for vSAN</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Disk Device view — identify storage bottleneck</strong></p>
+<pre><code># SSH to ESXi host:
+esxtop
+
+# Press 'd' for disk device view
+# Key columns (press 'f' to select fields):
+
+# DEVICE — physical device ID (naa.xxx for local, vSAN for vSAN devices)
+# CMDS/s — commands per second (IOPS)
+# READS/s — read IOPS
+# WRITES/s — write IOPS
+# MBREAD/s — read throughput
+# MBWRTN/s — write throughput
+# DAVG/cmd — Device Average latency per command (ms)
+#   SSD: should be &lt;1ms
+#   NVMe: should be &lt;0.5ms
+#   HDD: should be &lt;15ms
+# KAVG/cmd — Kernel Average latency (includes vSAN overhead)
+# GAVG/cmd — Guest Average latency (what the VM sees)
+# QUED — Commands queued (saturation indicator)
+
+# CRITICAL RULE:
+# GAVG = DAVG + KAVG
+# If KAVG &gt;&gt; DAVG → vSAN stack bottleneck (congestion, network)
+# If DAVG is high → physical device bottleneck (replace disk)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Virtual Machine disk view — per-VM I/O analysis</strong></p>
+<pre><code># In esxtop, press 'v' for VM storage view
+# This shows per-virtual-disk metrics:
+
+# VMDK — virtual disk file
+# CMDS/s — IOPS for this specific VMDK
+# GAVG/cmd — guest-visible latency for this VMDK
+# KAVG/cmd — kernel overhead for this VMDK
+
+# To filter for a specific VM:
+# Press 'V' (shift+v) to toggle VM name display
+# Look for your VM name in the list
+
+# To capture to CSV for later analysis:
+esxtop -b -d 5 -n 120 > /tmp/esxtop-output.csv
+# -b = batch mode
+# -d 5 = sample every 5 seconds
+# -n 120 = 120 samples (10 minutes)
+# Import CSV into Excel/Google Sheets for graphing</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Network view — vSAN VMkernel throughput</strong></p>
+<pre><code># In esxtop, press 'n' for network view
+# Key columns:
+
+# PORT-ID — virtual port identifier
+# UPLINK — physical NIC
+# MbTX/s — transmit throughput (MB/s)
+# MbRX/s — receive throughput (MB/s)
+# DRPTX/s — dropped transmit packets (should be 0!)
+# DRPRX/s — dropped receive packets (should be 0!)
+
+# Identify the vSAN VMkernel (vmk1 typically):
+# Look for vmk1 PORT-ID — check MbTX/s and MbRX/s
+# If near NIC speed limit (e.g., 10000 Mb/s for 10GbE) → network saturated
+
+# Dropped packets on vSAN vmk = CRITICAL issue
+# Any DRPTX or DRPRX &gt; 0 causes retransmits, adding latency
+# Fix: increase ring buffer, check physical switch, enable jumbo frames</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Advanced: vSAN-specific counters</strong></p>
+<pre><code># vSAN DOM (Distributed Object Manager) stats:
+# In esxtop, some vSAN-specific devices appear as:
+#   vSAN — aggregated vSAN datastore metrics
+#   Individual component UUIDs
+
+# For deeper vSAN diagnostics beyond esxtop:
+# Use vSAN Observer (web-based, built into RVC):
+# SSH to vCenter:
+rvc root@localhost
+# Navigate to cluster:
+cd /datacenter/computers/cluster
+# Run vSAN observer:
+vsan.observer . --run-webserver
+
+# vSAN Observer provides:
+#   Per-component latency breakdown
+#   DOM client/owner/component stats
+#   LSOM stats (disk I/O per device)
+#   Network I/O between hosts
+#   Access at: https://&lt;vcenter&gt;:8010/observer.html</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Quick Reference:</strong> Normal vSAN latency targets: DAVG &lt;1ms (SSD/NVMe), KAVG &lt;2ms, GAVG &lt;5ms. If GAVG &gt;10ms consistently, investigate. If GAVG &gt;50ms, you have active congestion — see KB #51.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #55: High Write Latency — Cache Destage Issue  -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="write latency cache destage SSD wear endurance write buffer full OSA capacity tier slow">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">55</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">High Write Latency — OSA Cache Destage Bottleneck</div>
+            <div class="kb-entry-subtitle">Write operations stall because the OSA write buffer cannot destage fast enough to capacity tier disks</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Write Latency</span>
+                <span class="tag">Cache Destage</span>
+                <span class="tag">OSA</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> In OSA, all writes first land in the cache SSD's write buffer (30% of cache capacity). When the capacity tier cannot absorb destaged data fast enough, the write buffer fills up. Once full, vSAN applies backpressure — write latency jumps from &lt;1ms to 50-500ms. This is the #1 OSA performance issue.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Write latency spikes while read latency remains normal</li>
+                    <li>esxtop: DAVG on capacity devices &gt;15ms (HDD) or &gt;5ms (SSD capacity)</li>
+                    <li>vSAN Performance: "Congestion" appears during write-heavy periods</li>
+                    <li>Write buffer fill percentage approaching 80-100%</li>
+                    <li>Cache SSD SMART data shows high wear level (&gt;90%)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>HDD capacity tier too slow for workload write rate</li>
+                    <li>Cache SSD approaching end-of-life (write endurance exhausted)</li>
+                    <li>Too many capacity disks per cache device (7:1 ratio maxed out)</li>
+                    <li>Write-heavy workload (databases, logging) overwhelming the destage pipeline</li>
+                    <li>Dedup/compression enabled — destage must dedup before writing to capacity (overhead)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check write buffer fill level and cache SSD health</strong></p>
+<pre><code># Check cache SSD health and write buffer:
+esxcli vsan storage list
+# Look for each "Cache Tier" device:
+#   "Write Buffer Free %" — should be &gt;30%
+#   If &lt;20% — destage is not keeping up
+
+# Check cache SSD wear level:
+esxcli vsan storage list | grep -A10 "Cache Tier"
+# Look for: "Wear Level" — percentage of write endurance consumed
+# If &gt;90% — the SSD is slowing down, replace immediately
+
+# Check SMART data for the cache SSD:
+esxcli storage core device smart get -d naa.xxxxxxxxxxxxxxxxxxxx
+# Key indicators:
+#   Percentage Used Endurance — should be &lt;80%
+#   Reallocated Sector Count — should be 0
+#   Program Fail Count — should be 0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify the destage bottleneck with esxtop</strong></p>
+<pre><code># Run esxtop and press 'd' for disk view:
+esxtop
+
+# Compare cache device vs capacity device metrics:
+# Cache SSD (naa.xxx — Cache Tier):
+#   DAVG should be &lt;0.5ms
+#   If DAVG &gt;2ms — cache SSD is degraded (wear/firmware issue)
+
+# Capacity devices (naa.xxx — Capacity Tier):
+#   DAVG for HDD: normally 5-15ms, problematic at &gt;20ms
+#   DAVG for SSD: normally &lt;1ms, problematic at &gt;3ms
+#   %BUSY — if 100% — capacity device is saturated
+
+# The destage rate depends on capacity tier speed:
+#   HDD: ~100-200 IOPS destage rate
+#   SSD: ~10,000+ IOPS destage rate
+# If VM write rate exceeds destage rate, buffer fills up</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Immediate relief actions</strong></p>
+<pre><code># Action 1: Move write-intensive VMs to a different disk group or host:
+# Identify the heavy writer:
+# VM &gt; Monitor &gt; Performance &gt; Virtual Disk &gt; Write IOPS
+# Storage vMotion this VM to a less-loaded disk group
+
+# Action 2: If dedup/compression is enabled and causing destage overhead:
+# Evaluate if savings justify the performance hit
+# Cluster &gt; Configure &gt; vSAN &gt; Services &gt; Deduplication and Compression
+# If savings ratio &lt;1.5x — consider disabling (OSA only, requires data evacuation)
+
+# Action 3: Reduce VM swap file overhead:
+# VM &gt; Edit Settings &gt; Resources &gt; Memory Reservation = full
+# This eliminates the swap file, reducing write I/O to vSAN
+
+# Action 4: Check for runaway writes inside guest OS:
+# Windows: Resource Monitor &gt; Disk tab &gt; sort by Write (B/sec)
+# Linux: iotop -o (shows processes with active I/O)
+# Common culprits: log rotation, backup agents, indexing services</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Long-term fix: upgrade capacity tier or migrate to ESA</strong></p>
+<pre><code># Option A: Replace HDD capacity with SSD capacity (hybrid → all-flash OSA)
+# 1. Add new SSDs to the server
+# 2. Create new all-flash disk group
+# 3. Migrate objects from HDD disk group to SSD disk group
+# 4. Remove old HDD disk group
+
+# Option B: Add more disk groups to distribute destage load
+# More disk groups = more parallel destage paths
+# Each new disk group needs its own cache SSD
+
+# Option C: Replace worn cache SSD with higher-endurance model
+# Use enterprise-grade write-intensive SSDs (3+ DWPD)
+# Consumer SSDs (0.3 DWPD) wear out quickly in vSAN cache tier
+
+# Option D: Migrate to ESA (recommended long-term)
+# ESA eliminates the cache destage bottleneck entirely
+# See KB #43 for OSA → ESA migration workflow
+
+# For new clusters: always choose ESA if hardware qualifies</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>ESA Note:</strong> This entire problem category does NOT exist in ESA. ESA has no cache tier, no write buffer, and no destage pipeline. Writes go directly to the NVMe storage pool. If you're experiencing write latency on ESA, the root cause is different — check NVMe health and congestion (KB #51).</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #56: Read Latency Spikes — Cache Miss Storm   -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="read latency cache miss cold data HDD random read IOPS slow reads working set">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">56</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Read Latency Spikes — OSA Cache Miss Storm</div>
+            <div class="kb-entry-subtitle">Read operations bypass the SSD cache and hit slow capacity tier disks, causing dramatic latency increases</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Read Latency</span>
+                <span class="tag">Cache Miss</span>
+                <span class="tag">OSA</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> OSA uses 70% of the cache SSD as read cache. When VMs access data not in the read cache (cache miss), reads go to the capacity tier. On HDD capacity, a cache miss means 5-15ms latency instead of &lt;1ms. A "cache miss storm" happens when many VMs simultaneously access cold data — saturating the HDD tier.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Read latency spikes to 10-50ms (normally &lt;1ms on all-flash)</li>
+                    <li>Read latency is highly variable — fast sometimes, slow other times</li>
+                    <li>esxtop: DAVG on capacity HDD is high, cache SSD DAVG is fine</li>
+                    <li>Typically happens after: VM migration, host reboot, new VMs, or backup operations</li>
+                    <li>Performance returns to normal after cache "warms up" (hours to days)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Working set size exceeds read cache capacity (cache too small for data)</li>
+                    <li>After host reboot — read cache is cold (all reads hit capacity tier)</li>
+                    <li>VMs with random read patterns (databases, VDI) thrash the cache</li>
+                    <li>Backup operations read entire VMDKs — evicts hot data from cache</li>
+                    <li>All-flash OSA clusters with all SSD capacity do NOT have this issue</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Measure cache hit rate</strong></p>
+<pre><code># vSAN Performance Service:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; Host &gt; Select Host
+# Look at "Read Cache Hit Rate" metric:
+#   &gt;90% = healthy (most reads served from cache)
+#   70-90% = moderate misses (noticeable on HDD capacity)
+#   &lt;70% = severe misses (performance degraded)
+
+# From ESXi Shell:
+esxcli vsan storage list
+# Per-device stats show cache utilization
+
+# esxtop disk view:
+esxtop
+# Press 'd' — compare:
+#   Cache SSD READS/s vs Capacity disk READS/s
+#   If capacity disk READS/s is high → cache misses are going to capacity</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify the working set size vs cache capacity</strong></p>
+<pre><code># Calculate your working set:
+# Working set = data actively being read by VMs at any given time
+# This is NOT total VMDK size — it's the "hot" data subset
+
+# Rule of thumb for cache sizing:
+#   Read cache = 70% of cache SSD capacity
+#   E.g., 800GB cache SSD → 560GB read cache
+#   If working set &gt; 560GB → cache misses are expected
+
+# Check total VM disk allocation:
+# Cluster &gt; VMs tab &gt; sort by "Storage Used"
+# If total active VM data significantly exceeds cache size → undersized
+
+# For database VMs: working set ≈ actively queried tables + indexes
+# For VDI VMs: working set ≈ (OS + apps) × linked-clone count
+
+# If working set &gt; cache capacity → options:
+#   1. Upgrade to larger cache SSD
+#   2. Replace HDD capacity with SSD (eliminates the problem)
+#   3. Migrate to ESA (eliminates cache concept entirely)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Mitigate cache miss impact</strong></p>
+<pre><code># Action 1: Schedule backups outside business hours
+# Backup software reads entire VMDKs, polluting the read cache
+# Schedule backups for off-peak when cache misses don't impact users
+
+# Action 2: Use Content-Based Read Cache (CBRC) for VDI
+# For Horizon VDI deployments:
+# vSphere Client &gt; Host &gt; Configure &gt; Advanced System Settings
+# Set: CBRC.Enable = 1
+# This adds a RAM-based read cache layer for linked-clone reads
+
+# Action 3: Move random-read-heavy VMs to all-flash disk groups
+# If you have mixed disk groups (hybrid + all-flash on same host):
+# Storage vMotion the database VM to the all-flash disk group
+
+# Action 4: Upgrade capacity tier to SSD (long-term)
+# All-flash OSA: cache miss still hits SSD capacity → still fast (&lt;1ms)
+# Hybrid OSA: cache miss hits HDD → slow (5-15ms)
+# Replacing HDD with SSD eliminates the cache miss penalty</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>ESA Note:</strong> ESA eliminates this entire problem category. With no cache tier, ALL reads go directly to NVMe storage pool at consistent sub-millisecond latency. No cache warm-up period, no cache miss penalty. For read-intensive workloads, ESA is the definitive solution.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #57: VM Storage Policy IOPS Limiting          -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="IOPS limit storage policy QoS quality of service noisy neighbor throttle multi-tenant">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">57</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VM Storage Policy IOPS Limiting — Taming Noisy Neighbors</div>
+            <div class="kb-entry-subtitle">Using vSAN storage policy IOPS limits to prevent a single VM from starving other VMs of storage bandwidth</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">IOPS Limit</span>
+                <span class="tag">QoS</span>
+                <span class="tag">Storage Policy</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSAN supports per-object IOPS limits in the storage policy. This is the primary mechanism to implement storage QoS and prevent "noisy neighbor" scenarios where one VM's heavy I/O degrades performance for other VMs on the same cluster.</span>
+        </div>
+
+        <div class="section-label">When to Use IOPS Limits</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">Good Use Cases</div>
+                <ul>
+                    <li>Multi-tenant environments sharing a vSAN cluster</li>
+                    <li>Dev/test VMs that should not impact production</li>
+                    <li>Backup proxy VMs during backup windows</li>
+                    <li>Known I/O-heavy VMs (log collectors, indexing services)</li>
+                    <li>VDI environments — cap per-desktop IOPS for predictability</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Cautions</div>
+                <ul>
+                    <li>IOPS limits throttle the VM — it cannot burst above the limit</li>
+                    <li>Setting limits too low causes application performance issues</li>
+                    <li>No "minimum IOPS" guarantee — only maximum cap</li>
+                    <li>IOPS counted as <strong>normalized IOPS</strong> (32KB I/O = 1 IOPS, 64KB = 2 IOPS)</li>
+                    <li>Limits apply per VMDK object, not per VM total</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create an IOPS-limited storage policy</strong></p>
+<pre><code># In vSphere Client:
+# Menu &gt; Policies and Profiles &gt; VM Storage Policies
+# Click "Create"
+
+# Name: "vSAN-RAID5-IOPS-5000"
+# Rules:
+#   vSAN &gt; Failures to Tolerate: 1
+#   vSAN &gt; Failure Tolerance Method: RAID-5
+#   vSAN &gt; IOPS limit for object: 5000
+#     (this means 5000 normalized 32KB IOPS per VMDK)
+
+# Common limit values:
+#   VDI desktop: 200-500 IOPS
+#   Dev/test VM: 1000-2000 IOPS
+#   General production: 5000-10000 IOPS
+#   High-performance DB: No limit (or 20000+ IOPS)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Apply the policy and monitor throttling</strong></p>
+<pre><code># Apply to a VM:
+# VM &gt; Configure &gt; Policies &gt; Edit VM Storage Policies
+# Select "vSAN-RAID5-IOPS-5000" for the VM's disks
+# Click OK
+
+# Monitor if the VM is being throttled:
+# VM &gt; Monitor &gt; Performance &gt; Virtual Disk
+# Watch "Normalized Latency" — if it suddenly increases when
+# IOPS reaches the limit, the policy is throttling
+
+# In vSAN Performance:
+# Cluster &gt; Monitor &gt; vSAN &gt; Performance &gt; VM
+# Compare VM IOPS before and after policy change
+# IOPS should plateau at the limit value
+
+# To see current policy assignments:
+# VM &gt; Configure &gt; Policies
+# Shows policy name and compliance status for each VMDK</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot unexpected throttling</strong></p>
+<pre><code># If a VM is slower than expected, check for accidental IOPS limits:
+# VM &gt; Configure &gt; Policies
+# Click on the policy name — review "IOPS limit for object"
+# If set to a low value, this is why the VM is slow
+
+# Also check if the DEFAULT storage policy has an IOPS limit:
+# Menu &gt; Policies and Profiles &gt; VM Storage Policies
+# Look at "vSAN Default Storage Policy"
+# If it has an IOPS limit, ALL VMs without explicit policy are throttled
+
+# To remove the limit:
+# VM &gt; Configure &gt; Policies &gt; Edit
+# Change to a policy without IOPS limit
+# Or set IOPS limit to 0 (means unlimited)
+
+# Note: Changing the policy triggers a vSAN object reconfiguration
+# This is non-disruptive but may take a few minutes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Important:</strong> IOPS limits are normalized to 32KB I/O size. A 64KB write counts as 2 IOPS. A 4KB write counts as 1 IOPS. This means database workloads with large I/O sizes consume their IOPS budget faster than expected. Always benchmark with your actual workload before setting production limits.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #58: ReadyNode Sizing — Host Count & Config   -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ReadyNode sizing host count configuration vSAN HCL hardware selection server planning FTT capacity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">58</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN ReadyNode Sizing — Host Count &amp; Hardware Selection</div>
+            <div class="kb-entry-subtitle">Selecting the right server configuration, disk layout, and host count for vSAN using ReadyNode validated configurations</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ReadyNode</span>
+                <span class="tag">Sizing</span>
+                <span class="tag">Hardware</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSAN ReadyNodes are server configurations pre-validated by VMware/Broadcom and the hardware vendor. Using ReadyNodes eliminates HCL compatibility guesswork and ensures the disk controller, firmware, driver, and NIC combination is supported. Always start with ReadyNode when sizing a new vSAN cluster.</span>
+        </div>
+
+        <div class="section-label">Sizing Decision Framework</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Host Count Rules</div>
+                <ul>
+                    <li><strong>Minimum 3 hosts:</strong> Smallest vSAN cluster (FTT=1 RAID-1)</li>
+                    <li><strong>4 hosts recommended:</strong> Allows one host failure + maintenance</li>
+                    <li><strong>6+ hosts:</strong> Required for RAID-6 (FTT=2) in OSA</li>
+                    <li><strong>N+1 rule:</strong> Always have at least 1 spare host capacity</li>
+                    <li><strong>N+2 rule:</strong> For production — tolerate failure + maintenance simultaneously</li>
+                    <li><strong>Stretched cluster:</strong> Minimum 6+1 (3+3 data + 1 witness)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">ReadyNode Categories</div>
+                <ul>
+                    <li><strong>Hybrid:</strong> SSD cache + HDD capacity (cost-optimized, lower perf)</li>
+                    <li><strong>All-Flash OSA:</strong> SSD cache + SSD capacity (high performance)</li>
+                    <li><strong>ESA:</strong> NVMe-only storage pool (highest performance, recommended)</li>
+                    <li><strong>Compute-heavy:</strong> More CPU/RAM, fewer disks (VDI, general compute)</li>
+                    <li><strong>Storage-heavy:</strong> More disks, moderate CPU (file services, archival)</li>
+                    <li><strong>2-node ROBO:</strong> Remote office — 2 data hosts + witness at central site</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Sizing Process</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Determine compute requirements</strong></p>
+<pre><code># Calculate total CPU and RAM needed:
+# Sum across all VMs:
+#   Total vCPU = Σ (VM vCPU count)
+#   Total RAM = Σ (VM RAM allocation)
+
+# Apply consolidation ratio:
+#   Physical cores needed = Total vCPU ÷ consolidation ratio
+#   Consolidation ratio: 3:1 (conservative) to 6:1 (aggressive)
+#   Example: 200 vCPUs ÷ 4:1 = 50 physical cores needed
+
+# Per-host calculation:
+#   If using dual-socket servers with 24-core CPUs:
+#   48 cores per host → 50 ÷ 48 = 2 hosts for compute
+#   RAM: Total RAM ÷ Per-host RAM = host count for RAM
+
+# The higher of compute/RAM host count is your minimum
+# Then apply N+1 for HA: minimum + 1 = production host count</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Determine storage requirements</strong></p>
+<pre><code># Calculate total raw storage needed:
+# Sum across all VMs:
+#   Total VMDK = Σ (VM disk provisioned size)
+#
+# Apply overhead multipliers:
+#   After FTT:
+#     RAID-1 FTT=1: Total VMDK × 2.0
+#     RAID-5 FTT=1: Total VMDK × 1.33
+#     RAID-6 FTT=2: Total VMDK × 1.5
+#
+#   After slack space (30% reserve):
+#     After FTT ÷ 0.70
+#
+#   After overhead (2% metadata):
+#     ÷ 0.98
+#
+# Example: 50TB VMs, RAID-5, 30% slack:
+#   50 × 1.33 = 66.5TB → ÷ 0.70 = 95TB → ÷ 0.98 = 97TB raw needed
+#
+# For ESA with dedup (conservative 2x ratio):
+#   97TB ÷ 2 = 48.5TB raw NVMe needed
+
+# Per-host: 97TB ÷ 4 hosts = 24.25TB per host
+# Select ReadyNode with ≥25TB capacity disks per host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Select ReadyNode from VMware HCL</strong></p>
+<pre><code># Navigate to VMware Compatibility Guide:
+# https://www.vmware.com/resources/compatibility
+# Select: vSAN &gt; ReadyNode
+
+# Filter by:
+#   Architecture: ESA or OSA
+#   Vendor: Dell, HPE, Lenovo, Supermicro, etc.
+#   Server Model: based on your procurement agreements
+#   Drive Configuration: NVMe count and capacity matching your sizing
+
+# Verify the EXACT configuration:
+#   - Storage controller model and firmware version
+#   - NVMe/SSD model numbers and firmware versions
+#   - NIC model and driver version
+#   - Boot device type (M.2, SD, USB — check support status)
+
+# IMPORTANT: The ReadyNode profile defines SPECIFIC disk models
+# Substituting a different SSD/NVMe model voids the validation
+# Check the ReadyNode profile PDF for exact part numbers</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Validate sizing before purchase</strong></p>
+<pre><code># Use the VMware vSAN Sizer Tool (free):
+# https://vsansizer.vmware.com
+# Input:
+#   - VM profiles (count, vCPU, RAM, storage per VM)
+#   - Protection level (FTT, RAID type)
+#   - Architecture (ESA vs OSA)
+#   - Growth projection (months/years)
+# Output:
+#   - Recommended host count
+#   - Disk configuration per host
+#   - Matched ReadyNode profiles
+
+# Cross-check sizer output with your manual calculation
+# If they differ significantly, review input assumptions
+
+# Final checklist before ordering:
+# ✓ Host count meets N+1 (or N+2 for production)
+# ✓ ReadyNode profile matches vSAN HCL exactly
+# ✓ Network: 25GbE minimum for ESA (10GbE minimum for OSA)
+# ✓ Boot device: Check ESXi 8 boot device requirements
+# ✓ Spare disks: Order 1-2 spare NVMe/SSD per host for replacements</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Procurement Tip:</strong> When ordering ReadyNodes, always include the VMware-validated firmware bundle from the vendor. Dell calls it "vSAN Ready Bundle", HPE calls it "vSAN Certified Config". This ensures the exact firmware/driver stack is pre-installed, saving hours of HCL validation during deployment.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #59: vSAN Witness Resource Exhaustion          -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="witness appliance resource exhaustion CPU RAM storage 2-node ROBO stretched cluster witness overloaded">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">59</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Witness Appliance Resource Exhaustion</div>
+            <div class="kb-entry-subtitle">Witness VM runs out of CPU, RAM, or storage causing quorum loss in 2-node and stretched clusters</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Witness</span>
+                <span class="tag">Resources</span>
+                <span class="tag">2-Node</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> The vSAN Witness Appliance serves as the tiebreaker in 2-node clusters and stretched clusters. If the witness runs out of resources (CPU starvation, RAM exhaustion, or disk full), it cannot participate in quorum votes. Without the witness, a single data-host failure causes total data unavailability.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSAN Health: <strong>"Stretched cluster / 2-node: Witness host fault domain"</strong> fails</li>
+                    <li>Witness appliance UI unresponsive or extremely slow</li>
+                    <li>vSAN Health: <strong>"Witness host not reachable"</strong></li>
+                    <li>Objects show <strong>"Reduced availability"</strong> even though both data hosts are up</li>
+                    <li>Witness VM console shows high CPU ready time or swap activity</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Witness deployed with "Tiny" profile serving too many objects</li>
+                    <li>Witness hosting multiple 2-node clusters (max ~64 per witness)</li>
+                    <li>Witness datastore full — metadata growth over time</li>
+                    <li>Host running witness has CPU/RAM overcommit from other VMs</li>
+                    <li>Network latency to witness &gt;200ms (RTT) causing timeouts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check witness appliance resource utilization</strong></p>
+<pre><code># SSH to the witness appliance:
+# Check CPU and memory:
+esxtop
+# Or from vSphere Client: select the witness host &gt; Monitor &gt; Performance
+
+# Check disk space on the witness:
+esxcli storage filesystem list
+# The witness vSAN partition should have &gt;20% free
+
+# Check how many objects the witness is serving:
+esxcli vsan debug object list | wc -l
+# Witness objects are small (metadata only) but each consumes some space
+
+# Check witness vSAN health:
+esxcli vsan health cluster list
+
+# Verify witness connectivity from data hosts:
+vmkping -I vmk1 &lt;witness-vSAN-IP&gt;
+# RTT must be &lt;200ms (500ms max for stretched cluster)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Right-size the witness appliance</strong></p>
+<pre><code># Witness appliance deployment profiles:
+#   Tiny:   2 vCPU,  8GB RAM,  15GB + 10GB storage — up to 10 VMs
+#   Medium: 2 vCPU, 16GB RAM,  15GB + 350GB storage — up to 500 VMs
+#   Large:  2 vCPU, 32GB RAM,  15GB + 1TB storage — up to 2000 VMs
+#   X-Large: 4 vCPU, 48GB RAM, 15GB + 2.6TB storage — stretched cluster (many VMs)
+
+# If the witness is undersized:
+# 1. Power off the witness appliance
+# 2. Edit Settings: increase RAM and disk to match the correct profile
+# 3. Power on and verify
+
+# OR: Deploy a new witness appliance with the correct profile
+# Then reconfigure the cluster to use the new witness:
+# vSphere Client &gt; Cluster &gt; Configure &gt; vSAN &gt; Fault Domains
+# Replace witness host reference
+
+# For shared witness (serving multiple clusters):
+# Count total VMs across all clusters using this witness
+# Size the witness for the total VM count (use Medium or Large)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Clean up witness datastore if full</strong></p>
+<pre><code># SSH to witness appliance:
+# Check disk usage:
+df -h
+
+# If the vSAN data partition is full:
+# Check for stale objects from decommissioned clusters:
+esxcli vsan debug object list
+# Look for objects belonging to clusters that no longer exist
+
+# In vSphere Client:
+# Select Witness Host &gt; Configure &gt; vSAN &gt; Disk Management
+# Check disk utilization
+
+# If the witness has stale data from old clusters:
+# The cleanest approach is to redeploy the witness:
+# 1. Remove the witness from all cluster configurations
+# 2. Delete the old witness VM
+# 3. Deploy a fresh witness OVA with correct profile
+# 4. Re-add to cluster fault domain configuration</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical Rule:</strong> Never place the witness appliance on the same failure domain as either data site. The witness must be at a third location (separate rack, room, building, or site). If the witness fails at the same time as one data site, you lose quorum and all data becomes inaccessible.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────────── -->
+<!-- KB #60: vSAN Capacity Reclaim — Thin Provisioning -->
+<!-- ──────────────────────────────────────────────── -->
+<div class="kb-entry" data-type="break" data-severity="high" data-keywords="thin provision thick eager lazy zeroed reclaim TRIM UNMAP capacity ghost blocks stale data balloon">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">60</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Capacity Reclaim — TRIM/UNMAP &amp; Thin Provisioning Issues</div>
+            <div class="kb-entry-subtitle">Deleted data inside VMs does not free vSAN capacity — understanding TRIM/UNMAP and capacity reclamation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">TRIM</span>
+                <span class="tag">UNMAP</span>
+                <span class="tag">Capacity</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When data is deleted inside a guest OS, the freed blocks are not automatically returned to the vSAN datastore. The VMDK file retains its consumed size. Over time, this leads to significant capacity waste — the datastore appears full even though VMs have deleted large amounts of data. This is especially problematic with thick-provisioned VMDKs.</span>
+        </div>
+
+        <div class="section-label">How TRIM/UNMAP Works in vSAN</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">TRIM/UNMAP Flow</div>
+                <ul>
+                    <li><strong>Guest OS deletes file:</strong> Filesystem marks blocks as free</li>
+                    <li><strong>Guest issues TRIM/UNMAP:</strong> Tells the virtual disk "these blocks are unused"</li>
+                    <li><strong>vSCSI layer:</strong> Passes UNMAP to the VMDK</li>
+                    <li><strong>vSAN LSOM:</strong> Marks those blocks as free in the storage pool</li>
+                    <li><strong>Capacity reclaimed:</strong> Free space increases on the datastore</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Common Failures</div>
+                <ul>
+                    <li>TRIM/UNMAP disabled in guest OS (Windows default: enabled, Linux: varies)</li>
+                    <li>VMDK is thick-provisioned — UNMAP cannot reclaim from thick disks</li>
+                    <li>VM hardware version too old — UNMAP requires vmx-11+</li>
+                    <li>SCSI controller type: PVSCSI or LSI Logic SAS required (IDE does not support UNMAP)</li>
+                    <li>vSAN UNMAP support not enabled (vSAN 6.7U3+ supports automatic UNMAP)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution — Step by Step</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify TRIM/UNMAP support in your environment</strong></p>
+<pre><code># Check VM hardware version (must be vmx-11+):
+# vSphere Client &gt; VM &gt; Summary
+# "Compatibility: ESXi 6.0 and later" = vmx-11 (minimum for UNMAP)
+
+# Check virtual SCSI controller type:
+# VM &gt; Edit Settings &gt; SCSI Controller
+# Must be "VMware Paravirtual" (PVSCSI) or "LSI Logic SAS"
+# NOT "LSI Logic Parallel" or "IDE"
+
+# Check VMDK provisioning type:
+# VM &gt; Edit Settings &gt; Hard Disk
+# "Type: Thin Provision" — UNMAP works
+# "Type: Thick Provision Lazy Zeroed" — UNMAP does NOT work
+# "Type: Thick Provision Eager Zeroed" — UNMAP does NOT work
+
+# vSAN automatic UNMAP:
+# vSAN 6.7U3+ automatically processes UNMAP from guests
+# No additional configuration needed on the vSAN side</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Enable TRIM/UNMAP in guest operating systems</strong></p>
+<pre><code># Windows (10/2016+): TRIM is enabled by default
+# Verify: Open CMD as Admin:
+#   fsutil behavior query DisableDeleteNotify
+#   Result: DisableDeleteNotify = 0 (TRIM is ON)
+#   If = 1: fsutil behavior set DisableDeleteNotify 0
+
+# Linux: Enable discard in filesystem mount options
+# Edit /etc/fstab — add "discard" option:
+#   /dev/sda1 /data ext4 defaults,discard 0 0
+# OR run manual TRIM:
+#   fstrim -av
+
+# For Linux with LVM:
+#   Add "issue_discards = 1" to /etc/lvm/lvm.conf
+
+# After enabling TRIM, verify it reaches vSAN:
+# vSphere Client &gt; VM &gt; Monitor &gt; Performance &gt; Virtual Disk
+# Check "UNMAP" operations counter — should be non-zero after guest delete</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Convert thick-provisioned VMDKs to thin</strong></p>
+<pre><code># Thick VMDKs do not support UNMAP — you must convert to thin:
+
+# Method: Storage vMotion (online, non-disruptive):
+# VM &gt; Migrate &gt; Change storage only
+# Select the same vSAN datastore
+# In disk format, select "Thin Provision"
+# This migrates the VMDK from thick to thin on-the-fly
+
+# After conversion, verify:
+# VM &gt; Edit Settings &gt; Hard Disk
+# "Type" should now show "Thin Provision"
+
+# The conversion will initially consume the same space
+# But future guest UNMAP operations will reclaim space
+
+# For newly created VMs:
+# Always use thin provisioning — set in VM storage policy:
+# Object Space Reservation: 0% (thin)
+# ESA: All objects are thin by default — this is a non-issue</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Force space reclamation for immediate capacity recovery</strong></p>
+<pre><code># If you need to reclaim space NOW:
+
+# Inside Windows VMs:
+# 1. Delete unnecessary files
+# 2. Open Disk Cleanup: cleanmgr /d C:
+# 3. Run: Optimize-Volume -DriveLetter C -ReTrim -Verbose
+#    (PowerShell — forces TRIM on all free space)
+
+# Inside Linux VMs:
+# 1. Delete unnecessary files
+# 2. Run: fstrim -av
+#    Output shows how much space was trimmed per mount point
+
+# Verify capacity recovery on vSAN:
+# Cluster &gt; Monitor &gt; vSAN &gt; Capacity
+# Watch "Used" decrease after TRIM operations propagate
+# Note: May take 5-15 minutes for vSAN to reflect reclaimed space
+
+# For dedup/compression environments (ESA):
+# TRIM is especially important — it allows dedup to operate on
+# truly free blocks instead of wasting CPU on stale data</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Best Practice:</strong> Enable TRIM/UNMAP in all guest OS templates before deployment. Use thin-provisioned VMDKs as default. For ESA, this is automatic. For OSA, schedule weekly <code class="inline">fstrim</code> (Linux) or <code class="inline">Optimize-Volume -ReTrim</code> (Windows) via cron/scheduled task to ensure continuous space reclamation.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<footer class="footer">
+    <p>VMware vSAN Knowledge Base — Phase 6: Performance &amp; Capacity Planning | 10 entries (KB #51–60)</p>
+    <p style="margin-top:0.5rem;">Official VMware/Broadcom tooling only — ESXCLI, vSphere Client UI, esxtop, RVC, vSAN Observer</p>
+</footer>
+
+<script>
+function toggleEntry(header) {
+    const entry = header.closest('.kb-entry');
+    entry.classList.toggle('open');
+}
+
+function copyCode(btn) {
+    const code = btn.parentElement.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+
+function filterEntries() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        const keywords = entry.dataset.keywords ? entry.dataset.keywords.toLowerCase() : '';
+        entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+    });
+}
+
+function filterByType(type, btn) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.kb-entry').forEach(entry => {
+        if (type === 'all') { entry.style.display = ''; return; }
+        if (type === 'critical' || type === 'high') {
+            entry.style.display = entry.dataset.severity === type ? '' : 'none';
+        } else {
+            entry.style.display = entry.dataset.type === type ? '' : 'none';
+        }
+    });
+}
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+
+</body>
+</html>
