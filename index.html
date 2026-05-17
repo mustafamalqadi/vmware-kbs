@@ -8,269 +8,482 @@
     <meta property="og:title" content="VMware Knowledge Base Portal">
     <meta property="og:description" content="Professional VMware troubleshooting references — vSAN, NSX-T, vSphere &amp; more. Fix &amp; break scenarios with official Broadcom/VMware remediation.">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#0f1923">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f1923'/%3E%3Cpath d='M16 4 L28 10 V18 C28 24 22 28 16 30 C10 28 4 24 4 18 V10 Z' fill='none' stroke='%2300b4d8' stroke-width='1.5'/%3E%3Cpath d='M10 16 L14 20 L22 12' stroke='%232ec4b6' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <meta name="theme-color" content="#0a0e1a">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0e1a'/%3E%3Cpath d='M16 4 L28 10 V18 C28 24 22 28 16 30 C10 28 4 24 4 18 V10 Z' fill='none' stroke='%236366f1' stroke-width='1.5'/%3E%3Cpath d='M10 16 L14 20 L22 12' stroke='%2310b981' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <!-- Enhancement #1: Google Font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* ═══════════ MIDNIGHT SAPPHIRE PALETTE ═══════════ */
         :root {
-            --bg-primary: #0f1923;
-            --bg-secondary: #1a2733;
-            --bg-card: #1e2d3d;
-            --bg-card-hover: #243547;
-            --accent: #00b4d8;
-            --accent-light: #48cae4;
-            --danger: #e63946;
-            --danger-light: #ff6b6b;
-            --success: #2ec4b6;
-            --success-light: #52d6c8;
-            --warning: #f4a261;
-            --warning-light: #f4c089;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(26,31,58,0.6);
+            --bg-card-solid: #1a1f3a;
+            --bg-card-hover: #222850;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --accent-glow: rgba(99,102,241,0.35);
+            --cyan: #06b6d4;
+            --cyan-light: #22d3ee;
+            --danger: #f43f5e;
+            --danger-light: #fb7185;
+            --success: #10b981;
+            --success-light: #34d399;
+            --warning: #f59e0b;
+            --warning-light: #fbbf24;
             --purple: #a78bfa;
             --purple-light: #c4b5fd;
-            --text-primary: #e8edf2;
-            --text-secondary: #8fa3b8;
-            --text-muted: #5c7a94;
-            --border: #2a3f52;
-            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #1e293b;
+            --border-light: rgba(99,102,241,0.15);
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --glass: rgba(26,31,58,0.45);
+            --glass-border: rgba(99,102,241,0.1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.7;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
+        /* Enhancement #5: Grid dot pattern background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle, rgba(99,102,241,0.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Enhancement #12: Page load entrance animation */
+        .page-loader {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .page-loader.loaded {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-icon {
+            width: 48px; height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* ── Top Bar ── */
+        /* Enhancement #9: Topbar scroll shadow */
         .topbar {
-            background: rgba(15,25,35,0.95);
+            background: rgba(10,14,26,0.85);
             border-bottom: 1px solid var(--border);
             padding: 0.6rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: box-shadow 0.3s, border-color 0.3s;
+        }
+        .topbar.scrolled {
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            border-bottom-color: var(--border-light);
         }
         .topbar-brand {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 0.7rem;
             text-decoration: none;
             color: var(--text-primary);
         }
         .topbar-brand .initials {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--success));
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 0.75rem; color: #fff;
+            font-weight: 800; font-size: 0.72rem; color: #fff;
+            transition: transform 0.3s;
         }
+        /* Enhancement #13: Hover micro-interactions */
+        .topbar-brand:hover .initials { transform: rotate(-5deg) scale(1.1); }
         .topbar-brand .name {
-            font-size: 0.85rem; font-weight: 600;
+            font-size: 0.85rem; font-weight: 600; letter-spacing: -0.01em;
         }
-        .topbar-links { display: flex; gap: 1rem; }
+        .topbar-links { display: flex; gap: 1.25rem; align-items: center; }
         .topbar-links a {
             color: var(--text-muted); text-decoration: none;
             font-size: 0.8rem; font-weight: 500;
             transition: color 0.2s;
+            position: relative;
+        }
+        .topbar-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 1.5px;
+            background: var(--accent);
+            transition: width 0.3s;
         }
         .topbar-links a:hover { color: var(--accent-light); }
+        .topbar-links a:hover::after { width: 100%; }
+
+        /* Enhancement #14: Responsive hamburger menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 4px;
+            z-index: 101;
+        }
+        .hamburger span {
+            display: block;
+            width: 22px; height: 2px;
+            background: var(--text-secondary);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
         /* ── Hero ── */
         .hero {
-            background: linear-gradient(135deg, #0d1520 0%, #122a3a 40%, #0d2137 70%, #1a2733 100%);
-            padding: 5rem 2rem 4rem;
-            text-align: center;
             position: relative;
+            padding: 6rem 2rem 5rem;
+            text-align: center;
             overflow: hidden;
         }
-        .hero::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at 50% 0%, rgba(0,180,216,0.08) 0%, transparent 70%);
-            pointer-events: none;
+        /* Enhancement #2: Animated gradient mesh hero */
+        .hero-mesh {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .mesh-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 12s ease-in-out infinite;
+        }
+        .mesh-orb:nth-child(1) {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(99,102,241,0.5), transparent 70%);
+            top: -15%; left: 20%;
+            animation-delay: 0s;
+        }
+        .mesh-orb:nth-child(2) {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(6,182,212,0.4), transparent 70%);
+            top: 10%; right: 10%;
+            animation-delay: -4s;
+            animation-duration: 15s;
+        }
+        .mesh-orb:nth-child(3) {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(167,139,250,0.35), transparent 70%);
+            bottom: -10%; left: 40%;
+            animation-delay: -8s;
+            animation-duration: 18s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -20px) scale(1.05); }
+            50% { transform: translate(-20px, 15px) scale(0.95); }
+            75% { transform: translate(15px, 25px) scale(1.02); }
+        }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
         }
         .hero-label {
             display: inline-block;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
             color: var(--accent-light);
-            background: rgba(0,180,216,0.1);
-            border: 1px solid rgba(0,180,216,0.2);
-            padding: 0.3rem 1rem;
+            background: rgba(99,102,241,0.1);
+            border: 1px solid rgba(99,102,241,0.2);
+            padding: 0.35rem 1.2rem;
             border-radius: 20px;
-            margin-bottom: 1.5rem;
-            position: relative;
+            margin-bottom: 1.75rem;
         }
         .hero h1 {
-            font-size: 3.2rem; font-weight: 800; margin-bottom: 0.75rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light), #90e0ef);
+            font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem;
+            letter-spacing: -0.03em; line-height: 1.15;
+            background: linear-gradient(135deg, #f1f5f9 0%, var(--accent-light) 50%, var(--cyan-light) 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            position: relative;
         }
         .hero .subtitle {
-            font-size: 1.15rem; color: var(--text-secondary); font-weight: 300;
-            max-width: 750px; margin: 0 auto 2rem;
-            position: relative;
+            font-size: 1.1rem; color: var(--text-secondary); font-weight: 400;
+            max-width: 650px; margin: 0 auto 2.5rem;
+            line-height: 1.8;
         }
         .hero-badges {
-            display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
-            margin-bottom: 2.5rem; position: relative;
+            display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 3rem;
         }
         .badge {
             display: inline-flex; align-items: center; gap: 0.4rem;
             padding: 0.4rem 1rem; border-radius: 20px;
-            font-size: 0.82rem; font-weight: 600; letter-spacing: 0.3px;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.2px;
+            backdrop-filter: blur(8px);
+            transition: transform 0.2s;
         }
-        .badge-accent { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
-        .badge-danger { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
-        .badge-success { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
-        .badge-warning { background: rgba(244,162,97,0.15); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.3); }
+        .badge:hover { transform: translateY(-2px); }
+        .badge-accent { background: rgba(99,102,241,0.12); color: var(--accent-light); border: 1px solid rgba(99,102,241,0.25); }
+        .badge-cyan { background: rgba(6,182,212,0.12); color: var(--cyan-light); border: 1px solid rgba(6,182,212,0.25); }
+        .badge-success { background: rgba(16,185,129,0.12); color: var(--success-light); border: 1px solid rgba(16,185,129,0.25); }
+        .badge-warning { background: rgba(245,158,11,0.12); color: var(--warning-light); border: 1px solid rgba(245,158,11,0.25); }
+        .badge-danger { background: rgba(244,63,94,0.12); color: var(--danger-light); border: 1px solid rgba(244,63,94,0.25); }
 
-        /* ── Features Strip ── */
         .features {
-            display: flex; justify-content: center; gap: 2.5rem; flex-wrap: wrap;
-            position: relative;
+            display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
         }
         .feature {
             display: flex; align-items: center; gap: 0.5rem;
-            font-size: 0.82rem; color: var(--text-secondary);
+            font-size: 0.8rem; color: var(--text-secondary);
+            font-weight: 500;
         }
         .feature-icon {
-            width: 36px; height: 36px; border-radius: 8px;
+            width: 36px; height: 36px; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem;
-            background: rgba(0,180,216,0.08);
-            border: 1px solid rgba(0,180,216,0.15);
+            font-size: 0.95rem;
+            background: rgba(99,102,241,0.08);
+            border: 1px solid rgba(99,102,241,0.12);
+            transition: transform 0.2s, background 0.2s;
+        }
+        .feature:hover .feature-icon {
+            transform: scale(1.1);
+            background: rgba(99,102,241,0.15);
+        }
+
+        /* Enhancement #15: Credential/trust strip */
+        .trust-strip {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        .trust-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            margin-top: -2rem;
+            position: relative;
+        }
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .trust-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+        }
+        .trust-icon.vmware { background: rgba(99,102,241,0.1); color: var(--accent-light); }
+        .trust-icon.broadcom { background: rgba(244,63,94,0.1); color: var(--danger-light); }
+        .trust-icon.vcf { background: rgba(245,158,11,0.1); color: var(--warning-light); }
+        .trust-icon.cert { background: rgba(16,185,129,0.1); color: var(--success-light); }
+        .trust-divider {
+            width: 1px; height: 24px;
+            background: var(--border);
         }
 
         /* ── Section ── */
         .section {
-            max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;
+            max-width: 1200px; margin: 0 auto; padding: 4rem 2rem;
+            position: relative; z-index: 1;
         }
         .section-header {
-            display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
         }
-        .section-icon {
-            width: 42px; height: 42px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; flex-shrink: 0;
+        .section-label {
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 2.5px;
+            text-transform: uppercase; color: var(--accent-light);
+            margin-bottom: 0.75rem;
         }
         .section-title {
-            font-size: 1.3rem; font-weight: 700;
+            font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
         }
         .section-subtitle {
-            font-size: 0.85rem; color: var(--text-secondary);
-        }
-        .section-header::after {
-            content: ''; flex: 1; height: 1px; background: var(--border);
+            font-size: 0.9rem; color: var(--text-secondary); font-weight: 400;
         }
 
         /* ── Product Grid ── */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
         }
 
-        /* ── Product Card ── */
+        /* Enhancement #3: Glassmorphism cards */
+        /* Enhancement #4: Card hover glow */
         .product-card {
             background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             overflow: hidden;
-            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             text-decoration: none;
             color: inherit;
             position: relative;
         }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+            z-index: 0;
+        }
         .product-card:hover {
-            border-color: var(--accent);
-            box-shadow: var(--shadow);
-            transform: translateY(-4px);
+            transform: translateY(-6px);
+            border-color: transparent;
         }
-        .product-card .card-accent-bar {
-            height: 4px;
-            width: 100%;
+        .product-card:hover::before { opacity: 1; }
+
+        /* Per-theme hover glow */
+        .product-card.vsan::before { box-shadow: 0 0 40px rgba(99,102,241,0.2), 0 8px 32px rgba(99,102,241,0.15); }
+        .product-card.vsan:hover { border-color: rgba(99,102,241,0.4); }
+        .product-card.nsx::before { box-shadow: 0 0 40px rgba(6,182,212,0.2), 0 8px 32px rgba(6,182,212,0.15); }
+        .product-card.nsx:hover { border-color: rgba(6,182,212,0.3); }
+        .product-card.vsphere::before { box-shadow: 0 0 40px rgba(167,139,250,0.2), 0 8px 32px rgba(167,139,250,0.15); }
+        .product-card.vsphere:hover { border-color: rgba(167,139,250,0.3); }
+        .product-card.vcf::before { box-shadow: 0 0 40px rgba(245,158,11,0.2), 0 8px 32px rgba(245,158,11,0.15); }
+        .product-card.vcf:hover { border-color: rgba(245,158,11,0.3); }
+
+        .card-accent-bar {
+            height: 3px; width: 100%;
         }
-        .product-card .card-body {
-            padding: 1.75rem;
+        .card-body {
+            padding: 2rem;
             flex: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
-        .product-card .card-icon-wrap {
-            width: 64px; height: 64px; border-radius: 16px;
+
+        /* Enhancement #8: SVG product icons */
+        .card-icon-wrap {
+            width: 56px; height: 56px; border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.8rem;
             margin-bottom: 1.25rem;
+            transition: transform 0.3s;
         }
-        .product-card .card-label {
+        .product-card:hover .card-icon-wrap { transform: scale(1.08) rotate(-3deg); }
+        .card-icon-wrap svg { width: 28px; height: 28px; }
+
+        .card-label {
             font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: 1.5px; margin-bottom: 0.4rem;
         }
-        .product-card .card-title {
-            font-size: 1.25rem; font-weight: 700; line-height: 1.4;
-            margin-bottom: 0.75rem;
+        .card-title {
+            font-size: 1.2rem; font-weight: 700; line-height: 1.4;
+            margin-bottom: 0.75rem; letter-spacing: -0.01em;
         }
-        .product-card .card-desc {
-            font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65;
-            flex: 1; padding: 0;
+        .card-desc {
+            font-size: 0.84rem; color: var(--text-secondary); line-height: 1.7;
+            flex: 1;
         }
-        .product-card .card-stats {
+        .card-stats {
             display: flex; gap: 1.25rem; flex-wrap: wrap;
-            padding-top: 1rem; margin-top: 1rem;
-            border-top: 1px solid rgba(42,63,82,0.5);
+            padding-top: 1.25rem; margin-top: 1.25rem;
+            border-top: 1px solid rgba(30,41,59,0.8);
         }
-        .product-card .card-stat {
+        .card-stat {
             font-size: 0.78rem; font-weight: 600;
             display: flex; align-items: center; gap: 0.35rem;
         }
-        .product-card .card-stat .num { font-weight: 700; }
-        .product-card .card-stat .lbl { color: var(--text-muted); font-weight: 500; }
-        .product-card .card-footer {
-            padding: 1rem 1.75rem;
-            border-top: 1px solid var(--border);
-            background: var(--bg-secondary);
+        /* Enhancement #7: Stat counter animation */
+        .card-stat .num {
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+        .card-stat .lbl { color: var(--text-muted); font-weight: 500; }
+        .card-footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid rgba(30,41,59,0.6);
+            background: rgba(17,24,39,0.5);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative; z-index: 1;
         }
-        .product-card .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-        .product-card .card-tag {
-            font-size: 0.68rem; padding: 0.15rem 0.55rem; border-radius: 4px;
+        .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .card-tag {
+            font-size: 0.66rem; padding: 0.18rem 0.55rem; border-radius: 6px;
+            font-weight: 500;
         }
-        .product-card .card-arrow {
-            font-size: 0.85rem; font-weight: 700;
+        .card-arrow {
+            font-size: 0.82rem; font-weight: 700;
             display: flex; align-items: center; gap: 0.3rem;
-            transition: gap 0.2s;
+            transition: gap 0.3s;
             white-space: nowrap;
         }
-        .product-card:hover .card-arrow { gap: 0.6rem; }
+        .product-card:hover .card-arrow { gap: 0.7rem; }
 
         /* ── vSAN Theme ── */
-        .product-card.vsan .card-accent-bar { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
-        .product-card.vsan .card-icon-wrap { background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.2); }
+        .product-card.vsan .card-accent-bar { background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--cyan)); }
+        .product-card.vsan .card-icon-wrap { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); }
         .product-card.vsan .card-label { color: var(--accent-light); }
         .product-card.vsan .card-stat .num { color: var(--accent-light); }
-        .product-card.vsan .card-tag { background: rgba(0,180,216,0.08); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.15); }
+        .product-card.vsan .card-tag { background: rgba(99,102,241,0.08); color: var(--accent-light); border: 1px solid rgba(99,102,241,0.15); }
         .product-card.vsan .card-arrow { color: var(--accent-light); }
-        .product-card.vsan:hover { border-color: var(--accent); }
 
         /* ── NSX-T Theme ── */
-        .product-card.nsx .card-accent-bar { background: linear-gradient(90deg, var(--success), var(--success-light)); }
-        .product-card.nsx .card-icon-wrap { background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); }
-        .product-card.nsx .card-label { color: var(--success-light); }
-        .product-card.nsx .card-stat .num { color: var(--success-light); }
-        .product-card.nsx .card-tag { background: rgba(46,196,182,0.08); color: var(--success-light); border: 1px solid rgba(46,196,182,0.15); }
-        .product-card.nsx .card-arrow { color: var(--success-light); }
-        .product-card.nsx:hover { border-color: var(--success); }
+        .product-card.nsx .card-accent-bar { background: linear-gradient(90deg, var(--cyan), var(--cyan-light)); }
+        .product-card.nsx .card-icon-wrap { background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2); }
+        .product-card.nsx .card-label { color: var(--cyan-light); }
+        .product-card.nsx .card-stat .num { color: var(--cyan-light); }
+        .product-card.nsx .card-tag { background: rgba(6,182,212,0.08); color: var(--cyan-light); border: 1px solid rgba(6,182,212,0.15); }
+        .product-card.nsx .card-arrow { color: var(--cyan-light); }
 
         /* ── vSphere Theme ── */
         .product-card.vsphere .card-accent-bar { background: linear-gradient(90deg, var(--purple), var(--purple-light)); }
@@ -279,196 +492,394 @@
         .product-card.vsphere .card-stat .num { color: var(--purple-light); }
         .product-card.vsphere .card-tag { background: rgba(167,139,250,0.08); color: var(--purple-light); border: 1px solid rgba(167,139,250,0.15); }
         .product-card.vsphere .card-arrow { color: var(--purple-light); }
-        .product-card.vsphere:hover { border-color: var(--purple); }
 
         /* ── VCF Theme ── */
         .product-card.vcf .card-accent-bar { background: linear-gradient(90deg, var(--warning), var(--warning-light)); }
-        .product-card.vcf .card-icon-wrap { background: rgba(244,162,97,0.1); border: 1px solid rgba(244,162,97,0.2); }
+        .product-card.vcf .card-icon-wrap { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); }
         .product-card.vcf .card-label { color: var(--warning-light); }
         .product-card.vcf .card-stat .num { color: var(--warning-light); }
-        .product-card.vcf .card-tag { background: rgba(244,162,97,0.08); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.15); }
+        .product-card.vcf .card-tag { background: rgba(245,158,11,0.08); color: var(--warning-light); border: 1px solid rgba(245,158,11,0.15); }
         .product-card.vcf .card-arrow { color: var(--warning-light); }
-        .product-card.vcf:hover { border-color: var(--warning); }
 
         /* ── Coming Soon ── */
         .product-card.coming-soon {
-            opacity: 0.55;
+            opacity: 0.5;
             cursor: default;
         }
         .product-card.coming-soon:hover {
             transform: none;
-            box-shadow: none;
         }
+        .product-card.coming-soon:hover::before { opacity: 0; }
         .coming-badge {
             font-size: 0.72rem; font-weight: 700;
             color: var(--warning-light);
-            padding: 0.2rem 0.7rem;
+            padding: 0.25rem 0.8rem;
             border-radius: 12px;
-            background: rgba(244,162,97,0.1);
-            border: 1px solid rgba(244,162,97,0.2);
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.2);
         }
+
+        /* Enhancement #10: Card ribbon/status badge for Live */
         .status-live {
-            font-size: 0.72rem; font-weight: 700;
+            font-size: 0.7rem; font-weight: 700;
             color: var(--success-light);
-            padding: 0.2rem 0.7rem;
+            padding: 0.25rem 0.8rem;
             border-radius: 12px;
-            background: rgba(46,196,182,0.1);
-            border: 1px solid rgba(46,196,182,0.2);
-            display: inline-flex; align-items: center; gap: 0.35rem;
+            background: rgba(16,185,129,0.08);
+            border: 1px solid rgba(16,185,129,0.2);
+            display: inline-flex; align-items: center; gap: 0.4rem;
         }
         .status-live::before {
             content: '';
-            width: 6px; height: 6px; border-radius: 50%;
+            width: 7px; height: 7px; border-radius: 50%;
             background: var(--success-light);
-            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse-glow 2s ease-in-out infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--success); }
+            50% { opacity: 0.4; box-shadow: 0 0 2px var(--success); }
+        }
+        .live-ribbon {
+            position: absolute;
+            top: 16px; right: 16px;
+            z-index: 2;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(99,102,241,0.3);
         }
 
         /* ── CTA Section ── */
         .cta {
             text-align: center;
-            padding: 3rem 2rem;
-            border-top: 1px solid var(--border);
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        .cta-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 3rem;
+            border-radius: 24px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
         }
         .cta h2 {
-            font-size: 1.4rem; margin-bottom: 0.5rem;
+            font-size: 1.35rem; margin-bottom: 0.5rem; font-weight: 700;
         }
         .cta p {
-            color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem;
+            color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.75rem;
         }
-        .cta-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .cta-links { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
         .cta-btn {
             display: inline-flex; align-items: center; gap: 0.5rem;
-            padding: 0.7rem 1.5rem; border-radius: 10px;
-            text-decoration: none; font-weight: 600; font-size: 0.9rem;
-            transition: all 0.2s;
+            padding: 0.65rem 1.5rem; border-radius: 12px;
+            text-decoration: none; font-weight: 600; font-size: 0.85rem;
+            transition: all 0.3s;
         }
         .cta-btn-primary {
-            background: var(--accent); color: #fff;
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(99,102,241,0.3);
         }
-        .cta-btn-primary:hover { background: var(--accent-light); transform: translateY(-2px); }
+        .cta-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(99,102,241,0.4);
+        }
         .cta-btn-secondary {
-            background: var(--bg-card); color: var(--text-primary);
+            background: rgba(30,41,59,0.5);
+            color: var(--text-primary);
             border: 1px solid var(--border);
+            backdrop-filter: blur(8px);
         }
-        .cta-btn-secondary:hover { border-color: var(--accent); color: var(--accent-light); }
+        .cta-btn-secondary:hover { border-color: var(--accent); color: var(--accent-light); transform: translateY(-2px); }
 
-        /* ── Footer ── */
+        /* Enhancement #11: Professional footer */
         .footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border);
-            padding: 2rem;
-            text-align: center;
+            padding: 3rem 2rem 2rem;
+            position: relative;
+            z-index: 1;
         }
-        .footer-name {
-            font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 2.5rem;
+        }
+        .footer-brand .footer-logo {
+            display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+        .footer-brand .footer-logo .logo-mark {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.65rem; color: #fff;
+        }
+        .footer-brand .footer-logo span {
+            font-weight: 700; font-size: 0.9rem;
+        }
+        .footer-brand p {
+            font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;
+            max-width: 280px;
+        }
+        .footer-col h4 {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px;
+            text-transform: uppercase; color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        .footer-col a {
+            display: block; font-size: 0.82rem; color: var(--text-muted);
+            text-decoration: none; padding: 0.25rem 0;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover { color: var(--accent-light); }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 2rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         .footer-copy {
-            font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;
+            font-size: 0.75rem; color: var(--text-muted);
+        }
+        .footer-socials {
+            display: flex; gap: 0.75rem;
+        }
+        .footer-socials a {
+            width: 34px; height: 34px; border-radius: 8px;
+            background: rgba(30,41,59,0.6);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .footer-socials a:hover {
+            background: rgba(99,102,241,0.1);
+            border-color: var(--accent);
+            color: var(--accent-light);
+            transform: translateY(-2px);
         }
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
+            .hero { padding: 4rem 1.5rem 3rem; }
+            .hero h1 { font-size: 2.2rem; }
             .hero .subtitle { font-size: 0.95rem; }
-            .features { gap: 1.5rem; }
+            .features { gap: 1rem; }
             .product-grid { grid-template-columns: 1fr; }
             .topbar { padding: 0.6rem 1rem; }
-            .section { padding: 2rem 1rem; }
+            .topbar-links {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(10,14,26,0.97);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2rem;
+                z-index: 100;
+            }
+            .topbar-links.open { display: flex; }
+            .topbar-links.open a { font-size: 1.1rem; }
+            .hamburger { display: flex; }
+            .section { padding: 2.5rem 1rem; }
+            .trust-inner { gap: 1rem; padding: 1rem; }
+            .trust-divider { display: none; }
+            .footer-inner { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.8rem; }
+            .footer-inner { grid-template-columns: 1fr; }
         }
 
-        /* ── Animations ── */
-        .fade-in {
+        /* Enhancement #6: Scroll-triggered fade-in */
+        .reveal {
             opacity: 0;
-            animation: fadeUp 0.6s ease forwards;
+            transform: translateY(24px);
+            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
+        .reveal.visible.coming-soon { opacity: 0.5; }
     </style>
 </head>
 <body>
 
+<!-- Enhancement #12: Page loader -->
+<div class="page-loader" id="pageLoader">
+    <div class="loader-icon"></div>
+</div>
+
 <!-- ═══════════ TOP BAR ═══════════ -->
-<div class="topbar">
+<nav class="topbar" id="topbar">
     <a href="./" class="topbar-brand">
         <div class="initials">MA</div>
         <span class="name">Eng. Mustafa Al-Qadi</span>
     </a>
-    <div class="topbar-links">
+    <!-- Enhancement #14: Hamburger -->
+    <div class="hamburger" id="hamburger" role="button" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="topbar-links" id="navLinks">
         <a href="https://www.linkedin.com/in/mustafa-al-qadi-18027120a" target="_blank">LinkedIn</a>
         <a href="https://github.com/mustafamalqadi" target="_blank">GitHub</a>
         <a href="https://mustafamalqadi.github.io/training-courses/" target="_blank">Training Courses</a>
     </div>
-</div>
+</nav>
 
 <!-- ═══════════ HERO ═══════════ -->
-<div class="hero">
-    <div class="hero-label">Knowledge Base Portal</div>
-    <h1>VMware<br>Knowledge Base</h1>
-    <p class="subtitle">
-        بوابة قواعد المعرفة الاحترافية لمنتجات VMware — سيناريوهات الكسر والإصلاح مع إجراءات المعالجة الرسمية من Broadcom / VMware
-    </p>
-    <div class="hero-badges">
-        <span class="badge badge-accent">&#128218; vSAN</span>
-        <span class="badge badge-success">&#128737; NSX-T</span>
-        <span class="badge badge-warning">&#9881; VCF</span>
-        <span class="badge badge-danger">&#128421; vSphere</span>
+<header class="hero">
+    <!-- Enhancement #2: Animated gradient mesh -->
+    <div class="hero-mesh">
+        <div class="mesh-orb"></div>
+        <div class="mesh-orb"></div>
+        <div class="mesh-orb"></div>
     </div>
-    <div class="features">
-        <div class="feature">
-            <div class="feature-icon">&#128269;</div>
-            <span>Interactive Search</span>
+    <div class="hero-content">
+        <div class="hero-label">Knowledge Base Portal</div>
+        <h1>VMware<br>Knowledge Base</h1>
+        <p class="subtitle">
+            بوابة قواعد المعرفة الاحترافية لمنتجات VMware — سيناريوهات الكسر والإصلاح مع إجراءات المعالجة الرسمية من Broadcom / VMware
+        </p>
+        <div class="hero-badges">
+            <span class="badge badge-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                vSAN
+            </span>
+            <span class="badge badge-cyan">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                NSX-T
+            </span>
+            <span class="badge badge-warning">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                VCF
+            </span>
+            <span class="badge badge-danger">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                vSphere
+            </span>
         </div>
-        <div class="feature">
-            <div class="feature-icon">&#128300;</div>
-            <span>Decision Trees</span>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <span>Interactive Search</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <span>Decision Trees</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <span>Verify Fix Steps</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                </div>
+                <span>Copy-Ready Commands</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <span>Cross-References</span>
+            </div>
         </div>
-        <div class="feature">
-            <div class="feature-icon">&#9989;</div>
-            <span>Verify Fix Steps</span>
+    </div>
+</header>
+
+<!-- Enhancement #15: Credential/Trust Strip -->
+<div class="trust-strip">
+    <div class="trust-inner reveal">
+        <div class="trust-item">
+            <div class="trust-icon vmware">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <span>VMware Certified</span>
         </div>
-        <div class="feature">
-            <div class="feature-icon">&#128203;</div>
-            <span>Copy-Ready Commands</span>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+            <div class="trust-icon broadcom">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <span>Official Broadcom Procedures</span>
         </div>
-        <div class="feature">
-            <div class="feature-icon">&#128279;</div>
-            <span>Cross-References</span>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+            <div class="trust-icon vcf">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <span>esxcli / RVC / DCLI Commands</span>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-item">
+            <div class="trust-icon cert">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <span>Production Validated</span>
         </div>
     </div>
 </div>
 
 <!-- ═══════════ PRODUCT GRID ═══════════ -->
-<div class="section">
-    <div class="section-header">
-        <div class="section-icon" style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.2);">&#128218;</div>
-        <div>
-            <div class="section-title">VMware Knowledge Bases</div>
-            <div class="section-subtitle">اختر المنتج للوصول إلى قاعدة المعرفة المخصصة</div>
-        </div>
+<section class="section">
+    <div class="section-header reveal">
+        <div class="section-label">Choose Your Product</div>
+        <div class="section-title">VMware Knowledge Bases</div>
+        <div class="section-subtitle">اختر المنتج للوصول إلى قاعدة المعرفة المخصصة</div>
     </div>
 
     <div class="product-grid">
 
         <!-- ══ vSAN — LIVE ══ -->
-        <a href="vsan-kb/" class="product-card vsan fade-in" style="animation-delay:0.1s;">
+        <a href="vsan-kb/" class="product-card vsan reveal" style="transition-delay:0.1s;">
+            <div class="live-ribbon">AVAILABLE</div>
             <div class="card-accent-bar"></div>
             <div class="card-body">
-                <div class="card-icon-wrap">&#128421;</div>
+                <div class="card-icon-wrap">
+                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent-light)">
+                        <rect x="2" y="6" width="24" height="16" rx="3"/>
+                        <path d="M7 14h2m4 0h2m4 0h2"/>
+                        <path d="M7 10h14M7 18h14"/>
+                        <circle cx="21" cy="10" r="1" fill="currentColor"/>
+                    </svg>
+                </div>
                 <div class="card-label">VMware vSAN</div>
                 <div class="card-title">vSAN Fix &amp; Break<br>Knowledge Base</div>
                 <div class="card-desc">
                     قاعدة معرفة شاملة تغطي 70 سيناريو في vSAN — من مشاكل Disk Group وNetwork Partition إلى ESA Deep Dive وVCF Integration. أوامر esxcli جاهزة للنسخ مع خطوات التحقق والجدول الزمني للاسترداد.
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><span class="num">70</span>&nbsp;<span class="lbl">KB Entries</span></div>
-                    <div class="card-stat"><span class="num">7</span>&nbsp;<span class="lbl">Phases</span></div>
-                    <div class="card-stat"><span class="num">6</span>&nbsp;<span class="lbl">Enrichments</span></div>
+                    <div class="card-stat"><span class="num" data-target="70">0</span>&nbsp;<span class="lbl">KB Entries</span></div>
+                    <div class="card-stat"><span class="num" data-target="7">0</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num" data-target="6">0</span>&nbsp;<span class="lbl">Enrichments</span></div>
                 </div>
             </div>
             <div class="card-footer">
@@ -484,10 +895,15 @@
         </a>
 
         <!-- ══ NSX-T — Coming Soon ══ -->
-        <div class="product-card nsx coming-soon fade-in" style="animation-delay:0.2s;">
+        <div class="product-card nsx coming-soon reveal" style="transition-delay:0.2s;">
             <div class="card-accent-bar"></div>
             <div class="card-body">
-                <div class="card-icon-wrap">&#128737;</div>
+                <div class="card-icon-wrap">
+                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--cyan-light)">
+                        <path d="M14 2L26 8v12l-12 6L2 20V8z"/>
+                        <path d="M14 14l12-6M14 14v12M14 14L2 8"/>
+                    </svg>
+                </div>
                 <div class="card-label">VMware NSX-T</div>
                 <div class="card-title">NSX-T Troubleshooting<br>Knowledge Base</div>
                 <div class="card-desc">
@@ -508,10 +924,17 @@
         </div>
 
         <!-- ══ vSphere — Coming Soon ══ -->
-        <div class="product-card vsphere coming-soon fade-in" style="animation-delay:0.3s;">
+        <div class="product-card vsphere coming-soon reveal" style="transition-delay:0.3s;">
             <div class="card-accent-bar"></div>
             <div class="card-body">
-                <div class="card-icon-wrap">&#128187;</div>
+                <div class="card-icon-wrap">
+                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--purple-light)">
+                        <rect x="3" y="4" width="22" height="15" rx="2"/>
+                        <line x1="9" y1="23" x2="19" y2="23"/>
+                        <line x1="14" y1="19" x2="14" y2="23"/>
+                        <path d="M8 10l3 3-3 3M13 16h5"/>
+                    </svg>
+                </div>
                 <div class="card-label">VMware vSphere</div>
                 <div class="card-title">vSphere Cluster<br>Troubleshooting KB</div>
                 <div class="card-desc">
@@ -532,10 +955,16 @@
         </div>
 
         <!-- ══ VCF — Coming Soon ══ -->
-        <div class="product-card vcf coming-soon fade-in" style="animation-delay:0.4s;">
+        <div class="product-card vcf coming-soon reveal" style="transition-delay:0.4s;">
             <div class="card-accent-bar"></div>
             <div class="card-body">
-                <div class="card-icon-wrap">&#9881;</div>
+                <div class="card-icon-wrap">
+                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--warning-light)">
+                        <circle cx="14" cy="14" r="3"/>
+                        <path d="M14 3v4m0 14v4M3 14h4m14 0h4"/>
+                        <path d="M6.3 6.3l2.8 2.8m9.8 9.8l2.8 2.8M6.3 21.7l2.8-2.8m9.8-9.8l2.8-2.8"/>
+                    </svg>
+                </div>
                 <div class="card-label">VMware Cloud Foundation</div>
                 <div class="card-title">VCF Lifecycle<br>Troubleshooting KB</div>
                 <div class="card-desc">
@@ -556,27 +985,141 @@
         </div>
 
     </div>
-</div>
+</section>
 
 <!-- ═══════════ CTA ═══════════ -->
-<div class="cta">
-    <h2>&#128233; هل تريد أن يصلك إشعار عند إطلاق محتوى جديد؟</h2>
-    <p>تواصل معي على LinkedIn أو GitHub للحصول على آخر التحديثات</p>
-    <div class="cta-links">
-        <a href="https://www.linkedin.com/in/mustafa-al-qadi-18027120a" target="_blank" class="cta-btn cta-btn-primary">
-            LinkedIn
-        </a>
-        <a href="https://github.com/mustafamalqadi" target="_blank" class="cta-btn cta-btn-secondary">
-            GitHub
-        </a>
+<section class="cta">
+    <div class="cta-inner reveal">
+        <h2>&#128233; هل تريد أن يصلك إشعار عند إطلاق محتوى جديد؟</h2>
+        <p>تواصل معي على LinkedIn أو GitHub للحصول على آخر التحديثات</p>
+        <div class="cta-links">
+            <a href="https://www.linkedin.com/in/mustafa-al-qadi-18027120a" target="_blank" class="cta-btn cta-btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+            </a>
+            <a href="https://github.com/mustafamalqadi" target="_blank" class="cta-btn cta-btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                GitHub
+            </a>
+        </div>
     </div>
-</div>
+</section>
 
-<!-- ═══════════ FOOTER ═══════════ -->
-<div class="footer">
-    <div class="footer-name">Eng. Mustafa Al-Qadi</div>
-    <div class="footer-copy">&copy; 2026 Eng. Mustafa Al-Qadi — All rights reserved</div>
-</div>
+<!-- Enhancement #11: Professional Footer -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <div class="logo-mark">MA</div>
+                <span>Eng. Mustafa Al-Qadi</span>
+            </div>
+            <p>بوابة قواعد المعرفة الاحترافية لمنتجات VMware — سيناريوهات الكسر والإصلاح مع إجراءات المعالجة الرسمية.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Knowledge Bases</h4>
+            <a href="vsan-kb/">vSAN KB</a>
+            <a href="#">NSX-T KB (Soon)</a>
+            <a href="#">vSphere KB (Soon)</a>
+            <a href="#">VCF KB (Soon)</a>
+        </div>
+        <div class="footer-col">
+            <h4>vSAN Quick Links</h4>
+            <a href="vsan-kb/">Dashboard</a>
+            <a href="vsan-kb/phase1.html">Phase 1 — Top 10</a>
+            <a href="vsan-kb/phase2.html">Phase 2 — Day-2 Ops</a>
+            <a href="vsan-kb/decision-tree.html">Decision Tree</a>
+        </div>
+        <div class="footer-col">
+            <h4>Resources</h4>
+            <a href="https://mustafamalqadi.github.io/training-courses/" target="_blank">Training Courses</a>
+            <a href="https://www.linkedin.com/in/mustafa-al-qadi-18027120a" target="_blank">LinkedIn</a>
+            <a href="https://github.com/mustafamalqadi" target="_blank">GitHub</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="footer-copy">&copy; 2026 Eng. Mustafa Al-Qadi — All rights reserved</div>
+        <div class="footer-socials">
+            <a href="https://www.linkedin.com/in/mustafa-al-qadi-18027120a" target="_blank" aria-label="LinkedIn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+            <a href="https://github.com/mustafamalqadi" target="_blank" aria-label="GitHub">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+            </a>
+        </div>
+    </div>
+</footer>
+
+<script>
+(function() {
+    'use strict';
+
+    /* Enhancement #12: Page load entrance */
+    window.addEventListener('load', function() {
+        document.getElementById('pageLoader').classList.add('loaded');
+    });
+    setTimeout(function() {
+        var l = document.getElementById('pageLoader');
+        if (l) l.classList.add('loaded');
+    }, 2000);
+
+    /* Enhancement #9: Topbar scroll shadow */
+    var topbar = document.getElementById('topbar');
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 20) {
+            topbar.classList.add('scrolled');
+        } else {
+            topbar.classList.remove('scrolled');
+        }
+    }, { passive: true });
+
+    /* Enhancement #14: Hamburger menu */
+    var hamburger = document.getElementById('hamburger');
+    var navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', function() {
+        hamburger.classList.toggle('open');
+        navLinks.classList.toggle('open');
+    });
+    navLinks.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+            hamburger.classList.remove('open');
+            navLinks.classList.remove('open');
+        }
+    });
+
+    /* Enhancement #6: Scroll-triggered fade-in (IntersectionObserver) */
+    var revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+
+                    /* Enhancement #7: Stat counter animation */
+                    var nums = entry.target.querySelectorAll('.num[data-target]');
+                    nums.forEach(function(num) {
+                        var target = parseInt(num.getAttribute('data-target'), 10);
+                        var duration = 1200;
+                        var start = performance.now();
+                        function tick(now) {
+                            var elapsed = now - start;
+                            var progress = Math.min(elapsed / duration, 1);
+                            var eased = 1 - Math.pow(1 - progress, 3);
+                            num.textContent = Math.round(target * eased);
+                            if (progress < 1) requestAnimationFrame(tick);
+                        }
+                        requestAnimationFrame(tick);
+                    });
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+        revealEls.forEach(function(el) { observer.observe(el); });
+    } else {
+        revealEls.forEach(function(el) { el.classList.add('visible'); });
+    }
+})();
+</script>
 
 </body>
 </html>
