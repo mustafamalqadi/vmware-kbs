@@ -9,24 +9,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f1923;
-            --bg-secondary: #1a2733;
-            --bg-card: #1e2d3d;
-            --bg-card-hover: #243547;
-            --accent: #00b4d8;
-            --accent-light: #48cae4;
-            --danger: #e63946;
-            --danger-light: #ff6b6b;
-            --success: #2ec4b6;
-            --success-light: #52d6c8;
-            --warning: #f4a261;
-            --warning-light: #f4c089;
-            --text-primary: #e8edf2;
-            --text-secondary: #8fa3b8;
-            --text-muted: #5c7a94;
-            --border: #2a3f52;
-            --code-bg: #0d1520;
-            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; scroll-padding-top: 20px; }
@@ -40,7 +40,7 @@
 
         /* ── Hero Header ── */
         .hero {
-            background: linear-gradient(180deg, #101d2b 0%, var(--bg-primary) 100%);
+            background: linear-gradient(180deg, #0d1117 0%, #111820 100%);
             border-bottom: 1px solid var(--border);
             padding: 4rem 2rem 3rem;
             text-align: center;
@@ -63,10 +63,10 @@
             padding: 0.3rem 0.85rem; border-radius: 6px;
             font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2px;
         }
-        .badge-total { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
-        .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
-        .badge-fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.3); }
-        .badge-phase { background: rgba(244,162,97,0.15); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.3); }
+        .badge-total { background: rgba(88,166,255,0.15); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.3); }
+        .badge-break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.3); }
+        .badge-fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.3); }
+        .badge-phase { background: rgba(210,153,34,0.15); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.3); }
 
         /* ── Global Search ── */
         .search-section {
@@ -115,11 +115,11 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 0.9rem;
         }
-        .sr-num.break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.25); }
-        .sr-num.fix { background: rgba(46,196,182,0.15); color: var(--success-light); border: 1px solid rgba(46,196,182,0.25); }
+        .sr-num.break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.25); }
+        .sr-num.fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.25); }
         .sr-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.15rem; }
         .sr-meta { font-size: 0.75rem; color: var(--text-muted); }
-        .sr-highlight { background: rgba(0,180,216,0.25); padding: 0 2px; border-radius: 2px; }
+        .sr-highlight { background: rgba(88,166,255,0.25); padding: 0 2px; border-radius: 2px; }
         .no-results { text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.9rem; }
 
         /* ── Stats Grid ── */
@@ -156,7 +156,7 @@
             text-decoration: none; color: inherit; display: block;
             position: relative;
         }
-        .phase-card:hover { border-color: rgba(0,180,216,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
+        .phase-card:hover { border-color: rgba(88,166,255,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
         /* Phase card colored top accent bar */
         .phase-card-bar { height: 3px; width: 100%; }
         .phase-card-header {
@@ -182,8 +182,8 @@
             font-weight: 700; font-size: 0.7rem; min-width: 26px; text-align: center;
             padding: 0.1rem 0.3rem; border-radius: 4px;
         }
-        .kb-num-small.b { color: var(--danger-light); background: rgba(230,57,70,0.1); }
-        .kb-num-small.f { color: var(--success-light); background: rgba(46,196,182,0.1); }
+        .kb-num-small.b { color: var(--danger-light); background: rgba(248,81,73,0.1); }
+        .kb-num-small.f { color: var(--success-light); background: rgba(63,185,80,0.1); }
         .phase-card-footer {
             padding: 0.75rem 1.5rem; background: var(--bg-secondary);
             border-top: 1px solid var(--border);
@@ -212,7 +212,7 @@
             font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
         }
         .filter-tab:hover { border-color: var(--accent); color: var(--text-primary); }
-        .filter-tab.active { background: rgba(0,180,216,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .filter-tab.active { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent-light); }
 
         /* ── Full KB Index ── */
         .kb-index { margin-top: 0.5rem; }
@@ -233,8 +233,8 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 0.95rem;
         }
-        .kb-idx-num.break { background: rgba(230,57,70,0.12); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.2); }
-        .kb-idx-num.fix { background: rgba(46,196,182,0.12); color: var(--success-light); border: 1px solid rgba(46,196,182,0.2); }
+        .kb-idx-num.break { background: rgba(248,81,73,0.12); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
+        .kb-idx-num.fix { background: rgba(63,185,80,0.12); color: var(--success-light); border: 1px solid rgba(63,185,80,0.2); }
         .kb-idx-info { flex: 1; min-width: 0; }
         .kb-idx-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .kb-idx-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; margin-top: 0.15rem; }
@@ -242,9 +242,9 @@
         .idx-tag {
             font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600;
         }
-        .idx-tag.critical { background: rgba(230,57,70,0.1); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.2); }
-        .idx-tag.high { background: rgba(244,162,97,0.1); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.2); }
-        .idx-tag.medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.2); }
+        .idx-tag.critical { background: rgba(248,81,73,0.1); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
+        .idx-tag.high { background: rgba(210,153,34,0.1); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.2); }
+        .idx-tag.medium { background: rgba(88,166,255,0.1); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.2); }
 
         /* #4: Animated stat counters */
         .stat-value { font-variant-numeric: tabular-nums; }
@@ -257,7 +257,7 @@
         .section-divider { width:100%; max-width:1400px; margin:0 auto; height:1px; background:var(--border); }
 
         /* Sticky compact nav */
-        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(15,25,35,.95); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
+        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(13,17,23,.95); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
         .sticky-nav.visible { transform:translateY(0); }
         .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:600; font-size:.8rem; }
         .sticky-nav-brand .sn-logo { width:24px; height:24px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.5rem; color:#fff; }
@@ -266,7 +266,7 @@
         .sticky-nav-links a:hover { color:var(--accent); }
 
         /* Decision tree card */
-        .phase-card.dt-special { border-color: rgba(244,162,97,0.3); }
+        .phase-card.dt-special { border-color: rgba(210,153,34,0.3); }
 
         /* ── Footer (enhanced #8) ── */
         .footer {
@@ -365,7 +365,7 @@
         <a href="phase1.html" class="phase-card" data-color="cyan">
             <div class="phase-card-bar" style="background:var(--accent)"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(0,180,216,0.12);border:1px solid rgba(0,180,216,0.25);color:var(--accent-light)">1</div>
+                <div class="phase-icon" style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light)">1</div>
                 <div>
                     <div class="phase-card-title">Top 10 Common Issues</div>
                     <div class="phase-card-sub">Most frequent vSAN fix &amp; break scenarios</div>
@@ -395,7 +395,7 @@
         <a href="phase2.html" class="phase-card" data-color="teal">
             <div class="phase-card-bar" style="background:var(--success)"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(46,196,182,0.12);border:1px solid rgba(46,196,182,0.25);color:var(--success-light)">2</div>
+                <div class="phase-icon" style="background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.25);color:var(--success-light)">2</div>
                 <div>
                     <div class="phase-card-title">Day-2 Operations</div>
                     <div class="phase-card-sub">Advanced troubleshooting &amp; operational tasks</div>
@@ -425,7 +425,7 @@
         <a href="phase3.html" class="phase-card" data-color="red">
             <div class="phase-card-bar" style="background:var(--danger)"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(230,57,70,0.12);border:1px solid rgba(230,57,70,0.25);color:var(--danger-light)">3</div>
+                <div class="phase-icon" style="background:rgba(248,81,73,0.12);border:1px solid rgba(248,81,73,0.25);color:var(--danger-light)">3</div>
                 <div>
                     <div class="phase-card-title">DR &amp; Data Protection</div>
                     <div class="phase-card-sub">Disaster recovery, snapshots &amp; data integrity</div>
@@ -455,7 +455,7 @@
         <a href="phase4.html" class="phase-card" data-color="amber">
             <div class="phase-card-bar" style="background:var(--warning)"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);color:var(--warning-light)">4</div>
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:var(--warning-light)">4</div>
                 <div>
                     <div class="phase-card-title">VCF Integration</div>
                     <div class="phase-card-sub">VMware Cloud Foundation lifecycle &amp; integration</div>
@@ -483,9 +483,9 @@
 
         <!-- Phase 5 -->
         <a href="phase5.html" class="phase-card" data-color="sky">
-            <div class="phase-card-bar" style="background:#90e0ef"></div>
+            <div class="phase-card-bar" style="background:#79c0ff"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(144,224,239,0.12);border:1px solid rgba(144,224,239,0.25);color:#90e0ef">5</div>
+                <div class="phase-icon" style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:#79c0ff">5</div>
                 <div>
                     <div class="phase-card-title">ESA Deep Dive</div>
                     <div class="phase-card-sub">Express Storage Architecture — NVMe-native vSAN</div>
@@ -513,9 +513,9 @@
 
         <!-- Phase 6 -->
         <a href="phase6.html" class="phase-card" data-color="gold">
-            <div class="phase-card-bar" style="background:#ffb74d"></div>
+            <div class="phase-card-bar" style="background:#e3b341"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(255,183,77,0.12);border:1px solid rgba(255,183,77,0.25);color:#ffb74d">6</div>
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:#e3b341">6</div>
                 <div>
                     <div class="phase-card-title">Performance &amp; Capacity</div>
                     <div class="phase-card-sub">Latency, IOPS, sizing &amp; capacity planning</div>
@@ -543,9 +543,9 @@
 
         <!-- Phase 7 -->
         <a href="phase7.html" class="phase-card" data-color="purple">
-            <div class="phase-card-bar" style="background:#ab82ff"></div>
+            <div class="phase-card-bar" style="background:#a5d6ff"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(171,130,255,0.12);border:1px solid rgba(171,130,255,0.25);color:#ab82ff">7</div>
+                <div class="phase-icon" style="background:rgba(139,148,158,0.12);border:1px solid rgba(139,148,158,0.25);color:#a5d6ff">7</div>
                 <div>
                     <div class="phase-card-title">Networking for vSAN</div>
                     <div class="phase-card-sub">VMkernel, MTU, teaming, RDMA &amp; topology</div>
@@ -572,10 +572,10 @@
         </a>
 
         <!-- Decision Tree -->
-        <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(244,162,97,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(244,162,97,0.04));">
+        <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(210,153,34,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(210,153,34,0.04));">
             <div class="phase-card-bar" style="background:var(--warning)"></div>
             <div class="phase-card-header">
-                <div class="phase-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);color:var(--warning-light);font-size:1.3rem;">&#9881;</div>
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:var(--warning-light);font-size:1.3rem;">&#9881;</div>
                 <div>
                     <div class="phase-card-title" style="color:var(--warning-light);">Interactive Decision Tree</div>
                     <div class="phase-card-sub">Step-by-step symptom-based troubleshooting</div>
