@@ -26,11 +26,18 @@
             --shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.7;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(circle, rgba(0,180,216,0.06) 1px, transparent 1px);
+            background-size: 32px 32px; pointer-events: none; z-index: 0;
         }
 
         /* ── Hero Header ── */
@@ -48,6 +55,20 @@
             background: radial-gradient(ellipse at 50% 0%, rgba(0,180,216,0.08) 0%, transparent 70%);
             pointer-events: none;
         }
+        /* #1: Hero mesh orbs */
+        .hero-mesh { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; overflow: hidden; }
+        .mesh-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .35; animation: orb-float 14s ease-in-out infinite; }
+        .mesh-orb:nth-child(1) { width: 450px; height: 450px; background: radial-gradient(circle, rgba(0,180,216,.45), transparent 70%); top: -20%; left: 10%; }
+        .mesh-orb:nth-child(2) { width: 380px; height: 380px; background: radial-gradient(circle, rgba(46,196,182,.35), transparent 70%); top: 0; right: 5%; animation-delay: -5s; animation-duration: 17s; }
+        .mesh-orb:nth-child(3) { width: 320px; height: 320px; background: radial-gradient(circle, rgba(244,162,97,.25), transparent 70%); bottom: -15%; left: 40%; animation-delay: -9s; animation-duration: 20s; }
+        @keyframes orb-float { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(25px,-18px) scale(1.04)} 50%{transform:translate(-18px,12px) scale(.96)} 75%{transform:translate(12px,20px) scale(1.02)} }
+        /* #2: Hero stagger entrance */
+        .hero-stagger { opacity: 0; transform: translateY(18px); animation: hero-enter .7s cubic-bezier(.4,0,.2,1) forwards; }
+        @keyframes hero-enter { to { opacity: 1; transform: translateY(0); } }
+        .hero-stagger-1 { animation-delay: .1s; }
+        .hero-stagger-2 { animation-delay: .25s; }
+        .hero-stagger-3 { animation-delay: .4s; }
+        .hero-stagger-4 { animation-delay: .55s; }
         .hero h1 {
             font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem;
             background: linear-gradient(135deg, var(--accent), var(--accent-light), #90e0ef);
@@ -155,10 +176,17 @@
         .phase-card {
             background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 14px; overflow: hidden;
-            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            transition: all .4s cubic-bezier(.4,0,.2,1);
             text-decoration: none; color: inherit; display: block;
+            position: relative; transform-style: preserve-3d;
         }
-        .phase-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-3px); }
+        .phase-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-6px); }
+        /* #3: Phase card shimmer */
+        .phase-card::after { content:''; position:absolute; top:0; left:-100%; right:0; bottom:0; width:60%; background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.03) 45%,rgba(255,255,255,.06) 50%,rgba(255,255,255,.03) 55%,transparent 60%); transition:left .6s ease; pointer-events:none; z-index:3; border-radius:14px; }
+        .phase-card:hover::after { left: 150%; }
+        /* #3: Phase card spotlight */
+        .card-spotlight { position:absolute; top:0; left:0; right:0; bottom:0; border-radius:14px; pointer-events:none; z-index:0; opacity:0; transition:opacity .3s; }
+        .phase-card:hover .card-spotlight { opacity: 1; }
         .phase-card-header {
             padding: 1.25rem 1.5rem 1rem;
             display: flex; align-items: center; gap: 1rem;
@@ -192,6 +220,13 @@
         }
         .phase-card-footer .count { color: var(--text-muted); }
         .phase-card-footer .link-text { color: var(--accent-light); font-weight: 600; }
+        /* #5: Break/Fix mini progress bar */
+        .bf-progress { display:flex; height:3px; border-radius:2px; overflow:hidden; margin-top:.5rem; gap:1px; }
+        .bf-bar-break { background: var(--danger); height:100%; border-radius:2px 0 0 2px; transition: width .6s ease; }
+        .bf-bar-fix { background: var(--success); height:100%; border-radius:0 2px 2px 0; transition: width .6s ease; }
+        .bf-legend { display:flex; gap:.75rem; margin-top:.35rem; font-size:.65rem; color:var(--text-muted); }
+        .bf-legend span { display:flex; align-items:center; gap:.3rem; }
+        .bf-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
 
         /* ── Category Filter ── */
         .filter-section {
@@ -216,6 +251,11 @@
             transition: background 0.2s; cursor: pointer; text-decoration: none; color: inherit;
         }
         .kb-index-item:hover { background: var(--bg-card-hover); }
+        /* #7: KB Index hover accent bar */
+        .kb-index-item { border-left: 3px solid transparent; transition: background .2s, border-left-color .3s, transform .2s; }
+        .kb-index-item:hover { transform: translateX(4px); }
+        .kb-index-item[data-type='break']:hover { border-left-color: var(--danger); }
+        .kb-index-item[data-type='fix']:hover { border-left-color: var(--success); }
         .kb-idx-num {
             flex-shrink: 0; width: 38px; height: 38px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
@@ -234,17 +274,39 @@
         .idx-tag.high { background: rgba(244,162,97,0.1); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.2); }
         .idx-tag.medium { background: rgba(0,180,216,0.1); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.2); }
 
-        /* ── Footer ── */
+        /* #4: Animated stat counters */
+        .stat-value { font-variant-numeric: tabular-nums; }
+
+        /* #6: Scroll-reveal */
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── Footer (enhanced #8) ── */
         .footer {
-            text-align: center; padding: 2.5rem 2rem; color: var(--text-muted);
-            font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 3rem;
+            border-top: 1px solid var(--border); margin-top: 3rem;
+            padding: 3rem 2rem 2rem; color: var(--text-muted); font-size: 0.8rem;
         }
+        .footer-inner { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr; gap:2rem; }
+        .footer-brand p { line-height:1.6; max-width:340px; margin-top:.5rem; }
+        .footer-logo { display:flex; align-items:center; gap:.6rem; margin-bottom:.25rem; }
+        .footer-logo .logo-mark { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--success)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.6rem; color:#fff; }
+        .footer-logo span { font-weight:700; font-size:.9rem; color:var(--text-primary); }
+        .footer-col h4 { font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-secondary); margin-bottom:.75rem; }
+        .footer-col a { display:block; font-size:.8rem; color:var(--text-muted); text-decoration:none; padding:.2rem 0; transition:color .2s; }
+        .footer-col a:hover { color:var(--accent-light); }
+        .footer-bottom { max-width:1400px; margin:1.5rem auto 0; padding-top:1.25rem; border-top:1px solid var(--border); text-align:center; font-size:.75rem; }
 
         @media (max-width: 600px) {
             .hero h1 { font-size: 1.8rem; }
             .phases-grid { grid-template-columns: 1fr; }
             .stats-section { grid-template-columns: repeat(2, 1fr); }
             .search-section, .phases-section, .filter-section, .stats-section { padding: 0 1rem; }
+            .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+        }
+        /* #9: Prefers reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+            .mesh-orb { animation: none !important; opacity: .2; }
         }
     </style>
 </head>
@@ -252,9 +314,10 @@
 
 <!-- ── Hero ── -->
 <section class="hero">
-    <h1>VMware vSAN Knowledge Base</h1>
-    <p class="subtitle">Comprehensive Fix &amp; Break Reference — Official VMware / Broadcom Procedures Only</p>
-    <div class="hero-badges">
+    <div class="hero-mesh"><div class="mesh-orb"></div><div class="mesh-orb"></div><div class="mesh-orb"></div></div>
+    <h1 class="hero-stagger hero-stagger-1">VMware vSAN Knowledge Base</h1>
+    <p class="subtitle hero-stagger hero-stagger-2">Comprehensive Fix &amp; Break Reference — Official VMware / Broadcom Procedures Only</p>
+    <div class="hero-badges hero-stagger hero-stagger-3">
         <span class="badge badge-total">70 KB Entries</span>
         <span class="badge badge-phase">7 Phases</span>
         <span class="badge badge-break">&#9888; Break Scenarios</span>
@@ -263,7 +326,7 @@
 </section>
 
 <!-- ── Global Search ── -->
-<div class="search-section">
+<div class="search-section hero-stagger hero-stagger-4">
     <div class="search-box" id="searchBox">
         <input type="text" id="globalSearch" placeholder="Search all 70 KB entries — congestion, resync, ESA, NVMe, stretched cluster, capacity..." oninput="performSearch()" autocomplete="off">
         <div class="search-hint">
@@ -285,16 +348,16 @@
 </div>
 
 <!-- ── Stats ── -->
-<div class="stats-section">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">70</div><div class="stat-label">Total KB Entries</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">35</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">35</div><div class="stat-label">Fix Procedures</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">7</div><div class="stat-label">Phases</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
+<div class="stats-section reveal">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="70">0</div><div class="stat-label">Total KB Entries</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="35">0</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="35">0</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="7">0</div><div class="stat-label">Phases</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
 </div>
 
 <!-- ── Phase Cards ── -->
-<section class="phases-section">
+<section class="phases-section reveal">
     <div class="section-title">Phases</div>
     <div class="phases-grid">
 
@@ -528,7 +591,7 @@
 </section>
 
 <!-- ── Full KB Index ── -->
-<section class="filter-section">
+<section class="filter-section reveal">
     <div class="section-title">Complete KB Index</div>
     <div class="filter-tabs">
         <button class="filter-tab active" onclick="filterIndex('all', this)">All (70)</button>
@@ -542,9 +605,31 @@
 </section>
 
 <footer class="footer">
-    <p>VMware vSAN Knowledge Base — 70 entries across 7 phases</p>
-    <p style="margin-top:0.4rem;">Official VMware / Broadcom tooling only — ESXCLI, vSphere Client, esxtop, RVC, vSAN Observer, VCSA CLI, SDDC Manager</p>
-    <p style="margin-top:0.4rem;">Zero Python, PowerCLI, iperf3, or third-party tools</p>
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <div class="logo-mark">vS</div>
+                <span>vSAN Knowledge Base</span>
+            </div>
+            <p>70 fix &amp; break entries across 7 phases. Official VMware / Broadcom tooling only — ESXCLI, vSphere Client, esxtop, RVC, vSAN Observer, VCSA CLI, SDDC Manager. Zero Python, PowerCLI, or third-party tools.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Navigate</h4>
+            <a href="index.html">Dashboard</a>
+            <a href="decision-tree.html">Decision Tree</a>
+            <a href="phase1.html">Phase 1 — Top 10</a>
+            <a href="phase5.html">Phase 5 — ESA</a>
+        </div>
+        <div class="footer-col">
+            <h4>Portal</h4>
+            <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Personal Portal</a>
+            <a href="https://mustafamalqadi.github.io/vmware-kbs/" target="_blank" rel="noopener">VMware KB Hub</a>
+            <a href="https://mustafamalqadi.github.io/training-courses/" target="_blank" rel="noopener">Training Courses</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; 2026 Eng. Mustafa Al-Qadi — All rights reserved
+    </div>
 </footer>
 
 <script>
@@ -727,6 +812,112 @@ document.addEventListener('click', function(e) {
 
 // ── Init ──
 renderIndex(kbEntries);
+
+/* ═══════════ Enhancement #3: 3D Tilt + Spotlight on Phase Cards ═══════════ */
+(function() {
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+    document.querySelectorAll('.phase-card').forEach(function(card) {
+        // Inject spotlight div
+        var spot = document.createElement('div');
+        spot.className = 'card-spotlight';
+        card.insertBefore(spot, card.firstChild);
+
+        card.addEventListener('mousemove', function(e) {
+            var r = card.getBoundingClientRect();
+            var x = e.clientX - r.left, y = e.clientY - r.top;
+            var rx = ((y - r.height / 2) / (r.height / 2)) * -3;
+            var ry = ((x - r.width / 2) / (r.width / 2)) * 3;
+            card.style.transform = 'translateY(-6px) perspective(800px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
+            spot.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px, rgba(255,255,255,.06) 0%, transparent 60%)';
+        });
+        card.addEventListener('mouseleave', function() {
+            card.style.transform = '';
+            spot.style.background = '';
+        });
+    });
+})();
+
+/* ═══════════ Enhancement #4: Animated Stat Counters ═══════════ */
+(function() {
+    var statEls = document.querySelectorAll('.stat-value[data-target]');
+    if (!statEls.length) return;
+    if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (!entry.isIntersecting) return;
+                obs.unobserve(entry.target);
+                var el = entry.target;
+                var target = parseInt(el.getAttribute('data-target'), 10);
+                if (target === 0) return;
+                var dur = 1000, start = performance.now();
+                (function tick(now) {
+                    var p = Math.min((now - start) / dur, 1);
+                    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                    if (p < 1) requestAnimationFrame(tick);
+                })(performance.now());
+            });
+        }, { threshold: 0.3 });
+        statEls.forEach(function(el) { obs.observe(el); });
+    } else {
+        statEls.forEach(function(el) { el.textContent = el.getAttribute('data-target'); });
+    }
+})();
+
+/* ═══════════ Enhancement #5: Break/Fix Progress Bars per Phase ═══════════ */
+(function() {
+    var phaseCounts = {
+        1: {b:7, f:3}, 2: {b:4, f:6}, 3: {b:5, f:5},
+        4: {b:5, f:5}, 5: {b:3, f:7}, 6: {b:5, f:5}, 7: {b:5, f:5}
+    };
+    var footers = document.querySelectorAll('.phase-card-footer');
+    footers.forEach(function(footer, i) {
+        var p = i + 1;
+        var c = phaseCounts[p];
+        if (!c) return;
+        var total = c.b + c.f;
+        var bar = document.createElement('div');
+        bar.className = 'bf-progress';
+        bar.innerHTML = '<div class="bf-bar-break" style="width:' + ((c.b / total) * 100) + '%"></div>' +
+            '<div class="bf-bar-fix" style="width:' + ((c.f / total) * 100) + '%"></div>';
+        var legend = document.createElement('div');
+        legend.className = 'bf-legend';
+        legend.innerHTML = '<span><span class="bf-dot" style="background:var(--danger)"></span>' + c.b + ' Break</span>' +
+            '<span><span class="bf-dot" style="background:var(--success)"></span>' + c.f + ' Fix</span>';
+        footer.appendChild(bar);
+        footer.appendChild(legend);
+    });
+})();
+
+/* ═══════════ Enhancement #6: Scroll-Reveal ═══════════ */
+(function() {
+    var revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        revealEls.forEach(function(el) { obs.observe(el); });
+    } else {
+        revealEls.forEach(function(el) { el.classList.add('visible'); });
+    }
+})();
+
+/* ═══════════ Enhancement #1b: Parallax on Hero Mesh Orbs ═══════════ */
+(function() {
+    var orbs = document.querySelectorAll('.mesh-orb');
+    if (!orbs.length || !window.matchMedia('(pointer: fine)').matches) return;
+    var rates = [0.025, -0.018, 0.012];
+    window.addEventListener('scroll', function() {
+        var sy = window.scrollY;
+        orbs.forEach(function(orb, i) {
+            orb.style.transform = 'translateY(' + (sy * rates[i % rates.length]) + 'px)';
+        });
+    }, { passive: true });
+})();
 </script>
 <script src="kb-ux.js"></script>
 
