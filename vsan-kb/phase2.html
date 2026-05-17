@@ -287,7 +287,7 @@
 <!-- ═══════════ STATS ═══════════ -->
 <div class="stats-bar">
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">12</div>
+        <div class="stat-value" style="color:var(--accent-light)">14</div>
         <div class="stat-label">Day-2 Issues</div>
     </div>
     <div class="stat-card">
@@ -295,7 +295,7 @@
         <div class="stat-label">Break Scenarios</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--success-light)">7</div>
+        <div class="stat-value" style="color:var(--success-light)">9</div>
         <div class="stat-label">Fix Procedures</div>
     </div>
     <div class="stat-card">
@@ -1857,6 +1857,163 @@ tar czf /tmp/vsan-vc-logs.tar.gz /var/log/vmware/vsanmgmtd/</code><button class=
         <div class="alert alert-info">
             <span class="alert-icon">&#128712;</span>
             <span><strong>Tips:</strong> Attach all bundles to your VMware/Broadcom SR (Service Request). Include a timeline of events and any screenshots of errors. For Severity 1 issues, call GSS support directly after uploading bundles.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #91: Disk Group Rebuild / Cache SSD Replace -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-91" data-type="fix" data-severity="high" data-keywords="disk group rebuild recreate cache SSD replace capacity disk hot swap failed drive">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">91</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Disk Group Rebuild / Cache SSD Replacement</div>
+            <div class="kb-entry-subtitle">Step-by-step procedure for replacing a failed cache SSD and rebuilding the disk group</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Disk Group</span>
+                <span class="tag">Cache SSD</span>
+                <span class="tag">Rebuild</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical:</strong> When a cache SSD fails, the <strong>entire disk group goes offline</strong> — all capacity disks in that group become unavailable. vSAN begins rebuilding affected object components on other hosts. Replacing the cache SSD and recreating the disk group is the recovery path.</span>
+        </div>
+
+        <div class="section-label">Rebuild Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify the failed disk group</strong></p>
+                    <pre><code># Check disk group status:
+esxcli vsan storage list
+# Failed disk group shows "Disk Group State: OFFLINE" or missing
+
+# Identify the failed cache SSD:
+esxcli vsan debug disk list
+# Cache disk will show "SSD: true" and status "offline" or absent
+
+# Check physical drive health in server management (iDRAC/iLO):
+# Locate the failed drive slot for physical replacement</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Remove the failed disk group</strong></p>
+                    <pre><code># Remove from vSphere Client:
+# Host → Configure → vSAN → Disk Management
+# Select the failed disk group → Remove (with data migration if possible)
+
+# Or from CLI:
+esxcli vsan storage remove -s naa.FAILED_CACHE_SSD_NAA
+
+# Wait for removal to complete before physical replacement
+# This prevents accidental data loss from pulling the wrong drive</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Physical replacement and disk group recreation</strong></p>
+                    <pre><code># 1. Physically replace the cache SSD (hot-swap if supported)
+# 2. Wait for ESXi to detect the new drive:
+esxcli storage core device list | grep -i "new\|naa."
+
+# 3. Claim the new SSD for vSAN cache and recreate disk group:
+esxcli vsan storage add -s naa.NEW_CACHE_SSD -d naa.CAPACITY_1 -d naa.CAPACITY_2
+
+# Or via vSphere Client:
+# Host → Configure → vSAN → Disk Management → Create Disk Group
+# Select the new cache SSD + existing capacity disks
+
+# 4. Monitor resync:
+esxcli vsan debug resync summary
+# vSAN will rebuild components onto the new disk group</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-info">
+                        <span class="alert-icon">&#128712;</span>
+                        <span><strong>Capacity disk replacement</strong> is simpler — remove the single disk from the disk group, replace physically, then add the new disk back. The disk group stays online since only the cache SSD failure takes down the entire group.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #93: vSAN Performance Service             -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-93" data-type="fix" data-severity="medium" data-keywords="performance service stats database historical graphs metrics collection monitoring vscsi vsan observer">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">93</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Performance Service Configuration &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">Enable, configure, and troubleshoot the vSAN Performance Service for historical metrics</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Performance Service</span>
+                <span class="tag">Monitoring</span>
+                <span class="tag">Metrics</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Overview</div>
+        <p>The vSAN Performance Service collects granular I/O metrics (latency, IOPS, throughput) and stores them in a stats database on the vSAN datastore. It is <strong>separate from vSAN Health</strong> — health checks object/cluster state while Performance Service tracks I/O metrics over time.</p>
+
+        <div class="section-label">Setup &amp; Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable the Performance Service</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSAN → Services → Performance Service → Turn ON
+
+# Requirements:
+# - Uses ~255 GB on the vSAN datastore (stats object)
+# - One host becomes the "stats master" (elected automatically)
+# - Collects data every 5 minutes (configurable intervals)
+
+# Verify it's running:
+# Cluster → Monitor → vSAN → Performance → should show graphs
+# If graphs show "No data available" — service may need time to collect</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot missing performance data</strong></p>
+                    <pre><code># 1. Check if stats master is healthy:
+esxcli vsan debug object list | grep -i "stats"
+# The stats DB object should be "Healthy"
+
+# 2. Restart the performance service:
+# vSphere Client → Cluster → Configure → vSAN → Services
+# Turn OFF Performance Service → wait 30 seconds → Turn ON
+
+# 3. If stats object is corrupted:
+# Delete the performance stats object (loses history):
+# Turn OFF service → it auto-deletes the stats DB
+# Turn ON → creates fresh stats object
+# Data collection resumes from scratch
+
+# 4. Check disk space — stats DB needs ~255 GB free on vSAN</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Key metrics to monitor:</strong> Backend Latency (DAVG), Guest Latency (GAVG), Congestion, Resync Rate, Cache Hit Ratio. Use Performance Service for trend analysis and Skyline Health for anomaly detection.</span>
         </div>
     </div>
 </div>

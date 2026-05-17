@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">12</div><div class="stat-label">VCF &amp; Lifecycle Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">14</div><div class="stat-label">VCF &amp; Lifecycle Issues</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">7</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">9</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 4</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1720,6 +1720,177 @@ esxcli storage core device list | grep -c "naa."
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #87: vSAN + Kubernetes / Tanzu (CNS)      -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-87" data-type="fix" data-severity="high" data-keywords="kubernetes Tanzu CNS cloud native storage persistent volume PVC CSI driver supervisor namespace TKG">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">87</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN + Kubernetes / Tanzu (Cloud Native Storage)</div>
+            <div class="kb-entry-subtitle">vSAN as persistent storage for Kubernetes workloads via CSI driver and Supervisor clusters</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Kubernetes</span>
+                <span class="tag">Tanzu</span>
+                <span class="tag">CNS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Architecture</div>
+        <p>vSAN provides persistent volumes for Kubernetes via the <strong>vSphere CSI Driver</strong>. When a pod requests a PersistentVolumeClaim (PVC), the CSI driver creates a First Class Disk (FCD/Improved Virtual Disk) on vSAN. The vSAN storage policy is applied to the FCD, giving Kubernetes workloads enterprise-grade storage with FTT protection, encryption, and dedup/compression.</p>
+
+        <div class="section-label">Common Issues &amp; Fixes</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>PVC stuck in "Pending" state</strong></p>
+                    <pre><code># Most common issue — PVC not binding to a PV
+kubectl describe pvc &lt;pvc-name&gt; -n &lt;namespace&gt;
+# Look at "Events" section for error messages
+
+# Common causes:
+# 1. StorageClass references a non-existent vSAN policy
+kubectl get storageclass -o yaml | grep storagePolicyName
+# Fix: verify the policy name matches exactly in vSphere
+
+# 2. CSI driver pods not running
+kubectl get pods -n vmware-system-csi
+# All pods should be Running. Restart if CrashLoopBackOff:
+kubectl rollout restart deployment vsphere-csi-controller -n vmware-system-csi
+
+# 3. vSAN capacity full — can't create new FCDs
+# Check vSAN datastore capacity in vSphere Client</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure vSAN StorageClass for Kubernetes</strong></p>
+                    <pre><code># Create a vSAN-backed StorageClass:
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vsan-default
+provisioner: csi.vsphere.vmware.com
+parameters:
+  storagePolicyName: "vSAN Default Storage Policy"
+  datastoreURL: "ds:///vmfs/volumes/vsan:xxxxxx/"
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+
+# Apply:
+kubectl apply -f storageclass.yaml
+
+# For Tanzu with Supervisor:
+# Storage policies are mapped automatically via VM Classes
+# Namespace → Storage → Add Storage Policy</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot CSI driver connectivity</strong></p>
+                    <pre><code># CSI driver needs connectivity to vCenter:
+kubectl logs deployment/vsphere-csi-controller -n vmware-system-csi -c vsphere-csi-controller
+# Look for "Failed to connect to vCenter" errors
+
+# Verify CSI secret has correct vCenter credentials:
+kubectl get secret vsphere-config-secret -n vmware-system-csi -o yaml
+# Decode and verify vCenter IP, user, and password
+
+# For TKG clusters: check the vSphere Cloud Provider config
+# kubeadm configmap → verify vcenter-config section</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Create separate vSAN storage policies for different K8s workload tiers (databases = FTT=2 RAID-1, stateless apps = FTT=1 RAID-5). Map each to a Kubernetes StorageClass. Use <code class="inline">allowVolumeExpansion: true</code> for databases that grow.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #94: Host Profile / Auto Deploy + vSAN    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-94" data-type="fix" data-severity="medium" data-keywords="host profile auto deploy stateless PXE boot image vSAN disk claim rule reference host">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">94</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Host Profile / Auto Deploy with vSAN</div>
+            <div class="kb-entry-subtitle">Stateless ESXi deployment with vSAN disk claiming rules and host profile compliance</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Host Profile</span>
+                <span class="tag">Auto Deploy</span>
+                <span class="tag">Stateless</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Overview</div>
+        <p>Host Profiles capture ESXi host configuration as a template. Auto Deploy boots stateless ESXi from network (PXE). When combined with vSAN, special care is needed for disk claiming rules — Auto Deploy hosts must correctly identify which disks are cache vs. capacity for vSAN.</p>
+
+        <div class="section-label">vSAN-Specific Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure disk claiming rules in Host Profile</strong></p>
+                    <pre><code># vSAN disk claiming in Host Profile:
+# Host Profile → Storage → vSAN → Disk Claiming
+# Define rules that match your hardware:
+
+# Rule example (by disk model):
+# Cache: Model contains "INTEL_SSDPE2MX" → Tag: SSD, Group: Cache
+# Capacity: Model contains "ST2000NM" → Tag: Non-SSD, Group: Capacity
+
+# Or by disk size:
+# Cache: Size &lt; 500GB → Cache tier
+# Capacity: Size &gt;= 500GB → Capacity tier
+
+# CRITICAL: Rules must be deterministic across all hosts
+# Same hardware model must produce same disk assignment</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot host profile compliance failures</strong></p>
+                    <pre><code># Check compliance:
+# Host → Configure → Host Profile → Check Compliance
+
+# Common vSAN-related failures:
+# 1. "Disk claiming rules do not match" 
+#    → Reference host has different disk models than target
+#    → Fix: update claiming rules to be model-agnostic (use size-based)
+
+# 2. "vSAN VMkernel not found"
+#    → Host profile requires vmk with vSAN traffic tag
+#    → Verify network profile includes vSAN VMkernel definition
+
+# 3. "Cannot enable vSAN — host has no eligible disks"
+#    → Boot device being claimed by vSAN rules
+#    → Add exclusion rule for boot device (USB/SD/M.2)
+#    → Exclude: Device path matches "mpx.vmhba*" (local boot)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Auto Deploy + vSAN:</strong> Stateless hosts <strong>do not persist vSAN configuration across reboots</strong>. The Host Profile must fully define the vSAN config (VMkernel, disk groups, cluster membership). Test profile compliance on a reference host before deploying to production.</span>
         </div>
     </div>
 </div>

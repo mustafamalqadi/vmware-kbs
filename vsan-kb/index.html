@@ -315,7 +315,7 @@
     <h1>VMware vSAN Knowledge Base</h1>
     <p class="subtitle">Comprehensive Fix &amp; Break Reference — Official VMware / Broadcom Procedures Only</p>
     <div class="hero-badges">
-        <span class="badge badge-total">84 KB Entries</span>
+        <span class="badge badge-total">94 KB Entries</span>
         <span class="badge badge-phase">7 Phases</span>
         <span class="badge badge-break">&#9888; Break Scenarios</span>
         <span class="badge badge-fix">&#10003; Fix Procedures</span>
@@ -325,7 +325,7 @@
 <!-- ── Global Search ── -->
 <div class="search-section">
     <div class="search-box" id="searchBox">
-        <input type="text" id="globalSearch" placeholder="Search all 84 KB entries — congestion, resync, ESA, NVMe, stretched cluster, capacity..." oninput="performSearch()" autocomplete="off">
+        <input type="text" id="globalSearch" placeholder="Search all 94 KB entries — congestion, resync, ESA, NVMe, stretched cluster, capacity..." oninput="performSearch()" autocomplete="off">
         <div class="search-hint">
             <span class="search-chip" onclick="quickSearch('congestion')">congestion</span>
             <span class="search-chip" onclick="quickSearch('disk group')">disk group</span>
@@ -346,9 +346,9 @@
 
 <!-- ── Stats ── -->
 <div class="stats-section reveal" id="stats">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="84">0</div><div class="stat-label">Total KB Entries</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="42">0</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="42">0</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="94">0</div><div class="stat-label">Total KB Entries</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="43">0</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="51">0</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="7">0</div><div class="stat-label">Phases</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
 </div>
@@ -385,10 +385,11 @@
                     <li><span class="kb-num-small f">#10</span> Maintenance Mode Stuck</li>
                     <li><span class="kb-num-small b">#71</span> Health Service Crash</li>
                     <li><span class="kb-num-small b">#72</span> Orphaned Objects</li>
+                    <li><span class="kb-num-small b">#85</span> APD / PDL Path Failure</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count">KB #1–10, 71–72</span>
+                <span class="count">KB #1–10, 71–72, 85</span>
                 <span class="link-text">Open Phase 1 →</span>
             </div>
         </a>
@@ -417,10 +418,12 @@
                     <li><span class="kb-num-small f">#20</span> iSCSI Target Service</li>
                     <li><span class="kb-num-small b">#73</span> CLOMD Failure</li>
                     <li><span class="kb-num-small f">#74</span> Support Bundle Collection</li>
+                    <li><span class="kb-num-small f">#91</span> Disk Group Rebuild</li>
+                    <li><span class="kb-num-small f">#93</span> Performance Service</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count">KB #11–20, 73–74</span>
+                <span class="count">KB #11–20, 73–74, 91, 93</span>
                 <span class="link-text">Open Phase 2 →</span>
             </div>
         </a>
@@ -449,10 +452,12 @@
                     <li><span class="kb-num-small b">#30</span> Fault Domain Misconfig</li>
                     <li><span class="kb-num-small b">#75</span> Boot Device Failure</li>
                     <li><span class="kb-num-small f">#76</span> Backup (VADP/CBT)</li>
+                    <li><span class="kb-num-small f">#86</span> Two-Node / ROBO</li>
+                    <li><span class="kb-num-small f">#90</span> SRM / DR Integration</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count">KB #21–30, 75–76</span>
+                <span class="count">KB #21–30, 75–76, 86, 90</span>
                 <span class="link-text">Open Phase 3 →</span>
             </div>
         </a>
@@ -481,10 +486,12 @@
                     <li><span class="kb-num-small b">#40</span> Cert Rotation Breaks Encryption</li>
                     <li><span class="kb-num-small f">#83</span> DRS + vSAN Conflicts</li>
                     <li><span class="kb-num-small f">#84</span> HBA Passthrough Mode</li>
+                    <li><span class="kb-num-small f">#87</span> K8s / Tanzu (CNS)</li>
+                    <li><span class="kb-num-small f">#94</span> Host Profile / Auto Deploy</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count">KB #31–40, 83–84</span>
+                <span class="count">KB #31–40, 83–84, 87, 94</span>
                 <span class="link-text">Open Phase 4 →</span>
             </div>
         </a>
@@ -545,10 +552,12 @@
                     <li><span class="kb-num-small b">#78</span> Component Count Limit</li>
                     <li><span class="kb-num-small f">#79</span> Proactive Rebalance</li>
                     <li><span class="kb-num-small f">#80</span> Max Config Limits</li>
+                    <li><span class="kb-num-small f">#89</span> Witness Replacement</li>
+                    <li><span class="kb-num-small f">#92</span> VM vs vSAN Encryption</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count">KB #51–60, 78–80</span>
+                <span class="count">KB #51–60, 78–80, 89, 92</span>
                 <span class="link-text">Open Phase 6 →</span>
             </div>
         </a>
@@ -577,10 +586,11 @@
                     <li><span class="kb-num-small f">#70</span> 25/100GbE Network Design</li>
                     <li><span class="kb-num-small b">#81</span> NTP Clock Drift (CMMDS)</li>
                     <li><span class="kb-num-small b">#82</span> Datastore Not Visible</li>
+                    <li><span class="kb-num-small f">#88</span> Data-in-Transit Encryption</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count">KB #61–70, 81–82</span>
+                <span class="count">KB #61–70, 81–82, 88</span>
                 <span class="link-text">Open Phase 7 →</span>
             </div>
         </a>
@@ -598,13 +608,13 @@
             <div class="phase-card-body">
                 <ul>
                     <li>Select symptoms to narrow down the root cause</li>
-                    <li>Covers all 84 KB entries across 8 categories</li>
+                    <li>Covers all 94 KB entries across 8 categories</li>
                     <li>Quick-path shortcuts for common scenarios</li>
                     <li>Guided navigation with breadcrumb trail</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count" style="color:var(--warning-light);">All 84 KBs</span>
+                <span class="count" style="color:var(--warning-light);">All 94 KBs</span>
                 <span class="link-text">Open Decision Tree →</span>
             </div>
         </a>
@@ -619,9 +629,9 @@
 <section class="filter-section reveal" id="kbindex">
     <div class="section-title">Complete KB Index</div>
     <div class="filter-tabs">
-        <button class="filter-tab active" onclick="filterIndex('all', this)">All (70)</button>
-        <button class="filter-tab" onclick="filterIndex('break', this)">Break (35)</button>
-        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (35)</button>
+        <button class="filter-tab active" onclick="filterIndex('all', this)">All (94)</button>
+        <button class="filter-tab" onclick="filterIndex('break', this)">Break (43)</button>
+        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (51)</button>
         <button class="filter-tab" onclick="filterIndex('critical', this)">Critical</button>
         <button class="filter-tab" onclick="filterIndex('high', this)">High</button>
         <button class="filter-tab" onclick="filterIndex('medium', this)">Medium</button>
@@ -636,7 +646,7 @@
                 <div class="logo-mark">vS</div>
                 <span>vSAN Knowledge Base</span>
             </div>
-            <p>84 fix &amp; break entries across 7 phases. Official VMware / Broadcom tooling only — ESXCLI, vSphere Client, esxtop, RVC, vSAN Observer, VCSA CLI, SDDC Manager. Zero Python, PowerCLI, or third-party tools.</p>
+            <p>94 fix &amp; break entries across 7 phases. Official VMware / Broadcom tooling only — ESXCLI, vSphere Client, esxtop, RVC, vSAN Observer, VCSA CLI, SDDC Manager. Zero Python, PowerCLI, or third-party tools.</p>
         </div>
         <div class="footer-col">
             <h4>Navigate</h4>
@@ -743,7 +753,17 @@ const kbEntries = [
     { id:81, title:"NTP Clock Drift Breaks vSAN CMMDS", type:"break", severity:"critical", phase:7, file:"phase7.html", keywords:"NTP time sync clock drift CMMDS partition node membership" },
     { id:82, title:"vSAN Datastore Not Visible After Reboot", type:"break", severity:"high", phase:7, file:"phase7.html", keywords:"datastore not visible missing disappeared reboot mount" },
     { id:83, title:"DRS + vSAN Conflict Resolution", type:"fix", severity:"high", phase:4, file:"phase4.html", keywords:"DRS vMotion conflict migration storage redistribution overload" },
-    { id:84, title:"HBA / Controller Passthrough (JBOD) Mode", type:"fix", severity:"high", phase:4, file:"phase4.html", keywords:"HBA controller passthrough JBOD RAID mode SAS SATA NVMe firmware" }
+    { id:84, title:"HBA / Controller Passthrough (JBOD) Mode", type:"fix", severity:"high", phase:4, file:"phase4.html", keywords:"HBA controller passthrough JBOD RAID mode SAS SATA NVMe firmware" },
+    { id:85, title:"APD / PDL — All Paths Down & Permanent Device Loss", type:"break", severity:"critical", phase:1, file:"phase1.html", keywords:"APD PDL all paths down permanent device loss storage unavailable timeout SCSI" },
+    { id:86, title:"Two-Node / ROBO vSAN Deployment", type:"fix", severity:"high", phase:3, file:"phase3.html", keywords:"two-node 2-node ROBO remote office branch office witness direct connect edge" },
+    { id:87, title:"vSAN + Kubernetes / Tanzu (CNS)", type:"fix", severity:"high", phase:4, file:"phase4.html", keywords:"kubernetes Tanzu CNS cloud native storage persistent volume PVC CSI driver" },
+    { id:88, title:"vSAN Data-in-Transit Encryption", type:"fix", severity:"high", phase:7, file:"phase7.html", keywords:"data in transit encryption network traffic wire encrypted TLS compliance" },
+    { id:89, title:"Witness Appliance Replacement / Redeployment", type:"fix", severity:"high", phase:6, file:"phase6.html", keywords:"witness replacement redeploy swap stretched 2-node cluster reconfigure" },
+    { id:90, title:"vSAN + Site Recovery Manager (SRM)", type:"fix", severity:"high", phase:3, file:"phase3.html", keywords:"SRM Site Recovery Manager replication DR disaster recovery failover" },
+    { id:91, title:"Disk Group Rebuild / Cache SSD Replacement", type:"fix", severity:"high", phase:2, file:"phase2.html", keywords:"disk group rebuild recreate cache SSD replace capacity hot swap" },
+    { id:92, title:"VM Encryption vs vSAN Encryption", type:"fix", severity:"medium", phase:6, file:"phase6.html", keywords:"VM encryption vSAN encryption data at rest double encrypt KMS performance" },
+    { id:93, title:"vSAN Performance Service Configuration", type:"fix", severity:"medium", phase:2, file:"phase2.html", keywords:"performance service stats database historical graphs metrics monitoring" },
+    { id:94, title:"Host Profile / Auto Deploy with vSAN", type:"fix", severity:"medium", phase:4, file:"phase4.html", keywords:"host profile auto deploy stateless PXE boot vSAN disk claim rule" }
 ];
 
 const phaseNames = {

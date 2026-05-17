@@ -329,7 +329,7 @@
         <h1>vSAN Troubleshooting <span>Decision Tree</span></h1>
         <div class="header-badges">
             <span class="badge badge-tree">Interactive Diagnosis</span>
-            <span class="badge badge-phase">84 KB Entries</span>
+            <span class="badge badge-phase">94 KB Entries</span>
         </div>
     </div>
 </header>
@@ -439,14 +439,14 @@ const tree = {
         question: "What area is affected?",
         stepNum: 1,
         choices: [
-            { id: "storage",     icon: "&#128190;", title: "Storage / Disk",              desc: "Disk groups, objects, capacity, NVMe, checksum errors",             count: 19 },
-            { id: "network",     icon: "&#127760;", title: "Network / Connectivity",      desc: "VMkernel, MTU, partition, split brain, NIC teaming, firewall",      count: 11 },
-            { id: "performance", icon: "&#9889;",   title: "Performance",                 desc: "Latency, congestion, resync, IOPS, esxtop counters",               count: 11 },
-            { id: "cluster",     icon: "&#128421;", title: "Cluster / Host",              desc: "Host join, maintenance mode, witness, PSOD, isolation, HA",         count: 16 },
-            { id: "data_prot",   icon: "&#128737;", title: "Data Protection & Recovery",  desc: "Snapshots, vCenter recovery, stretched cluster failover",           count: 8  },
+            { id: "storage",     icon: "&#128190;", title: "Storage / Disk",              desc: "Disk groups, objects, capacity, NVMe, checksum errors",             count: 20 },
+            { id: "network",     icon: "&#127760;", title: "Network / Connectivity",      desc: "VMkernel, MTU, partition, split brain, NIC teaming, firewall",      count: 12 },
+            { id: "performance", icon: "&#9889;",   title: "Performance",                 desc: "Latency, congestion, resync, IOPS, esxtop counters",               count: 12 },
+            { id: "cluster",     icon: "&#128421;", title: "Cluster / Host",              desc: "Host join, maintenance mode, witness, PSOD, isolation, HA",         count: 19 },
+            { id: "data_prot",   icon: "&#128737;", title: "Data Protection & Recovery",  desc: "Snapshots, vCenter recovery, stretched cluster failover",           count: 9  },
             { id: "upgrade",     icon: "&#128259;", title: "Upgrade / Lifecycle",          desc: "Upgrade failures, vLCM, firmware, OSA\u2192ESA migration",         count: 7  },
-            { id: "encryption",  icon: "&#128274;", title: "Encryption / Security",       desc: "KMS keys, key rotation, certificates, SPBM policies",              count: 4  },
-            { id: "vcf",         icon: "&#127970;", title: "VCF / SDDC",                  desc: "SDDC Manager, workload domains, NSX-T, Aria, HCI Mesh",            count: 10 }
+            { id: "encryption",  icon: "&#128274;", title: "Encryption / Security",       desc: "KMS keys, key rotation, certificates, SPBM policies",              count: 6  },
+            { id: "vcf",         icon: "&#127970;", title: "VCF / SDDC",                  desc: "SDDC Manager, workload domains, NSX-T, Aria, HCI Mesh",            count: 12 }
         ]
     },
 
@@ -470,7 +470,8 @@ const tree = {
             { id: "orphan_objects",  icon: "&#128308;", title: "Orphaned / stale objects",            desc: "Ghost objects consuming capacity after VM deletions",         result: true },
             { id: "dom_owner",       icon: "&#128308;", title: "DOM owner unreachable",               desc: "Object inaccessible because owner host is down/partitioned",  result: true },
             { id: "component_limit", icon: "&#128308;", title: "Component count limit exceeded",      desc: "Host hit max component count, blocking deployments",          result: true },
-            { id: "hba_passthrough", icon: "&#128993;", title: "HBA / controller passthrough mode",   desc: "Storage controller not in JBOD mode for vSAN",                result: true }
+            { id: "hba_passthrough", icon: "&#128993;", title: "HBA / controller passthrough mode",   desc: "Storage controller not in JBOD mode for vSAN",                result: true },
+            { id: "dg_rebuild",      icon: "&#128993;", title: "Disk group rebuild / cache SSD swap",  desc: "Replace failed cache SSD and recreate the disk group",        result: true }
         ]
     },
 
@@ -489,7 +490,8 @@ const tree = {
             { id: "stretched_net", icon: "&#128993;", title: "Stretched cluster networking", desc: "Inter-site latency, witness connectivity, ISL sizing",  result: true },
             { id: "firewall",    icon: "&#128308;", title: "Firewall / ports blocked",      desc: "Hosts can't communicate on vSAN ports (2233, 12321\u2026)",  result: true },
             { id: "25_100gbe",   icon: "&#128993;", title: "25/100 GbE design for ESA",     desc: "NIC selection, switch config for high-bandwidth ESA",   result: true },
-            { id: "ntp_drift",   icon: "&#128308;", title: "NTP clock drift breaks CMMDS",  desc: "Time desync causes phantom partitions and membership issues",  result: true }
+            { id: "ntp_drift",   icon: "&#128308;", title: "NTP clock drift breaks CMMDS",  desc: "Time desync causes phantom partitions and membership issues",  result: true },
+            { id: "transit_enc", icon: "&#128993;", title: "Data-in-transit encryption",      desc: "Encrypt vSAN network traffic between hosts",                   result: true }
         ]
     },
 
@@ -508,7 +510,8 @@ const tree = {
             { id: "resync_throttle", icon: "&#128993;", title: "Resync throttle balancing",  desc: "Resync consuming too much bandwidth / need to tune",         result: true },
             { id: "capacity_plan", icon: "&#128993;", title: "Capacity planning & sizing",  desc: "Right-sizing clusters, slack space, growth projections",      result: true },
             { id: "readynode",     icon: "&#128993;", title: "ReadyNode hardware selection", desc: "Picking the right ReadyNode config for workload profile",    result: true },
-            { id: "rebalance",     icon: "&#128993;", title: "Proactive rebalance",           desc: "Trigger and tune capacity rebalancing across hosts/disks",   result: true }
+            { id: "rebalance",     icon: "&#128993;", title: "Proactive rebalance",           desc: "Trigger and tune capacity rebalancing across hosts/disks",   result: true },
+            { id: "perf_service",  icon: "&#128993;", title: "Performance Service setup",      desc: "Enable and troubleshoot vSAN Performance Service metrics",   result: true }
         ]
     },
 
@@ -532,7 +535,10 @@ const tree = {
             { id: "support_bundle", icon: "&#128993;", title: "Support bundle collection",          desc: "Proper diagnostic bundle collection for VMware SR",        result: true },
             { id: "boot_device",    icon: "&#128308;", title: "Boot device failure (USB/SD)",       desc: "ESXi boot media worn out, host lost configuration",        result: true },
             { id: "max_limits",     icon: "&#128993;", title: "Max configuration limits",           desc: "vSAN scalability limits — hosts, components, policies",    result: true },
-            { id: "datastore_gone", icon: "&#128308;", title: "vSAN datastore not visible",         desc: "Datastore disappeared after reboot or network outage",     result: true }
+            { id: "datastore_gone", icon: "&#128308;", title: "vSAN datastore not visible",         desc: "Datastore disappeared after reboot or network outage",     result: true },
+            { id: "apd_pdl",        icon: "&#128308;", title: "APD / PDL storage path failure",      desc: "All Paths Down or Permanent Device Loss on vSAN disks",    result: true },
+            { id: "two_node_robo",  icon: "&#128993;", title: "Two-node / ROBO cluster",             desc: "Unique challenges for 2-node remote/branch office vSAN",   result: true },
+            { id: "witness_replace",icon: "&#128993;", title: "Witness appliance replacement",       desc: "Deploy and swap to a new witness appliance",               result: true }
         ]
     },
 
@@ -548,7 +554,8 @@ const tree = {
             { id: "esa_arch",        icon: "&#128993;", title: "ESA vs OSA architecture",       desc: "Understanding architectural differences for decisions",   result: true },
             { id: "osa_to_esa",      icon: "&#128993;", title: "OSA \u2192 ESA migration planning",  desc: "Planning and executing migration from OSA to ESA",       result: true },
             { id: "esa_dedup",       icon: "&#128993;", title: "ESA dedup & compression",       desc: "ESA-specific dedup/compression tuning and issues",       result: true },
-            { id: "backup_vadp",     icon: "&#128993;", title: "Backup integration (VADP/CBT)",    desc: "Backup failures due to CBT issues or snapshot problems", result: true }
+            { id: "backup_vadp",     icon: "&#128993;", title: "Backup integration (VADP/CBT)",    desc: "Backup failures due to CBT issues or snapshot problems", result: true },
+            { id: "srm_dr",          icon: "&#128993;", title: "SRM / vSphere Replication DR",       desc: "Site Recovery Manager integration with vSAN replication",result: true }
         ]
     },
 
@@ -575,7 +582,9 @@ const tree = {
             { id: "kms_keys",    icon: "&#128308;", title: "KMS / encryption key issues",       desc: "Host can't unlock encrypted disk group, KMS unreachable",  result: true },
             { id: "key_rotation",icon: "&#128993;", title: "Encryption key rotation",            desc: "Key rotation stuck, shallow vs deep re-key",              result: true },
             { id: "cert_rot",    icon: "&#128308;", title: "Certificate rotation breaks encryption", desc: "After cert renewal, vSAN encryption stopped working", result: true },
-            { id: "spbm_enc",    icon: "&#128993;", title: "SPBM storage policy mismatch",      desc: "Encryption policy not applying, compliance issues",        result: true }
+            { id: "spbm_enc",    icon: "&#128993;", title: "SPBM storage policy mismatch",      desc: "Encryption policy not applying, compliance issues",        result: true },
+            { id: "vm_vs_vsan_enc", icon: "&#128993;", title: "VM encryption vs vSAN encryption", desc: "Understanding two encryption layers, avoiding double encrypt", result: true },
+            { id: "transit_enc2",   icon: "&#128993;", title: "Data-in-transit encryption",       desc: "Encrypt vSAN network traffic (separate from at-rest)",    result: true }
         ]
     },
 
@@ -593,7 +602,9 @@ const tree = {
             { id: "hci_mesh_vcf",   icon: "&#128993;", title: "HCI Mesh cross-domain",        desc: "HCI Mesh between workload domains in VCF",                  result: true },
             { id: "hci_mesh_gen",   icon: "&#128993;", title: "HCI Mesh general config",      desc: "Non-VCF HCI Mesh setup and troubleshooting",                result: true },
             { id: "iscsi_target",   icon: "&#128993;", title: "iSCSI target service",          desc: "vSAN iSCSI target configuration or failure",                result: true },
-            { id: "drs_conflict",   icon: "&#128993;", title: "DRS + vSAN conflict",              desc: "DRS migrations conflicting with vSAN data locality",       result: true }
+            { id: "drs_conflict",   icon: "&#128993;", title: "DRS + vSAN conflict",              desc: "DRS migrations conflicting with vSAN data locality",       result: true },
+            { id: "k8s_tanzu",      icon: "&#128993;", title: "Kubernetes / Tanzu (CNS)",          desc: "vSAN as persistent storage for K8s workloads via CSI",     result: true },
+            { id: "host_profile",   icon: "&#128993;", title: "Host Profile / Auto Deploy",        desc: "Stateless ESXi with vSAN disk claiming rules",             result: true }
         ]
     }
 };
@@ -706,7 +717,20 @@ const results = {
     max_limits:      { kbs: [{ n:80, t:"vSAN Max Configuration Limits Reference",       ty:"fix",   f:"phase6.html", sum:"Key limits: 64 hosts/cluster, 9,000 components/host (OSA), 14,000+ (ESA), 5 disk groups, 62TB max object. Check configmax.broadcom.com." }] },
     datastore_gone:  { kbs: [{ n:82, t:"vSAN Datastore Not Visible After Reboot",       ty:"break", f:"phase7.html", sum:"vSAN datastore missing after reboot. Verify VMkernel vSAN tag, rejoin cluster with esxcli vsan cluster join, re-register VMs." }] },
     drs_conflict:    { kbs: [{ n:83, t:"DRS + vSAN Conflict Resolution",                ty:"fix",   f:"phase4.html", sum:"DRS vMotion conflicts with vSAN data locality. Set DRS to Partially Automated, increase migration threshold, separate traffic." }] },
-    backup_vadp:     { kbs: [{ n:76, t:"vSAN + Backup Integration (VADP/CBT)",          ty:"fix",   f:"phase3.html", sum:"Backup failures from CBT bugs or snapshot overload. Reset CBT, limit concurrent snapshots to 2\u20133, use HotAdd transport mode." }] }
+    backup_vadp:     { kbs: [{ n:76, t:"vSAN + Backup Integration (VADP/CBT)",          ty:"fix",   f:"phase3.html", sum:"Backup failures from CBT bugs or snapshot overload. Reset CBT, limit concurrent snapshots to 2\u20133, use HotAdd transport mode." }] },
+
+    // ── New KB Entries (85–94) ──
+    apd_pdl:         { kbs: [{ n:85, t:"APD / PDL \u2014 All Paths Down & Permanent Device Loss", ty:"break", f:"phase1.html", sum:"APD = temporary storage loss (140s retry). PDL = permanent loss (immediate). Configure HA APD/PDL response policies. Never force-kill VMs during APD." }] },
+    two_node_robo:   { kbs: [{ n:86, t:"Two-Node / ROBO vSAN Deployment",               ty:"fix",   f:"phase3.html", sum:"2-node clusters require witness, can only use FTT=1 RAID-1, must use Ensure Accessibility for maintenance. Direct-connect topology eliminates switch SPOF." }] },
+    k8s_tanzu:       { kbs: [{ n:87, t:"vSAN + Kubernetes / Tanzu (CNS)",               ty:"fix",   f:"phase4.html", sum:"vSAN provides persistent volumes via CSI driver. PVC stuck in Pending = check StorageClass policy name, CSI pods, and vSAN capacity." }] },
+    transit_enc:     { kbs: [{ n:88, t:"vSAN Data-in-Transit Encryption",                ty:"fix",   f:"phase7.html", sum:"Encrypts vSAN network traffic between hosts. No KMS needed. 5-10% CPU overhead. Three modes: Disabled, Preferred, Required." }] },
+    transit_enc2:    { kbs: [{ n:88, t:"vSAN Data-in-Transit Encryption",                ty:"fix",   f:"phase7.html", sum:"Encrypts vSAN network traffic between hosts. No KMS needed. Combined with data-at-rest for full encryption compliance." }] },
+    witness_replace: { kbs: [{ n:89, t:"Witness Appliance Replacement / Redeployment",   ty:"fix",   f:"phase6.html", sum:"Deploy new witness OVA, add to vCenter, swap via Fault Domains config. vSAN resyncs witness components automatically. Don\u2019t remove old witness until swap completes." }] },
+    srm_dr:          { kbs: [{ n:90, t:"vSAN + Site Recovery Manager Integration",       ty:"fix",   f:"phase3.html", sum:"vSphere Replication for async DR to remote vSAN cluster. SRM orchestrates failover. Use replication seeds for large VMs. Cleanup test failover to avoid orphans." }] },
+    dg_rebuild:      { kbs: [{ n:91, t:"Disk Group Rebuild / Cache SSD Replacement",     ty:"fix",   f:"phase2.html", sum:"Cache SSD failure takes entire disk group offline. Remove failed DG, replace SSD physically, recreate DG with esxcli vsan storage add. Monitor resync." }] },
+    vm_vs_vsan_enc:  { kbs: [{ n:92, t:"VM Encryption vs vSAN Encryption",              ty:"fix",   f:"phase6.html", sum:"Two different layers: VM encryption (per-VM, before I/O) vs vSAN encryption (cluster-wide, after dedup). Avoid double encryption. vSAN encryption preserves dedup savings." }] },
+    perf_service:    { kbs: [{ n:93, t:"vSAN Performance Service Configuration",         ty:"fix",   f:"phase2.html", sum:"Enable in cluster services. Uses ~255GB on vSAN. Collects IOPS/latency/throughput every 5 min. Separate from Health Service. Restart if graphs show no data." }] },
+    host_profile:    { kbs: [{ n:94, t:"Host Profile / Auto Deploy with vSAN",           ty:"fix",   f:"phase4.html", sum:"Stateless ESXi needs Host Profile for vSAN disk claiming rules. Define cache vs capacity by disk model or size. Exclude boot device from vSAN claiming." }] }
 };
 
 // ═══════════════════════════════════════════════════════════════════

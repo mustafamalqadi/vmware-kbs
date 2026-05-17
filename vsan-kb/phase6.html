@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">13</div><div class="stat-label">Performance &amp; Capacity Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">15</div><div class="stat-label">Performance &amp; Capacity Issues</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">6</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">7</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">9</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 6</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1995,6 +1995,157 @@ esxcli vsan debug resync summary
         <div class="alert alert-info">
             <span class="alert-icon">&#128712;</span>
             <span><strong>Always verify:</strong> Check the <a href="https://configmax.broadcom.com/" target="_blank" rel="noopener" style="color:var(--accent-light)">Broadcom Configuration Maximums tool</a> for your exact vSAN build. Limits change between releases and update versions.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #89: Witness Appliance Replacement        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-89" data-type="fix" data-severity="high" data-keywords="witness replacement redeploy deploy new witness appliance swap stretched 2-node cluster reconfigure">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">89</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Witness Appliance Replacement / Redeployment</div>
+            <div class="kb-entry-subtitle">Replace a failed or degraded witness appliance without disrupting the vSAN cluster</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Witness</span>
+                <span class="tag">Replacement</span>
+                <span class="tag">Stretched Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">When to Replace</div>
+        <p>Replace the witness when: appliance is corrupted or unrecoverable, hardware hosting the witness is being decommissioned, you need to resize from small/medium to large appliance, or witness disk is full and can't be expanded.</p>
+
+        <div class="section-label">Replacement Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Deploy new witness appliance</strong></p>
+                    <pre><code># 1. Download the vSAN Witness Appliance OVA (same version as cluster)
+# 2. Deploy OVA to a non-vSAN host/cluster at the witness site
+# 3. Select appliance size:
+#    - Tiny:   10 VMs, 1-5 hosts (2 vCPU, 8 GB RAM)
+#    - Medium: up to 39 nodes (2 vCPU, 16 GB RAM)
+#    - Large:  up to 64 nodes (2 vCPU, 32 GB RAM)
+# 4. Configure management + witness (vSAN) VMkernel networks
+# 5. Power on and verify it's accessible:
+ping &lt;new-witness-management-ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Swap the witness in vSphere Client</strong></p>
+                    <pre><code># Add the new witness to vCenter inventory as a standalone host:
+# Hosts and Clusters → Data Center → Add Host → new witness IP
+
+# Replace witness on the stretched/2-node cluster:
+# Cluster → Configure → vSAN → Fault Domains and Stretched Cluster
+# Click "Change" on the witness host assignment
+# Select the new witness host from inventory
+# Click OK
+
+# vSAN will:
+# 1. Move witness components from old to new witness
+# 2. This happens via resync — monitor progress:
+#    Cluster → Monitor → vSAN → Resyncing Objects
+
+# After resync completes, remove old witness from vCenter inventory</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Do NOT remove the old witness before the swap completes.</strong> The cluster needs at least one witness for quorum during the transition. If the old witness is already dead, the swap will still work — vSAN rebuilds witness components on the new appliance.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #92: VM Encryption vs vSAN Encryption     -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-92" data-type="fix" data-severity="medium" data-keywords="VM encryption vSAN encryption data at rest double encrypt KMS performance overhead comparison SPBM">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">92</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VM Encryption vs. vSAN Encryption — Understanding the Two Layers</div>
+            <div class="kb-entry-subtitle">Clarifying the differences between per-VM encryption and vSAN datastore-level encryption to avoid double encryption overhead</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Encryption</span>
+                <span class="tag">Security</span>
+                <span class="tag">KMS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Key Differences</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">VM Encryption (per-VM)</div>
+                <ul>
+                    <li>Encrypts at the <strong>VM layer</strong> — each VM has its own keys</li>
+                    <li>Configured via <strong>VM storage policy</strong> (per-VM opt-in)</li>
+                    <li>Encryption happens <strong>before I/O reaches vSAN</strong></li>
+                    <li>Encrypted data is stored on vSAN (vSAN sees ciphertext)</li>
+                    <li>Works with <strong>any datastore</strong> (not vSAN-specific)</li>
+                    <li>vMotion: data stays encrypted in transit</li>
+                    <li><strong>Prevents dedup/compression</strong> (data is random after encryption)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">vSAN Encryption (datastore-level)</div>
+                <ul>
+                    <li>Encrypts at the <strong>vSAN layer</strong> — entire datastore is encrypted</li>
+                    <li>Configured at <strong>cluster level</strong> (all-or-nothing)</li>
+                    <li>Encryption happens <strong>after dedup/compression</strong></li>
+                    <li>All data on vSAN disks is encrypted at rest</li>
+                    <li><strong>vSAN-specific feature</strong> only</li>
+                    <li>Dedup/compression <strong>works normally</strong> (data compressed first, then encrypted)</li>
+                    <li>Lower per-VM overhead — one encryption pass for everything</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Critical Guidance</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Avoid double encryption</strong></p>
+                    <pre><code># BAD: VM Encryption + vSAN Encryption on the same VM
+# Results in double encryption → double CPU overhead, zero benefit
+# vSAN dedup/compression is defeated by VM encryption layer
+
+# RECOMMENDED configurations:
+# Option A: vSAN Encryption only (most common)
+#   - Cluster → Configure → vSAN → Services → Encryption → ON
+#   - All data encrypted at rest, dedup/compression still effective
+#   - Single KMS configuration for entire cluster
+
+# Option B: VM Encryption only (selective compliance)
+#   - Only sensitive VMs get encrypted via storage policy
+#   - Other VMs benefit from dedup/compression on plaintext data
+#   - Per-VM key management
+
+# Option C: Both (ONLY if compliance requires it)
+#   - Some regulations require both layers (rare)
+#   - Accept the performance penalty and loss of dedup</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Recommendation:</strong> For most environments, <strong>vSAN Encryption alone</strong> is the best choice. It covers all data at rest, preserves dedup/compression savings, and requires only cluster-level KMS configuration. Use VM Encryption only when specific VMs need independent key management for compliance.</span>
         </div>
     </div>
 </div>

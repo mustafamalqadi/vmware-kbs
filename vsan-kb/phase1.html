@@ -509,11 +509,11 @@
 <!-- ═══════════ STATS ═══════════ -->
 <div class="stats-bar">
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--accent-light)">12</div>
+        <div class="stat-value" style="color:var(--accent-light)">13</div>
         <div class="stat-label">Total Issues</div>
     </div>
     <div class="stat-card">
-        <div class="stat-value" style="color:var(--danger-light)">7</div>
+        <div class="stat-value" style="color:var(--danger-light)">8</div>
         <div class="stat-label">Break Scenarios</div>
     </div>
     <div class="stat-card">
@@ -2044,6 +2044,137 @@ vsan.purge_inaccessible_vswp_objects /dc/computers/cluster-name</code><button cl
 # VM → Snapshots → Consolidate if "Consolidation needed" appears</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #85: APD / PDL Handling                   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-85" data-type="break" data-severity="critical" data-keywords="APD PDL all paths down permanent device loss storage unavailable timeout SCSI sense vmkernel dead">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">85</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">APD / PDL — All Paths Down &amp; Permanent Device Loss</div>
+            <div class="kb-entry-subtitle">Storage path failure triggers APD or PDL state, causing VM stuns, HA events, and potential data unavailability</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">APD</span>
+                <span class="tag">PDL</span>
+                <span class="tag">Storage Paths</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> APD (All Paths Down) means storage is temporarily unreachable — ESXi keeps retrying for up to 140 seconds. PDL (Permanent Device Loss) means the device is gone forever — ESXi gives up immediately. The difference in ESXi behavior is dramatic and understanding it is critical to avoiding data loss.</span>
+        </div>
+
+        <div class="section-label">APD vs PDL — Key Differences</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">APD (All Paths Down)</div>
+                <ul>
+                    <li>Storage is <strong>temporarily</strong> unreachable (network blip, switch reboot)</li>
+                    <li>ESXi retries I/O for <strong>140 seconds</strong> (default APD timeout)</li>
+                    <li>VMs are <strong>stunned</strong> (frozen) — not crashed</li>
+                    <li>If paths recover within timeout, VMs resume automatically</li>
+                    <li>SCSI sense code: no response (timeout)</li>
+                    <li>vmkernel.log: <code class="inline">APD Timeout: Not Responded</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title red">PDL (Permanent Device Loss)</div>
+                <ul>
+                    <li>Storage device is <strong>permanently gone</strong> (disk removed, LUN destroyed)</li>
+                    <li>ESXi <strong>immediately</strong> marks device as lost — no retry</li>
+                    <li>VMs receive I/O errors and may <strong>crash or BSOD</strong></li>
+                    <li>SCSI sense code: <strong>0x5/0x25</strong> (Logical Unit Not Supported)</li>
+                    <li>vmkernel.log: <code class="inline">PDL: Permanent Device Loss</code></li>
+                    <li>HA can restart VMs on other hosts (if configured)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Symptoms on vSAN</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>vSAN-specific APD/PDL scenarios</strong></p>
+                    <pre><code># vSAN can trigger APD when:
+# - vSAN VMkernel network goes down (all paths to remote components lost)
+# - A cache SSD fails (entire disk group enters APD-like state)
+# - Host running DOM owner becomes unreachable
+
+# vSAN can trigger PDL when:
+# - A capacity disk is physically removed or fails with SMART errors
+# - Controller firmware marks a drive as permanently failed
+# - Disk group is manually removed while objects still reference it
+
+# Check current APD/PDL state:
+esxcli storage core device list | grep -A2 "Is Perennially Reserved\|Status"
+# Look for "dead" or "off" status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure APD/PDL response policies</strong></p>
+                    <pre><code># vSphere HA settings for APD:
+# Cluster → Configure → vSphere HA → Failures and Responses
+# → Datastore with APD:
+#   Response for VM: "Power off and restart VMs (conservative)"
+#   Delay: 140 seconds (match APD timeout)
+#   Reset period: 180 seconds
+
+# For PDL:
+# → Datastore with PDL:
+#   Response: "Power off and restart VMs"
+#   (HA will immediately restart VMs on healthy hosts)
+
+# vSAN-specific: Set APD timeout
+esxcfg-advcfg -s 140 /Misc/APDTimeout
+# Default is 140 seconds — increase for environments with slow failover</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Handle active APD on vSAN</strong></p>
+                    <pre><code># If APD is currently occurring:
+# 1. Check network connectivity to vSAN VMkernel:
+vmkping -I vmk1 &lt;other-host-vsan-ip&gt;
+
+# 2. If network is fine, check disk health:
+esxcli vsan debug disk list
+esxcli storage core device list -d naa.xxx
+
+# 3. If a single disk caused APD, the disk group will auto-recover
+#    after the disk is replaced or the path is restored
+
+# 4. If APD timeout expires and VMs are stunned:
+#    HA will restart them on other hosts (if configured)
+#    Or manually: vim-cmd vmsvc/power.off &lt;vmid&gt;
+#    Then power on elsewhere</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Never force-kill a VM during APD</strong> unless HA is configured to handle restart. Forcing power-off during APD may leave vSAN objects in an inconsistent state. Wait for the APD timeout or fix the underlying path issue.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always configure HA APD/PDL responses explicitly. The defaults may leave VMs stunned indefinitely. For vSAN, set <code class="inline">das.config.fdm.storageAllPathsDownTimeoutEnabled = true</code> to ensure HA acts on storage failures.</span>
         </div>
     </div>
 </div>

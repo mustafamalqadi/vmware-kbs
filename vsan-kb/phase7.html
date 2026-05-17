@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">12</div><div class="stat-label">Networking Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">13</div><div class="stat-label">Networking Issues</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">7</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">6</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 7</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1922,6 +1922,82 @@ esxcli vsan storage list
 # Then: Datastore → Browse → find .vmx → Register VM</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #88: Data-in-Transit Encryption           -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-88" data-type="fix" data-severity="high" data-keywords="data in transit encryption network traffic vSAN wire encrypted TLS compliance inter-host">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">88</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN Data-in-Transit Encryption</div>
+            <div class="kb-entry-subtitle">Encrypt vSAN network traffic between hosts to protect data traversing the wire</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Encryption</span>
+                <span class="tag">Network</span>
+                <span class="tag">In-Transit</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Overview</div>
+        <p>Data-in-transit encryption protects vSAN network traffic between ESXi hosts. This is <strong>separate from data-at-rest encryption</strong> (which protects data on physical disks). In-transit encryption uses TLS-like encryption on the vSAN data path and is available in vSAN 7.0u1+ and all vSAN 8 releases.</p>
+
+        <div class="section-label">Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable data-in-transit encryption</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSAN → Services → Data-in-Transit Encryption → ON
+
+# Three levels:
+# 1. Disabled (default) — no network encryption
+# 2. Preferred — encrypt when both hosts support it
+# 3. Required — all vSAN traffic must be encrypted (fail if not possible)
+
+# Note: does NOT require KMS (unlike data-at-rest)
+# Uses self-signed certificates managed by vCenter
+
+# Verify encryption is active:
+esxcli vsan debug resync summary
+# In-transit encrypted traffic shows in Performance Service dashboards</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Performance impact and troubleshooting</strong></p>
+                    <pre><code># Performance impact:
+# - Adds ~5-10% CPU overhead for encryption/decryption per host
+# - Minimal latency increase (~0.1-0.3ms per I/O)
+# - More noticeable during heavy resync operations
+# - AES-NI acceleration reduces impact on modern CPUs
+
+# Verify CPU supports AES-NI:
+grep -c aes /proc/cpuinfo
+# Any number > 0 means AES-NI is available
+
+# If performance is a concern:
+# Use "Preferred" mode instead of "Required"
+# This allows resync traffic to use unencrypted path when needed
+
+# Common issue: all hosts must be on compatible vSAN version
+# If one host is too old, "Required" mode blocks communication with it</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Data-at-rest + Data-in-transit = Full encryption:</strong> For maximum compliance (HIPAA, PCI-DSS, government), enable BOTH. Data-at-rest encrypts on disk (requires KMS), data-in-transit encrypts on the wire (no KMS needed). Combined, data is encrypted everywhere.</span>
         </div>
     </div>
 </div>

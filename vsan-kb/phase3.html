@@ -248,9 +248,9 @@
 </div>
 
 <div class="stats-bar">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">12</div><div class="stat-label">DR &amp; Recovery Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">14</div><div class="stat-label">DR &amp; Recovery Issues</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">7</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">7</div><div class="stat-label">Fix Procedures</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 3</div><div class="stat-label">Current Phase</div></div>
 </div>
 
@@ -1841,6 +1841,177 @@ esxcli vsan debug object list --filter-type snapshot</code><button class="copy-b
         <div class="alert alert-info">
             <span class="alert-icon">&#128712;</span>
             <span><strong>Best Practice:</strong> Always use HotAdd transport mode for backup proxies on vSAN. Place backup proxy VMs on the vSAN cluster itself. Maintain at least 25% free capacity for snapshot overhead during backup windows.</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #86: Two-Node / ROBO vSAN                 -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-86" data-type="fix" data-severity="high" data-keywords="two-node 2-node ROBO remote office branch office witness direct connect small cluster edge">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">86</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Two-Node / ROBO vSAN Deployment &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">Unique challenges and procedures for 2-node vSAN clusters at remote/branch office sites</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Two-Node</span>
+                <span class="tag">ROBO</span>
+                <span class="tag">Edge</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Key constraint:</strong> In a 2-node cluster, losing <strong>any single host means zero redundancy</strong>. During maintenance on one host, all objects run at reduced availability. Plan maintenance windows carefully — a second failure during maintenance means data loss.</span>
+        </div>
+
+        <div class="section-label">Architecture &amp; Requirements</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">2-Node Setup</div>
+                <ul>
+                    <li><strong>2 data hosts</strong> + 1 witness appliance (mandatory)</li>
+                    <li>Witness can be at the same site or remote (for DR)</li>
+                    <li>Maximum policy: <strong>FTT=1, RAID-1</strong> (mirror between hosts)</li>
+                    <li>No RAID-5/6 possible (needs 4+ hosts)</li>
+                    <li>Direct-connect supported (no switch needed between data hosts)</li>
+                    <li>Requires vSAN Standard license or higher</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Unique Challenges</div>
+                <ul>
+                    <li>Maintenance mode requires <strong>"Ensure accessibility"</strong> — full migration impossible with only 1 remaining host</li>
+                    <li>Host failure = all VMs run on single host (no FTT protection)</li>
+                    <li>Witness failure = cluster can still run but <strong>can't tolerate another failure</strong></li>
+                    <li>Upgrades must be sequential — never both hosts at once</li>
+                    <li>Capacity planning: need 50%+ free on each host for failover</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Common Issues &amp; Fixes</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Witness connectivity loss</strong></p>
+                    <pre><code># 2-node clusters REQUIRE the witness for quorum
+# If witness is unreachable:
+esxcli vsan cluster get
+# Check "Sub-Cluster Member Count" — should be 3 (2 data + 1 witness)
+
+# Common causes:
+# - Witness VM powered off or suspended
+# - Firewall blocking witness ↔ data host traffic (ports 2233, 12321)
+# - Witness on wrong network (must reach both data hosts)
+
+# Fix: ensure witness VMkernel can ping both data hosts:
+vmkping -I vmk0 &lt;witness-vsan-ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Maintenance mode in 2-node cluster</strong></p>
+                    <pre><code># ALWAYS use "Ensure accessibility" mode:
+esxcli system maintenanceMode set -e true -m ensureObjectAccessibility
+
+# "Full data migration" is IMPOSSIBLE — there's only 1 other host
+# and it already holds its own data + needs capacity headroom
+
+# Before maintenance:
+# 1. Verify witness is healthy
+# 2. Check no objects are already degraded
+# 3. Reduce FTT=0 for non-critical VMs temporarily (optional)
+
+# During maintenance:
+# All objects on the maintenance host go to "Reduced availability"
+# If the remaining host fails during this window → DATA LOSS</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Direct-connect topology:</strong> Connect the two data hosts with a crossover cable or direct 25GbE link for vSAN traffic. Use a separate management network through a switch. This eliminates the switch as a single point of failure for vSAN data.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #90: vSAN + SRM Integration               -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-90" data-type="fix" data-severity="high" data-keywords="SRM Site Recovery Manager replication DR disaster recovery orchestration protection group failover test">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">90</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSAN + Site Recovery Manager (SRM) Integration</div>
+            <div class="kb-entry-subtitle">Configure and troubleshoot vSAN replication with SRM for automated DR failover</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">SRM</span>
+                <span class="tag">Replication</span>
+                <span class="tag">DR</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Architecture</div>
+        <p>vSAN integrates with SRM via <strong>vSphere Replication</strong> (host-based, no SRA needed) or vSAN's own replication for stretched clusters. SRM orchestrates failover — protection groups, recovery plans, and non-disruptive testing.</p>
+
+        <div class="section-label">Setup &amp; Common Issues</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure vSphere Replication for vSAN-to-vSAN DR</strong></p>
+                    <pre><code># 1. Deploy vSphere Replication Appliance at both sites
+# 2. Pair the vCenters in SRM
+# 3. Configure replication per VM:
+#    - Right-click VM → vSphere Replication → Configure Replication
+#    - Target: vSAN datastore at recovery site
+#    - RPO: 5 minutes (minimum) to 24 hours
+
+# Key vSAN-specific settings:
+# - Use vSAN storage policy at target for FTT protection
+# - Network: replication traffic can use vSAN VMkernel or dedicated vmk
+# - Compression: enable replication network compression for WAN links</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot replication failures</strong></p>
+                    <pre><code># Common issues:
+# 1. RPO violations — replication can't keep up
+#    Fix: increase RPO, reduce VM change rate, increase bandwidth
+#    Check: vSphere Replication → Monitor → Outgoing Replications
+
+# 2. "Replication target datastore full"
+#    vSAN target needs space for: VM + snapshots + replication overhead
+#    Rule of thumb: 1.5x the VM size on target vSAN datastore
+
+# 3. SRM test failover leaves placeholder VMs
+#    Always use "Cleanup" after test failover in SRM recovery plan
+#    Orphaned test VMs consume vSAN capacity at recovery site
+
+# 4. Network timeout during initial sync (large VMs)
+#    Use "Replication Seeds" — copy VMDK to target offline
+#    SRM syncs only delta after seeding</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Stretched cluster vs. SRM:</strong> Stretched clusters provide <strong>near-zero RPO/RTO</strong> (synchronous replication, &le;5ms RTT). SRM + vSphere Replication provides <strong>asynchronous DR</strong> over any distance (higher RPO but no latency constraints). Choose based on distance and RPO requirements.</span>
         </div>
     </div>
 </div>
