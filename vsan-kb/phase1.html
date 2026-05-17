@@ -541,7 +541,7 @@
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #1: Disk Group Fails / Goes Absent        -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="disk group absent degraded failed capacity cache ssd hdd">
+<div class="kb-entry" id="kb-1" data-type="break" data-severity="critical" data-keywords="disk group absent degraded failed capacity cache ssd hdd">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">1</div>
         <div class="kb-entry-title-block">
@@ -687,7 +687,7 @@ esxcli vsan debug resync summary
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #2: vSAN Network Partition                -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="network partition split brain vmkernel vmk1 multicast unicast connectivity">
+<div class="kb-entry" id="kb-2" data-type="break" data-severity="critical" data-keywords="network partition split brain vmkernel vmk1 multicast unicast connectivity">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">2</div>
         <div class="kb-entry-title-block">
@@ -834,7 +834,7 @@ esxcli vsan debug resync summary</code><button class="copy-btn" onclick="copyCod
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #3: Objects Inaccessible / Compliance Fail -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="object inaccessible non-compliant compliance policy FTT reduced availability stale">
+<div class="kb-entry" id="kb-3" data-type="fix" data-severity="critical" data-keywords="object inaccessible non-compliant compliance policy FTT reduced availability stale">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">3</div>
         <div class="kb-entry-title-block">
@@ -969,7 +969,7 @@ vsan.obj_status_report /dc/computers/cluster-name --fix-non-compliant
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #4: vSAN Resync / Rebuild Stalled         -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="resync rebuild stalled stuck slow resyncing objects progress bandwidth throttle">
+<div class="kb-entry" id="kb-4" data-type="fix" data-severity="high" data-keywords="resync rebuild stalled stuck slow resyncing objects progress bandwidth throttle">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">4</div>
         <div class="kb-entry-title-block">
@@ -1105,7 +1105,7 @@ esxcli system maintenanceMode set -e false</code><button class="copy-btn" onclic
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #5: Host Fails to Join vSAN Cluster       -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="host join cluster vmkernel agent cannot node membership cmmds">
+<div class="kb-entry" id="kb-5" data-type="break" data-severity="high" data-keywords="host join cluster vmkernel agent cannot node membership cmmds">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">5</div>
         <div class="kb-entry-title-block">
@@ -1235,7 +1235,7 @@ esxcli vsan storage add -s naa.CACHE_SSD -d naa.CAPACITY_1 -d naa.CAPACITY_2
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #6: vSAN Stretched Cluster Witness Failure -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="stretched cluster witness failure preferred fault domain site outage two-site">
+<div class="kb-entry" id="kb-6" data-type="break" data-severity="critical" data-keywords="stretched cluster witness failure preferred fault domain site outage two-site">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">6</div>
         <div class="kb-entry-title-block">
@@ -1330,7 +1330,7 @@ esxcli vsan cluster preferredfaultdomain set --preferred-fault-domain-name "Pref
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #7: Encryption Issues / KMS Disconnect    -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="encryption kms key management server disconnect locked datastore DEK KEK">
+<div class="kb-entry" id="kb-7" data-type="break" data-severity="critical" data-keywords="encryption kms key management server disconnect locked datastore DEK KEK">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">7</div>
         <div class="kb-entry-title-block">
@@ -1429,7 +1429,7 @@ esxcli system maintenanceMode set -e false</code><button class="copy-btn" onclic
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #8: vSAN Performance Degradation          -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="performance slow latency high IOPS throughput congestion SSD wear cache capacity tier">
+<div class="kb-entry" id="kb-8" data-type="fix" data-severity="high" data-keywords="performance slow latency high IOPS throughput congestion SSD wear cache capacity tier">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">8</div>
         <div class="kb-entry-title-block">
@@ -1562,7 +1562,7 @@ esxcli vsan debug object rebalance</code><button class="copy-btn" onclick="copyC
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #9: vSAN Upgrade Failure / Disk Format    -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="upgrade on-disk format version rolling upgrade compatibility pre-check failed">
+<div class="kb-entry" id="kb-9" data-type="fix" data-severity="high" data-keywords="upgrade on-disk format version rolling upgrade compatibility pre-check failed">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">9</div>
         <div class="kb-entry-title-block">
@@ -1671,7 +1671,7 @@ esxcli vsan storage list
 <!-- ──────────────────────────────────────────── -->
 <!-- KB #10: vSAN Maintenance Mode Stuck          -->
 <!-- ──────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="maintenance mode stuck enter exit evacuate data migration ensure accessibility full">
+<div class="kb-entry" id="kb-10" data-type="fix" data-severity="high" data-keywords="maintenance mode stuck enter exit evacuate data migration ensure accessibility full">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">10</div>
         <div class="kb-entry-title-block">
@@ -1875,6 +1875,19 @@ vsan.obj_status_report /dc/computers/cluster-name --filter-type orphan
             input.blur();
         }
     });
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>

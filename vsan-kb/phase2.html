@@ -319,7 +319,7 @@
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #11: vSAN ESA Disk Pool Issues               -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="ESA express storage architecture disk pool single tier NVMe storage pool capacity">
+<div class="kb-entry" id="kb-11" data-type="break" data-severity="critical" data-keywords="ESA express storage architecture disk pool single tier NVMe storage pool capacity">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">11</div>
         <div class="kb-entry-title-block">
@@ -473,7 +473,7 @@ esxcli vsan debug resync summary
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #12: vSAN File Services Failure              -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="file services NFS SMB CIFS agent ovf share mount vdfs">
+<div class="kb-entry" id="kb-12" data-type="break" data-severity="high" data-keywords="file services NFS SMB CIFS agent ovf share mount vdfs">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">12</div>
         <div class="kb-entry-title-block">
@@ -625,7 +625,7 @@ ping &lt;dns_server_ip&gt;
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #13: vSAN HCI Mesh (Remote Datastore) Issues -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="HCI Mesh remote datastore client server cross-cluster mount capacity sharing disaggregated">
+<div class="kb-entry" id="kb-13" data-type="fix" data-severity="high" data-keywords="HCI Mesh remote datastore client server cross-cluster mount capacity sharing disaggregated">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">13</div>
         <div class="kb-entry-title-block">
@@ -757,7 +757,7 @@ nc -zv &lt;server_host_vsan_ip&gt; 2233</code><button class="copy-btn" onclick="
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #14: vSAN Data-at-Rest Encryption Key Rotation -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="encryption key rotation DEK KEK shallow deep rekey data-at-rest compliance">
+<div class="kb-entry" id="kb-14" data-type="fix" data-severity="high" data-keywords="encryption key rotation DEK KEK shallow deep rekey data-at-rest compliance">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">14</div>
         <div class="kb-entry-title-block">
@@ -884,7 +884,7 @@ nc -zv &lt;server_host_vsan_ip&gt; 2233</code><button class="copy-btn" onclick="
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #15: vSAN Skyline Health — Persistent Red     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="skyline health check red warning persistent false positive stale outdated HCL vcsa">
+<div class="kb-entry" id="kb-15" data-type="fix" data-severity="medium" data-keywords="skyline health check red warning persistent false positive stale outdated HCL vcsa">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">15</div>
         <div class="kb-entry-title-block">
@@ -1002,7 +1002,7 @@ vmon-cli -s vsanHealth
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #16: Dedup/Compression Failures              -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="dedup deduplication compression space efficiency on-disk format all-flash overhead savings">
+<div class="kb-entry" id="kb-16" data-type="break" data-severity="high" data-keywords="dedup deduplication compression space efficiency on-disk format all-flash overhead savings">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">16</div>
         <div class="kb-entry-title-block">
@@ -1139,7 +1139,7 @@ grep -i "dedup\|LSOM.*compress" /var/log/vmkernel.log | tail -50</code><button c
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #17: vSAN Capacity — Slack Space / Overcommit -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="capacity full slack space overcommit thin provision 80% threshold out of space datastore">
+<div class="kb-entry" id="kb-17" data-type="fix" data-severity="high" data-keywords="capacity full slack space overcommit thin provision 80% threshold out of space datastore">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">17</div>
         <div class="kb-entry-title-block">
@@ -1275,7 +1275,7 @@ esxcli vsan storage add -s naa.CACHE_SSD -d naa.CAP1 -d naa.CAP2
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #18: vSAN + vLCM Image-Based Lifecycle Mgmt   -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="vLCM lifecycle manager image cluster firmware driver update baseline remediate compliance">
+<div class="kb-entry" id="kb-18" data-type="fix" data-severity="medium" data-keywords="vLCM lifecycle manager image cluster firmware driver update baseline remediate compliance">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">18</div>
         <div class="kb-entry-title-block">
@@ -1397,7 +1397,7 @@ esxcli software vib install -v /path/to/correct-driver.vib
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #19: vSAN SPBM Policy Misconfiguration        -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="SPBM storage policy FTT RAID stripe width object format thick thin provision default policy">
+<div class="kb-entry" id="kb-19" data-type="break" data-severity="high" data-keywords="SPBM storage policy FTT RAID stripe width object format thick thin provision default policy">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">19</div>
         <div class="kb-entry-title-block">
@@ -1543,7 +1543,7 @@ esxcli software vib install -v /path/to/correct-driver.vib
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #20: vSAN iSCSI Target Service Failure        -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="iSCSI target service LUN initiator physical workloads bare-metal external access">
+<div class="kb-entry" id="kb-20" data-type="fix" data-severity="medium" data-keywords="iSCSI target service LUN initiator physical workloads bare-metal external access">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">20</div>
         <div class="kb-entry-title-block">
@@ -1721,6 +1721,19 @@ cat /etc/iscsi/iscsid.conf | grep -i "chap"
             input.blur();
         }
     });
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>

@@ -267,7 +267,7 @@
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #31: SDDC Manager Bring-Up Fails on vSAN     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="SDDC Manager bring-up bringup VCF deployment management domain vSAN initialization">
+<div class="kb-entry" id="kb-31" data-type="break" data-severity="critical" data-keywords="SDDC Manager bring-up bringup VCF deployment management domain vSAN initialization">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">31</div>
         <div class="kb-entry-title-block">
@@ -378,7 +378,7 @@ vmware -vl
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #32: Workload Domain Expansion — vSAN Stretch -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="workload domain expansion cluster add host commission SDDC stretch vSAN WLD">
+<div class="kb-entry" id="kb-32" data-type="break" data-severity="high" data-keywords="workload domain expansion cluster add host commission SDDC stretch vSAN WLD">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">32</div>
         <div class="kb-entry-title-block">
@@ -496,7 +496,7 @@ esxcli vsan storage list</code><button class="copy-btn" onclick="copyCode(this)"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #33: VCF Bundle Download / Apply Failure      -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="VCF bundle download apply update patch lifecycle LCM SDDC Manager depot">
+<div class="kb-entry" id="kb-33" data-type="fix" data-severity="high" data-keywords="VCF bundle download apply update patch lifecycle LCM SDDC Manager depot">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">33</div>
         <div class="kb-entry-title-block">
@@ -617,7 +617,7 @@ scp VCF-*.tar vcf@sddc-manager:/nfs/vmware/vcf/nfs-mount/bundle/
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #34: NSX Integration — vSAN + NSX Overlay     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="NSX overlay VXLAN GENEVE transport zone TEP edge node vSAN traffic NSX-T">
+<div class="kb-entry" id="kb-34" data-type="break" data-severity="critical" data-keywords="NSX overlay VXLAN GENEVE transport zone TEP edge node vSAN traffic NSX-T">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">34</div>
         <div class="kb-entry-title-block">
@@ -741,7 +741,7 @@ esxcli vsan health cluster list
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #35: vSAN Stretched Cluster in VCF            -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="VCF stretched cluster witness site affinity cross-site SDDC Manager workload domain stretched">
+<div class="kb-entry" id="kb-35" data-type="fix" data-severity="critical" data-keywords="VCF stretched cluster witness site affinity cross-site SDDC Manager workload domain stretched">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">35</div>
         <div class="kb-entry-title-block">
@@ -864,7 +864,7 @@ esxcli vsan cluster get
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #36: vLCM Image-Based Mgmt in VCF             -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="vLCM image lifecycle management firmware driver ESXi baseline cluster image VCF">
+<div class="kb-entry" id="kb-36" data-type="fix" data-severity="high" data-keywords="vLCM image lifecycle management firmware driver ESXi baseline cluster image VCF">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">36</div>
         <div class="kb-entry-title-block">
@@ -994,7 +994,7 @@ cat /var/log/vmware/vcf/lcm/lcm.log | grep -i "image"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #37: vSAN + Aria (vRealize) Integration       -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="Aria vRealize Operations vROps Aria Operations monitoring vSAN metrics alerts dashboard VCF">
+<div class="kb-entry" id="kb-37" data-type="fix" data-severity="medium" data-keywords="Aria vRealize Operations vROps Aria Operations monitoring vSAN metrics alerts dashboard VCF">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">37</div>
         <div class="kb-entry-title-block">
@@ -1125,7 +1125,7 @@ curl -k https://&lt;esxi-host-ip&gt;/sdk -o /dev/null -w "%{http_code}"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #38: vSAN Datastore on Mgmt Domain — Recovery -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="management domain vSAN datastore SDDC vCenter PSC recovery bootstrap VCF management cluster">
+<div class="kb-entry" id="kb-38" data-type="break" data-severity="critical" data-keywords="management domain vSAN datastore SDDC vCenter PSC recovery bootstrap VCF management cluster">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">38</div>
         <div class="kb-entry-title-block">
@@ -1270,7 +1270,7 @@ systemctl restart domainmanager
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #39: vSAN HCI Mesh Cross-Domain in VCF        -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="HCI Mesh cross-domain datastore sharing vSAN remote mount workload domain disaggregate VCF">
+<div class="kb-entry" id="kb-39" data-type="fix" data-severity="high" data-keywords="HCI Mesh cross-domain datastore sharing vSAN remote mount workload domain disaggregate VCF">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">39</div>
         <div class="kb-entry-title-block">
@@ -1405,7 +1405,7 @@ esxcli network firewall ruleset list | grep -i vsan
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #40: VCF Certificate Rotation + vSAN Impact   -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="certificate rotation TLS SSL VMCA expiry vSAN encryption KMS VCF SDDC certificate management">
+<div class="kb-entry" id="kb-40" data-type="break" data-severity="high" data-keywords="certificate rotation TLS SSL VMCA expiry vSAN encryption KMS VCF SDDC certificate management">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">40</div>
         <div class="kb-entry-title-block">
@@ -1589,6 +1589,19 @@ function filterByType(type, btn) {
         }
     });
 }
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>

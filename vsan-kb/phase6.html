@@ -267,7 +267,7 @@
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #51: vSAN Congestion — Diagnosis & Relief     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="congestion backpressure throttle IOPS latency slow SSD overload queue depth write buffer">
+<div class="kb-entry" id="kb-51" data-type="break" data-severity="critical" data-keywords="congestion backpressure throttle IOPS latency slow SSD overload queue depth write buffer">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">51</div>
         <div class="kb-entry-title-block">
@@ -424,7 +424,7 @@ esxcli vsan storage list | grep -A5 "Cache Tier"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #52: Resync Throttle — Balancing Recovery + IO -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="resync throttle rebuild recovery rebalance bandwidth limit repair object rebuild performance impact">
+<div class="kb-entry" id="kb-52" data-type="fix" data-severity="high" data-keywords="resync throttle rebuild recovery rebalance bandwidth limit repair object rebuild performance impact">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">52</div>
         <div class="kb-entry-title-block">
@@ -567,7 +567,7 @@ esxcli vsan health cluster list | grep -i "resync"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #53: Capacity Planning — Sizing & Thresholds  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="capacity planning sizing threshold overhead slack space FTT usable raw effective reserve">
+<div class="kb-entry" id="kb-53" data-type="fix" data-severity="critical" data-keywords="capacity planning sizing threshold overhead slack space FTT usable raw effective reserve">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">53</div>
         <div class="kb-entry-title-block">
@@ -733,7 +733,7 @@ esxcli vsan storage list
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #54: esxtop Deep Dive for vSAN Diagnostics    -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="esxtop vscsiStats performance diagnostic latency IOPS throughput device queue depth command line troubleshoot">
+<div class="kb-entry" id="kb-54" data-type="fix" data-severity="high" data-keywords="esxtop vscsiStats performance diagnostic latency IOPS throughput device queue depth command line troubleshoot">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">54</div>
         <div class="kb-entry-title-block">
@@ -871,7 +871,7 @@ vsan.observer . --run-webserver
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #55: High Write Latency — Cache Destage Issue  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="write latency cache destage SSD wear endurance write buffer full OSA capacity tier slow">
+<div class="kb-entry" id="kb-55" data-type="break" data-severity="critical" data-keywords="write latency cache destage SSD wear endurance write buffer full OSA capacity tier slow">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">55</div>
         <div class="kb-entry-title-block">
@@ -1025,7 +1025,7 @@ esxtop
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #56: Read Latency Spikes — Cache Miss Storm   -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="read latency cache miss cold data HDD random read IOPS slow reads working set">
+<div class="kb-entry" id="kb-56" data-type="break" data-severity="high" data-keywords="read latency cache miss cold data HDD random read IOPS slow reads working set">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">56</div>
         <div class="kb-entry-title-block">
@@ -1156,7 +1156,7 @@ esxtop
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #57: VM Storage Policy IOPS Limiting          -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="IOPS limit storage policy QoS quality of service noisy neighbor throttle multi-tenant">
+<div class="kb-entry" id="kb-57" data-type="fix" data-severity="medium" data-keywords="IOPS limit storage policy QoS quality of service noisy neighbor throttle multi-tenant">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">57</div>
         <div class="kb-entry-title-block">
@@ -1284,7 +1284,7 @@ esxtop
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #58: ReadyNode Sizing — Host Count & Config   -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ReadyNode sizing host count configuration vSAN HCL hardware selection server planning FTT capacity">
+<div class="kb-entry" id="kb-58" data-type="fix" data-severity="high" data-keywords="ReadyNode sizing host count configuration vSAN HCL hardware selection server planning FTT capacity">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">58</div>
         <div class="kb-entry-title-block">
@@ -1450,7 +1450,7 @@ esxtop
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #59: vSAN Witness Resource Exhaustion          -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="witness appliance resource exhaustion CPU RAM storage 2-node ROBO stretched cluster witness overloaded">
+<div class="kb-entry" id="kb-59" data-type="break" data-severity="high" data-keywords="witness appliance resource exhaustion CPU RAM storage 2-node ROBO stretched cluster witness overloaded">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">59</div>
         <div class="kb-entry-title-block">
@@ -1584,7 +1584,7 @@ esxcli vsan debug object list
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #60: vSAN Capacity Reclaim — Thin Provisioning -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="thin provision thick eager lazy zeroed reclaim TRIM UNMAP capacity ghost blocks stale data balloon">
+<div class="kb-entry" id="kb-60" data-type="break" data-severity="high" data-keywords="thin provision thick eager lazy zeroed reclaim TRIM UNMAP capacity ghost blocks stale data balloon">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">60</div>
         <div class="kb-entry-title-block">
@@ -1783,6 +1783,19 @@ function filterByType(type, btn) {
         }
     });
 }
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>

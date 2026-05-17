@@ -267,7 +267,7 @@
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #61: VMkernel Misconfiguration Breaks vSAN    -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="VMkernel vmk adapter port group vSAN traffic tag misconfiguration IP subnet wrong interface network connectivity">
+<div class="kb-entry" id="kb-61" data-type="break" data-severity="critical" data-keywords="VMkernel vmk adapter port group vSAN traffic tag misconfiguration IP subnet wrong interface network connectivity">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">61</div>
         <div class="kb-entry-title-block">
@@ -405,7 +405,7 @@ vmkping -I vmk1 &lt;host4-vSAN-IP&gt; -d -s 8972
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #62: MTU / Jumbo Frames Mismatch              -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="MTU jumbo frames 9000 1500 mismatch packet loss fragmentation switch port group vDS end-to-end path">
+<div class="kb-entry" id="kb-62" data-type="break" data-severity="critical" data-keywords="MTU jumbo frames 9000 1500 mismatch packet loss fragmentation switch port group vDS end-to-end path">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">62</div>
         <div class="kb-entry-title-block">
@@ -550,7 +550,7 @@ vmkping -I vmk1 &lt;host2-vSAN-IP&gt; -d -s 8972
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #63: NIC Teaming & Failover Policies           -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="NIC teaming failover policy active standby load balancing route based originating port IP hash LACP vDS uplink failover order">
+<div class="kb-entry" id="kb-63" data-type="fix" data-severity="high" data-keywords="NIC teaming failover policy active standby load balancing route based originating port IP hash LACP vDS uplink failover order">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">63</div>
         <div class="kb-entry-title-block">
@@ -691,7 +691,7 @@ esxcli network nic up -n vmnic2
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #64: vSAN Multicast → Unicast Migration       -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="multicast unicast migration IGMP snooping cluster communication heartbeat discovery vSAN 6.6 7.0 switch flooding PIM">
+<div class="kb-entry" id="kb-64" data-type="fix" data-severity="high" data-keywords="multicast unicast migration IGMP snooping cluster communication heartbeat discovery vSAN 6.6 7.0 switch flooding PIM">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">64</div>
         <div class="kb-entry-title-block">
@@ -829,7 +829,7 @@ esxcli vsan storage list | grep "On-Disk Format"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #65: vSAN Network Partition — Split Brain      -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="network partition split brain two sub-clusters quorum data loss inaccessible objects cluster split connectivity">
+<div class="kb-entry" id="kb-65" data-type="break" data-severity="critical" data-keywords="network partition split brain two sub-clusters quorum data loss inaccessible objects cluster split connectivity">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">65</div>
         <div class="kb-entry-title-block">
@@ -988,7 +988,7 @@ esxcli vsan cluster get
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #66: vDS Migration Pitfalls for vSAN           -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="vDS distributed switch migration vSS standard switch VMkernel lost connectivity uplink move port group migrate">
+<div class="kb-entry" id="kb-66" data-type="break" data-severity="high" data-keywords="vDS distributed switch migration vSS standard switch VMkernel lost connectivity uplink move port group migrate">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">66</div>
         <div class="kb-entry-title-block">
@@ -1138,7 +1138,7 @@ esxcli network vswitch dvs vmware list
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #67: vSAN over RDMA (RoCE v2) Configuration   -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="RDMA RoCE v2 PVRDMA low latency NVMe-oF high performance ESA network adapter offload lossless ECN PFC DCB">
+<div class="kb-entry" id="kb-67" data-type="fix" data-severity="medium" data-keywords="RDMA RoCE v2 PVRDMA low latency NVMe-oF high performance ESA network adapter offload lossless ECN PFC DCB">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">67</div>
         <div class="kb-entry-title-block">
@@ -1283,7 +1283,7 @@ esxcli rdma device stats get -d vmrdma0
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #68: vSAN Stretched Cluster Networking          -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="stretched cluster witness network latency RTT bandwidth inter-site link ISL WAN dark fiber site awareness fault domain">
+<div class="kb-entry" id="kb-68" data-type="fix" data-severity="high" data-keywords="stretched cluster witness network latency RTT bandwidth inter-site link ISL WAN dark fiber site awareness fault domain">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">68</div>
         <div class="kb-entry-title-block">
@@ -1424,7 +1424,7 @@ vmkping -I vmk1 &lt;witness-vSAN-IP&gt; -c 20
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #69: vSAN Firewall & Port Requirements         -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="firewall port requirements TCP UDP 2233 blocked ACL security rule ESXi vCenter traffic flow blocked connection refused">
+<div class="kb-entry" id="kb-69" data-type="break" data-severity="high" data-keywords="firewall port requirements TCP UDP 2233 blocked ACL security rule ESXi vCenter traffic flow blocked connection refused">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">69</div>
         <div class="kb-entry-title-block">
@@ -1571,7 +1571,7 @@ nc -z &lt;witness-IP&gt; 2233
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #70: 25/100GbE Network Design for ESA          -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="25GbE 100GbE network design ESA spine leaf ToR switch architecture bandwidth NIC selection SmartNIC DPU high speed">
+<div class="kb-entry" id="kb-70" data-type="fix" data-severity="high" data-keywords="25GbE 100GbE network design ESA spine leaf ToR switch architecture bandwidth NIC selection SmartNIC DPU high speed">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">70</div>
         <div class="kb-entry-title-block">
@@ -1758,6 +1758,19 @@ function filterByType(type, btn) {
         }
     });
 }
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>

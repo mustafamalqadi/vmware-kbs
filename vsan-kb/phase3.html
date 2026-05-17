@@ -267,7 +267,7 @@
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #21: PSOD on vSAN Host — Full Recovery        -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="PSOD purple screen of death crash host dump vmkernel panic coredump">
+<div class="kb-entry" id="kb-21" data-type="break" data-severity="critical" data-keywords="PSOD purple screen of death crash host dump vmkernel panic coredump">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">21</div>
         <div class="kb-entry-title-block">
@@ -405,7 +405,7 @@ esxcli vsan storage list
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #22: Snapshot Sprawl — vSAN Performance Kill  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="snapshot sprawl consolidation chain depth performance latency stun CID CTK">
+<div class="kb-entry" id="kb-22" data-type="break" data-severity="high" data-keywords="snapshot sprawl consolidation chain depth performance latency stun CID CTK">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">22</div>
         <div class="kb-entry-title-block">
@@ -569,7 +569,7 @@ tail -f /var/log/vmware/hostd.log | grep -i "consolidat\|snapshot"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #23: vSAN Stretched Cluster — Full Site Fail  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="stretched cluster site failure preferred secondary failover witness quorum full site disaster">
+<div class="kb-entry" id="kb-23" data-type="break" data-severity="critical" data-keywords="stretched cluster site failure preferred secondary failover witness quorum full site disaster">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">23</div>
         <div class="kb-entry-title-block">
@@ -715,7 +715,7 @@ esxcli vsan cluster unicastagent add -a &lt;local_host_ip&gt; -p 12321
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #24: vSAN Native Data Protection (Snapshots)  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="native data protection snapshot local backup recovery vsan 8 integrated protection group">
+<div class="kb-entry" id="kb-24" data-type="fix" data-severity="high" data-keywords="native data protection snapshot local backup recovery vsan 8 integrated protection group">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">24</div>
         <div class="kb-entry-title-block">
@@ -840,7 +840,7 @@ esxcli vsan cluster unicastagent add -a &lt;local_host_ip&gt; -p 12321
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #25: vSAN Data Integrity — Checksum Mismatch  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="data integrity checksum mismatch corruption silent bit rot scrubbing object consistency">
+<div class="kb-entry" id="kb-25" data-type="break" data-severity="critical" data-keywords="data integrity checksum mismatch corruption silent bit rot scrubbing object consistency">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">25</div>
         <div class="kb-entry-title-block">
@@ -990,7 +990,7 @@ esxcli system settings advanced set -o /VSAN/ObjectScrubInterval -i 90
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #26: vSAN + vCenter HA / Backup Recovery      -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="vCenter backup restore VCSA file-based FBR database postgres appliance management recovery">
+<div class="kb-entry" id="kb-26" data-type="fix" data-severity="high" data-keywords="vCenter backup restore VCSA file-based FBR database postgres appliance management recovery">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">26</div>
         <div class="kb-entry-title-block">
@@ -1104,7 +1104,7 @@ esxcli vsan debug resync summary
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #27: vSAN Host Isolation Response              -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="host isolation response das.isolationaddress isolation heartbeat HA APD PDL all paths down">
+<div class="kb-entry" id="kb-27" data-type="break" data-severity="high" data-keywords="host isolation response das.isolationaddress isolation heartbeat HA APD PDL all paths down">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">27</div>
         <div class="kb-entry-title-block">
@@ -1234,7 +1234,7 @@ esxcli vsan debug resync summary
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #28: vSAN Proactive HA / Fault Injection       -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="proactive HA predictive failure hardware health provider vendor DRS pre-emptive migration">
+<div class="kb-entry" id="kb-28" data-type="fix" data-severity="medium" data-keywords="proactive HA predictive failure hardware health provider vendor DRS pre-emptive migration">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">28</div>
         <div class="kb-entry-title-block">
@@ -1349,7 +1349,7 @@ esxcli vsan debug resync summary
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #29: vSAN Cluster Shutdown / Startup Order     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="cluster shutdown startup power off power on order sequence graceful datacenter maintenance UPS">
+<div class="kb-entry" id="kb-29" data-type="fix" data-severity="critical" data-keywords="cluster shutdown startup power off power on order sequence graceful datacenter maintenance UPS">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">29</div>
         <div class="kb-entry-title-block">
@@ -1511,7 +1511,7 @@ esxcli system maintenanceMode set -e false
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #30: vSAN Fault Domain Misconfig               -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="fault domain rack awareness placement topology rack server enclosure failure domain">
+<div class="kb-entry" id="kb-30" data-type="break" data-severity="high" data-keywords="fault domain rack awareness placement topology rack server enclosure failure domain">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">30</div>
         <div class="kb-entry-title-block">
@@ -1684,6 +1684,19 @@ esxcli system maintenanceMode set -e false
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') { const i = document.getElementById('searchInput'); i.value = ''; filterEntries(); i.blur(); }
     });
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>

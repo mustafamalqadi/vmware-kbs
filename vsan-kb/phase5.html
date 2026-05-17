@@ -267,7 +267,7 @@
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #41: ESA vs OSA — Architecture Overview       -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA OSA architecture single-tier flat pool NVMe comparison original express storage overview">
+<div class="kb-entry" id="kb-41" data-type="fix" data-severity="high" data-keywords="ESA OSA architecture single-tier flat pool NVMe comparison original express storage overview">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">41</div>
         <div class="kb-entry-title-block">
@@ -370,7 +370,7 @@ esxcli software vib list | grep -i nvme
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #42: ESA NVMe Device Failure — Recovery       -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="ESA NVMe failure device drop storage pool degraded device lost disk error">
+<div class="kb-entry" id="kb-42" data-type="break" data-severity="critical" data-keywords="ESA NVMe failure device drop storage pool degraded device lost disk error">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">42</div>
         <div class="kb-entry-title-block">
@@ -507,7 +507,7 @@ esxcli vsan storage list | grep -A3 "naa.xxxxxxxxxxxxxxxxxxxx"</code><button cla
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #43: OSA to ESA Migration — Full Workflow     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="critical" data-keywords="OSA ESA migration convert upgrade workflow move workload vSAN 8 express storage original">
+<div class="kb-entry" id="kb-43" data-type="fix" data-severity="critical" data-keywords="OSA ESA migration convert upgrade workflow move workload vSAN 8 express storage original">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">43</div>
         <div class="kb-entry-title-block">
@@ -651,7 +651,7 @@ esxcli vsan health cluster list
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #44: ESA RAID-5/6 Efficiency & Policy Design  -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA RAID-5 RAID-6 erasure coding storage policy SPBM FTT FTM efficiency stripe capacity">
+<div class="kb-entry" id="kb-44" data-type="fix" data-severity="high" data-keywords="ESA RAID-5 RAID-6 erasure coding storage policy SPBM FTT FTM efficiency stripe capacity">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">44</div>
         <div class="kb-entry-title-block">
@@ -772,7 +772,7 @@ esxcli vsan debug object health summary get
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #45: ESA Native Snapshots Troubleshooting     -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="ESA native snapshot redo log stun consolidation chain delete stuck performance">
+<div class="kb-entry" id="kb-45" data-type="break" data-severity="high" data-keywords="ESA native snapshot redo log stun consolidation chain delete stuck performance">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">45</div>
         <div class="kb-entry-title-block">
@@ -915,7 +915,7 @@ esxcli vsan debug object list | grep -i "&lt;vm-name&gt;"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #46: ESA Dedup & Compression — Always-On      -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA deduplication compression inline always-on ratio savings efficiency data reduction">
+<div class="kb-entry" id="kb-46" data-type="fix" data-severity="high" data-keywords="ESA deduplication compression inline always-on ratio savings efficiency data reduction">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">46</div>
         <div class="kb-entry-title-block">
@@ -1041,7 +1041,7 @@ esxcli vsan debug resync summary get
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #47: ESA Storage Pool Rebalance               -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="high" data-keywords="ESA storage pool rebalance unbalanced skew capacity imbalance host utilization">
+<div class="kb-entry" id="kb-47" data-type="break" data-severity="high" data-keywords="ESA storage pool rebalance unbalanced skew capacity imbalance host utilization">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">47</div>
         <div class="kb-entry-title-block">
@@ -1161,7 +1161,7 @@ esxcli vsan storage list | grep "Capacity"
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #48: ESA NVMe Firmware Update — Live          -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="medium" data-keywords="ESA NVMe firmware update upgrade flash vLCM HSM driver maintenance live rolling">
+<div class="kb-entry" id="kb-48" data-type="fix" data-severity="medium" data-keywords="ESA NVMe firmware update upgrade flash vLCM HSM driver maintenance live rolling">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">48</div>
         <div class="kb-entry-title-block">
@@ -1311,7 +1311,7 @@ esxcli nvme device log smart get -A &lt;vmhbaX&gt;
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #49: ESA Log-Structured Object Manager Issues -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="break" data-severity="critical" data-keywords="ESA log-structured object manager LSOM2 write amplification metadata corruption object manager crash">
+<div class="kb-entry" id="kb-49" data-type="break" data-severity="critical" data-keywords="ESA log-structured object manager LSOM2 write amplification metadata corruption object manager crash">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number break-num">49</div>
         <div class="kb-entry-title-block">
@@ -1460,7 +1460,7 @@ esxcli vsan debug object health summary get
 <!-- ──────────────────────────────────────────────── -->
 <!-- KB #50: ESA Performance Tuning & Benchmarking    -->
 <!-- ──────────────────────────────────────────────── -->
-<div class="kb-entry" data-type="fix" data-severity="high" data-keywords="ESA performance tuning benchmark IOPS latency throughput NVMe queue depth vSAN performance service">
+<div class="kb-entry" id="kb-50" data-type="fix" data-severity="high" data-keywords="ESA performance tuning benchmark IOPS latency throughput NVMe queue depth vSAN performance service">
     <div class="kb-entry-header" onclick="toggleEntry(this)">
         <div class="kb-number fix-num">50</div>
         <div class="kb-entry-title-block">
@@ -1637,6 +1637,19 @@ function filterByType(type, btn) {
         }
     });
 }
+
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
 </script>
 <script src="kb-crossref.js"></script>
 <script src="kb-refs.js"></script>
