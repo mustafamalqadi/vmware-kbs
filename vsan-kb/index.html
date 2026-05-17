@@ -37,59 +37,31 @@
             line-height: 1.7;
             overflow-x: hidden;
         }
-        body::before {
-            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: radial-gradient(circle, rgba(0,180,216,0.06) 1px, transparent 1px);
-            background-size: 32px 32px; pointer-events: none; z-index: 0;
-        }
 
         /* ── Hero Header ── */
         .hero {
-            background: linear-gradient(135deg, #0d1520 0%, #122a3a 40%, #0d2137 70%, #1a2733 100%);
+            background: linear-gradient(180deg, #101d2b 0%, var(--bg-primary) 100%);
             border-bottom: 1px solid var(--border);
-            padding: 3.5rem 2rem 2.5rem;
+            padding: 4rem 2rem 3rem;
             text-align: center;
             position: relative;
-            overflow: hidden;
         }
-        .hero::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at 50% 0%, rgba(0,180,216,0.08) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        /* #1: Hero mesh orbs */
-        .hero-mesh { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; overflow: hidden; }
-        .mesh-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .35; animation: orb-float 14s ease-in-out infinite; }
-        .mesh-orb:nth-child(1) { width: 450px; height: 450px; background: radial-gradient(circle, rgba(0,180,216,.45), transparent 70%); top: -20%; left: 10%; }
-        .mesh-orb:nth-child(2) { width: 380px; height: 380px; background: radial-gradient(circle, rgba(46,196,182,.35), transparent 70%); top: 0; right: 5%; animation-delay: -5s; animation-duration: 17s; }
-        .mesh-orb:nth-child(3) { width: 320px; height: 320px; background: radial-gradient(circle, rgba(244,162,97,.25), transparent 70%); bottom: -15%; left: 40%; animation-delay: -9s; animation-duration: 20s; }
-        @keyframes orb-float { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(25px,-18px) scale(1.04)} 50%{transform:translate(-18px,12px) scale(.96)} 75%{transform:translate(12px,20px) scale(1.02)} }
-        /* #2: Hero stagger entrance */
-        .hero-stagger { opacity: 0; transform: translateY(18px); animation: hero-enter .7s cubic-bezier(.4,0,.2,1) forwards; }
-        @keyframes hero-enter { to { opacity: 1; transform: translateY(0); } }
-        .hero-stagger-1 { animation-delay: .1s; }
-        .hero-stagger-2 { animation-delay: .25s; }
-        .hero-stagger-3 { animation-delay: .4s; }
-        .hero-stagger-4 { animation-delay: .55s; }
         .hero h1 {
-            font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-light), #90e0ef);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            position: relative;
+            font-size: 2.4rem; font-weight: 700; margin-bottom: 0.6rem;
+            color: var(--text-primary); letter-spacing: -0.5px;
         }
         .hero .subtitle {
-            font-size: 1.1rem; color: var(--text-secondary); font-weight: 300;
-            margin-bottom: 0.75rem; position: relative;
+            font-size: 1rem; color: var(--text-secondary); font-weight: 400;
+            margin-bottom: 1.25rem; max-width: 600px; margin-left: auto; margin-right: auto;
         }
         .hero-badges {
-            display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
-            margin-bottom: 2rem; position: relative;
+            display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 0;
         }
         .badge {
             display: inline-flex; align-items: center; gap: 0.4rem;
-            padding: 0.4rem 1rem; border-radius: 20px;
-            font-size: 0.82rem; font-weight: 600; letter-spacing: 0.3px;
+            padding: 0.3rem 0.85rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2px;
         }
         .badge-total { background: rgba(0,180,216,0.15); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.3); }
         .badge-break { background: rgba(230,57,70,0.15); color: var(--danger-light); border: 1px solid rgba(230,57,70,0.3); }
@@ -102,12 +74,12 @@
             position: relative; z-index: 10;
         }
         .search-box {
-            background: var(--bg-card); border: 2px solid var(--border);
-            border-radius: 16px; padding: 1.25rem 1.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            transition: border-color 0.3s;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: border-color 0.2s;
         }
-        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15), 0 8px 32px rgba(0,0,0,0.4); }
+        .search-box:focus-within { border-color: var(--accent); }
         .search-box input {
             width: 100%; padding: 0.75rem 1rem 0.75rem 3rem;
             border-radius: 10px; border: 1px solid var(--border);
@@ -160,8 +132,8 @@
             border-radius: 12px; padding: 1.25rem 1.5rem; text-align: center;
             transition: border-color 0.2s, transform 0.2s;
         }
-        .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .stat-value { font-size: 2.4rem; font-weight: 800; line-height: 1.2; }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
         .stat-label { font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.25rem; }
 
         /* ── Phase Cards ── */
@@ -169,55 +141,34 @@
             max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem;
         }
         .section-title {
-            font-size: 1.3rem; font-weight: 700; margin-bottom: 1.25rem;
+            font-size: 0.75rem; font-weight: 600; margin-bottom: 1.25rem;
             display: flex; align-items: center; gap: 0.75rem;
-            background: linear-gradient(90deg, var(--text-primary), var(--accent-light), var(--success-light), var(--text-primary));
-            background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            animation: title-shimmer 6s ease-in-out infinite;
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
         }
-        @keyframes title-shimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); -webkit-text-fill-color: initial; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
         .phases-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.25rem;
         }
         .phase-card {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 14px; overflow: hidden;
-            transition: all .4s cubic-bezier(.4,0,.2,1);
+            border-radius: 10px; overflow: hidden;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
             text-decoration: none; color: inherit; display: block;
-            position: relative; transform-style: preserve-3d;
+            position: relative;
         }
-        .phase-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-6px); }
+        .phase-card:hover { border-color: rgba(0,180,216,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
         /* Phase card colored top accent bar */
-        .phase-card-bar { height: 3px; width: 100%; position: relative; overflow: hidden; }
-        .phase-card:hover .phase-card-bar { height: 4px; }
-        .phase-card-bar::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent); }
-        .phase-card:hover .phase-card-bar::after { animation: bar-shimmer 1.2s ease forwards; }
-        @keyframes bar-shimmer { 0%{left:-100%} 100%{left:100%} }
-        /* Unique phase hover colors */
-        .phase-card[data-color='cyan']:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(0,180,216,.2), 0 8px 24px rgba(0,0,0,.3); }
-        .phase-card[data-color='teal']:hover { border-color: var(--success); box-shadow: 0 0 30px rgba(46,196,182,.2), 0 8px 24px rgba(0,0,0,.3); }
-        .phase-card[data-color='red']:hover { border-color: var(--danger); box-shadow: 0 0 30px rgba(230,57,70,.2), 0 8px 24px rgba(0,0,0,.3); }
-        .phase-card[data-color='amber']:hover { border-color: var(--warning); box-shadow: 0 0 30px rgba(244,162,97,.2), 0 8px 24px rgba(0,0,0,.3); }
-        .phase-card[data-color='sky']:hover { border-color: #90e0ef; box-shadow: 0 0 30px rgba(144,224,239,.2), 0 8px 24px rgba(0,0,0,.3); }
-        .phase-card[data-color='gold']:hover { border-color: #ffb74d; box-shadow: 0 0 30px rgba(255,183,77,.2), 0 8px 24px rgba(0,0,0,.3); }
-        .phase-card[data-color='purple']:hover { border-color: #ab82ff; box-shadow: 0 0 30px rgba(171,130,255,.2), 0 8px 24px rgba(0,0,0,.3); }
-        /* #3: Phase card shimmer */
-        .phase-card::after { content:''; position:absolute; top:0; left:-100%; right:0; bottom:0; width:60%; background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.03) 45%,rgba(255,255,255,.06) 50%,rgba(255,255,255,.03) 55%,transparent 60%); transition:left .6s ease; pointer-events:none; z-index:3; border-radius:14px; }
-        .phase-card:hover::after { left: 150%; }
-        /* #3: Phase card spotlight */
-        .card-spotlight { position:absolute; top:0; left:0; right:0; bottom:0; border-radius:14px; pointer-events:none; z-index:0; opacity:0; transition:opacity .3s; }
-        .phase-card:hover .card-spotlight { opacity: 1; }
+        .phase-card-bar { height: 3px; width: 100%; }
         .phase-card-header {
-            padding: 1.25rem 1.5rem 1rem;
+            padding: 1.25rem 1.5rem 0.75rem;
             display: flex; align-items: center; gap: 1rem;
         }
         .phase-icon {
-            width: 50px; height: 50px; border-radius: 12px;
+            width: 42px; height: 42px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; flex-shrink: 0;
+            font-size: 1.1rem; flex-shrink: 0; font-weight: 700;
         }
-        .phase-card-title { font-size: 1.05rem; font-weight: 700; }
+        .phase-card-title { font-size: 0.95rem; font-weight: 600; }
         .phase-card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem; }
         .phase-card-body { padding: 0 1.5rem 1.25rem; }
         .phase-kb-list { list-style: none; }
@@ -303,22 +254,19 @@
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
         /* Section dividers */
-        .section-divider { width:100%; height:1px; position:relative; z-index:1; max-width:1400px; margin:2rem auto; overflow:visible; }
-        .section-divider::before { content:''; display:block; width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(0,180,216,.2),rgba(46,196,182,.25),rgba(0,180,216,.2),transparent); }
-        .section-divider::after { content:''; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px rgba(0,180,216,.4); }
+        .section-divider { width:100%; max-width:1400px; margin:0 auto; height:1px; background:var(--border); }
 
         /* Sticky compact nav */
-        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(15,25,35,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:.5rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .3s ease; }
+        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(15,25,35,.95); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
         .sticky-nav.visible { transform:translateY(0); }
-        .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:700; font-size:.82rem; }
-        .sticky-nav-brand .sn-logo { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,var(--accent),var(--success)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.55rem; color:#fff; }
-        .sticky-nav-links { display:flex; gap:1rem; align-items:center; }
-        .sticky-nav-links a { color:var(--text-muted); text-decoration:none; font-size:.75rem; font-weight:500; transition:color .2s; }
-        .sticky-nav-links a:hover { color:var(--accent-light); }
+        .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:600; font-size:.8rem; }
+        .sticky-nav-brand .sn-logo { width:24px; height:24px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.5rem; color:#fff; }
+        .sticky-nav-links { display:flex; gap:1.25rem; align-items:center; }
+        .sticky-nav-links a { color:var(--text-secondary); text-decoration:none; font-size:.78rem; font-weight:500; transition:color .15s; }
+        .sticky-nav-links a:hover { color:var(--accent); }
 
-        /* Decision tree pulse border */
-        .phase-card.dt-special { animation: dt-pulse 3s ease-in-out infinite; }
-        @keyframes dt-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(244,162,97,0); } 50%{ box-shadow:0 0 0 4px rgba(244,162,97,.15); } }
+        /* Decision tree card */
+        .phase-card.dt-special { border-color: rgba(244,162,97,0.3); }
 
         /* ── Footer (enhanced #8) ── */
         .footer {
@@ -328,7 +276,7 @@
         .footer-inner { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr; gap:2rem; }
         .footer-brand p { line-height:1.6; max-width:340px; margin-top:.5rem; }
         .footer-logo { display:flex; align-items:center; gap:.6rem; margin-bottom:.25rem; }
-        .footer-logo .logo-mark { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--success)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.6rem; color:#fff; }
+        .footer-logo .logo-mark { width:28px; height:28px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.55rem; color:#fff; }
         .footer-logo span { font-weight:700; font-size:.9rem; color:var(--text-primary); }
         .footer-col h4 { font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-secondary); margin-bottom:.75rem; }
         .footer-col a { display:block; font-size:.8rem; color:var(--text-muted); text-decoration:none; padding:.2rem 0; transition:color .2s; }
@@ -342,10 +290,9 @@
             .search-section, .phases-section, .filter-section, .stats-section { padding: 0 1rem; }
             .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
         }
-        /* #9: Prefers reduced motion */
+        /* Prefers reduced motion */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
-            .mesh-orb { animation: none !important; opacity: .2; }
         }
     </style>
 </head>
@@ -365,10 +312,9 @@
 
 <!-- ── Hero ── -->
 <section class="hero">
-    <div class="hero-mesh"><div class="mesh-orb"></div><div class="mesh-orb"></div><div class="mesh-orb"></div></div>
-    <h1 class="hero-stagger hero-stagger-1">VMware vSAN Knowledge Base</h1>
-    <p class="subtitle hero-stagger hero-stagger-2">Comprehensive Fix &amp; Break Reference — Official VMware / Broadcom Procedures Only</p>
-    <div class="hero-badges hero-stagger hero-stagger-3">
+    <h1>VMware vSAN Knowledge Base</h1>
+    <p class="subtitle">Comprehensive Fix &amp; Break Reference — Official VMware / Broadcom Procedures Only</p>
+    <div class="hero-badges">
         <span class="badge badge-total">70 KB Entries</span>
         <span class="badge badge-phase">7 Phases</span>
         <span class="badge badge-break">&#9888; Break Scenarios</span>
@@ -377,7 +323,7 @@
 </section>
 
 <!-- ── Global Search ── -->
-<div class="search-section hero-stagger hero-stagger-4">
+<div class="search-section">
     <div class="search-box" id="searchBox">
         <input type="text" id="globalSearch" placeholder="Search all 70 KB entries — congestion, resync, ESA, NVMe, stretched cluster, capacity..." oninput="performSearch()" autocomplete="off">
         <div class="search-hint">
@@ -399,7 +345,6 @@
 </div>
 
 <!-- ── Stats ── -->
-<!-- ── Stats ── -->
 <div class="stats-section reveal" id="stats">
     <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="70">0</div><div class="stat-label">Total KB Entries</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="35">0</div><div class="stat-label">Break Scenarios</div></div>
@@ -418,7 +363,7 @@
 
         <!-- Phase 1 -->
         <a href="phase1.html" class="phase-card" data-color="cyan">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--accent),var(--accent-light),#90e0ef)"></div>
+            <div class="phase-card-bar" style="background:var(--accent)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(0,180,216,0.12);border:1px solid rgba(0,180,216,0.25);color:var(--accent-light)">1</div>
                 <div>
@@ -448,7 +393,7 @@
 
         <!-- Phase 2 -->
         <a href="phase2.html" class="phase-card" data-color="teal">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--success),var(--success-light),#90e0ef)"></div>
+            <div class="phase-card-bar" style="background:var(--success)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(46,196,182,0.12);border:1px solid rgba(46,196,182,0.25);color:var(--success-light)">2</div>
                 <div>
@@ -478,7 +423,7 @@
 
         <!-- Phase 3 -->
         <a href="phase3.html" class="phase-card" data-color="red">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--danger),var(--danger-light),var(--warning))"></div>
+            <div class="phase-card-bar" style="background:var(--danger)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(230,57,70,0.12);border:1px solid rgba(230,57,70,0.25);color:var(--danger-light)">3</div>
                 <div>
@@ -508,7 +453,7 @@
 
         <!-- Phase 4 -->
         <a href="phase4.html" class="phase-card" data-color="amber">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--warning),var(--warning-light),#ffd166)"></div>
+            <div class="phase-card-bar" style="background:var(--warning)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);color:var(--warning-light)">4</div>
                 <div>
@@ -538,7 +483,7 @@
 
         <!-- Phase 5 -->
         <a href="phase5.html" class="phase-card" data-color="sky">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,#90e0ef,#48cae4,var(--accent))"></div>
+            <div class="phase-card-bar" style="background:#90e0ef"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(144,224,239,0.12);border:1px solid rgba(144,224,239,0.25);color:#90e0ef">5</div>
                 <div>
@@ -568,7 +513,7 @@
 
         <!-- Phase 6 -->
         <a href="phase6.html" class="phase-card" data-color="gold">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,#ffb74d,#ffd166,var(--warning))"></div>
+            <div class="phase-card-bar" style="background:#ffb74d"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(255,183,77,0.12);border:1px solid rgba(255,183,77,0.25);color:#ffb74d">6</div>
                 <div>
@@ -598,7 +543,7 @@
 
         <!-- Phase 7 -->
         <a href="phase7.html" class="phase-card" data-color="purple">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,#ab82ff,#c4b5fd,#ddd6fe)"></div>
+            <div class="phase-card-bar" style="background:#ab82ff"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(171,130,255,0.12);border:1px solid rgba(171,130,255,0.25);color:#ab82ff">7</div>
                 <div>
@@ -628,7 +573,7 @@
 
         <!-- Decision Tree -->
         <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(244,162,97,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(244,162,97,0.04));">
-            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--warning),var(--danger),var(--warning))"></div>
+            <div class="phase-card-bar" style="background:var(--warning)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);color:var(--warning-light);font-size:1.3rem;">&#9881;</div>
                 <div>
@@ -879,29 +824,8 @@ document.addEventListener('click', function(e) {
 // ── Init ──
 renderIndex(kbEntries);
 
-/* ═══════════ Enhancement #3: 3D Tilt + Spotlight on Phase Cards ═══════════ */
-(function() {
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-    document.querySelectorAll('.phase-card').forEach(function(card) {
-        // Inject spotlight div
-        var spot = document.createElement('div');
-        spot.className = 'card-spotlight';
-        card.insertBefore(spot, card.firstChild);
-
-        card.addEventListener('mousemove', function(e) {
-            var r = card.getBoundingClientRect();
-            var x = e.clientX - r.left, y = e.clientY - r.top;
-            var rx = ((y - r.height / 2) / (r.height / 2)) * -3;
-            var ry = ((x - r.width / 2) / (r.width / 2)) * 3;
-            card.style.transform = 'translateY(-6px) perspective(800px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg)';
-            spot.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px, rgba(255,255,255,.06) 0%, transparent 60%)';
-        });
-        card.addEventListener('mouseleave', function() {
-            card.style.transform = '';
-            spot.style.background = '';
-        });
-    });
-})();
+/* ═══════════ Enhancement #3: Spotlight on Phase Cards ═══════════ */
+/* Removed — clean design, no 3D tilt */
 
 /* ═══════════ Enhancement #4: Animated Stat Counters ═══════════ */
 (function() {
@@ -970,19 +894,6 @@ renderIndex(kbEntries);
     } else {
         revealEls.forEach(function(el) { el.classList.add('visible'); });
     }
-})();
-
-/* ═══════════ Enhancement #1b: Parallax on Hero Mesh Orbs ═══════════ */
-(function() {
-    var orbs = document.querySelectorAll('.mesh-orb');
-    if (!orbs.length || !window.matchMedia('(pointer: fine)').matches) return;
-    var rates = [0.025, -0.018, 0.012];
-    window.addEventListener('scroll', function() {
-        var sy = window.scrollY;
-        orbs.forEach(function(orb, i) {
-            orb.style.transform = 'translateY(' + (sy * rates[i % rates.length]) + 'px)';
-        });
-    }, { passive: true });
 })();
 
 /* ═══════════ Enhancement: Sticky Nav on Scroll ═══════════ */
