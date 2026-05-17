@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VMware vSAN Knowledge Base — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0f1923;
@@ -28,7 +31,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; scroll-padding-top: 20px; }
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.7;
@@ -104,7 +107,7 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
             transition: border-color 0.3s;
         }
-        .search-box:focus-within { border-color: var(--accent); }
+        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,180,216,0.15), 0 8px 32px rgba(0,0,0,0.4); }
         .search-box input {
             width: 100%; padding: 0.75rem 1rem 0.75rem 3rem;
             border-radius: 10px; border: 1px solid var(--border);
@@ -168,8 +171,12 @@
         .section-title {
             font-size: 1.3rem; font-weight: 700; margin-bottom: 1.25rem;
             display: flex; align-items: center; gap: 0.75rem;
+            background: linear-gradient(90deg, var(--text-primary), var(--accent-light), var(--success-light), var(--text-primary));
+            background-size: 300% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            animation: title-shimmer 6s ease-in-out infinite;
         }
-        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        @keyframes title-shimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); -webkit-text-fill-color: initial; }
         .phases-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.25rem;
         }
@@ -181,6 +188,20 @@
             position: relative; transform-style: preserve-3d;
         }
         .phase-card:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-6px); }
+        /* Phase card colored top accent bar */
+        .phase-card-bar { height: 3px; width: 100%; position: relative; overflow: hidden; }
+        .phase-card:hover .phase-card-bar { height: 4px; }
+        .phase-card-bar::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent); }
+        .phase-card:hover .phase-card-bar::after { animation: bar-shimmer 1.2s ease forwards; }
+        @keyframes bar-shimmer { 0%{left:-100%} 100%{left:100%} }
+        /* Unique phase hover colors */
+        .phase-card[data-color='cyan']:hover { border-color: var(--accent); box-shadow: 0 0 30px rgba(0,180,216,.2), 0 8px 24px rgba(0,0,0,.3); }
+        .phase-card[data-color='teal']:hover { border-color: var(--success); box-shadow: 0 0 30px rgba(46,196,182,.2), 0 8px 24px rgba(0,0,0,.3); }
+        .phase-card[data-color='red']:hover { border-color: var(--danger); box-shadow: 0 0 30px rgba(230,57,70,.2), 0 8px 24px rgba(0,0,0,.3); }
+        .phase-card[data-color='amber']:hover { border-color: var(--warning); box-shadow: 0 0 30px rgba(244,162,97,.2), 0 8px 24px rgba(0,0,0,.3); }
+        .phase-card[data-color='sky']:hover { border-color: #90e0ef; box-shadow: 0 0 30px rgba(144,224,239,.2), 0 8px 24px rgba(0,0,0,.3); }
+        .phase-card[data-color='gold']:hover { border-color: #ffb74d; box-shadow: 0 0 30px rgba(255,183,77,.2), 0 8px 24px rgba(0,0,0,.3); }
+        .phase-card[data-color='purple']:hover { border-color: #ab82ff; box-shadow: 0 0 30px rgba(171,130,255,.2), 0 8px 24px rgba(0,0,0,.3); }
         /* #3: Phase card shimmer */
         .phase-card::after { content:''; position:absolute; top:0; left:-100%; right:0; bottom:0; width:60%; background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.03) 45%,rgba(255,255,255,.06) 50%,rgba(255,255,255,.03) 55%,transparent 60%); transition:left .6s ease; pointer-events:none; z-index:3; border-radius:14px; }
         .phase-card:hover::after { left: 150%; }
@@ -281,6 +302,24 @@
         .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); }
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
+        /* Section dividers */
+        .section-divider { width:100%; height:1px; position:relative; z-index:1; max-width:1400px; margin:2rem auto; overflow:visible; }
+        .section-divider::before { content:''; display:block; width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(0,180,216,.2),rgba(46,196,182,.25),rgba(0,180,216,.2),transparent); }
+        .section-divider::after { content:''; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px rgba(0,180,216,.4); }
+
+        /* Sticky compact nav */
+        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(15,25,35,.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:.5rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .3s ease; }
+        .sticky-nav.visible { transform:translateY(0); }
+        .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:700; font-size:.82rem; }
+        .sticky-nav-brand .sn-logo { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,var(--accent),var(--success)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.55rem; color:#fff; }
+        .sticky-nav-links { display:flex; gap:1rem; align-items:center; }
+        .sticky-nav-links a { color:var(--text-muted); text-decoration:none; font-size:.75rem; font-weight:500; transition:color .2s; }
+        .sticky-nav-links a:hover { color:var(--accent-light); }
+
+        /* Decision tree pulse border */
+        .phase-card.dt-special { animation: dt-pulse 3s ease-in-out infinite; }
+        @keyframes dt-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(244,162,97,0); } 50%{ box-shadow:0 0 0 4px rgba(244,162,97,.15); } }
+
         /* ── Footer (enhanced #8) ── */
         .footer {
             border-top: 1px solid var(--border); margin-top: 3rem;
@@ -311,6 +350,18 @@
     </style>
 </head>
 <body>
+
+<!-- Sticky compact nav -->
+<div class="sticky-nav" id="stickyNav">
+    <a href="index.html" class="sticky-nav-brand"><div class="sn-logo">vS</div> vSAN Knowledge Base</a>
+    <div class="sticky-nav-links">
+        <a href="#stats">Stats</a>
+        <a href="#phases">Phases</a>
+        <a href="#kbindex">KB Index</a>
+        <a href="decision-tree.html">Decision Tree</a>
+        <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">↑ Portal</a>
+    </div>
+</div>
 
 <!-- ── Hero ── -->
 <section class="hero">
@@ -348,7 +399,8 @@
 </div>
 
 <!-- ── Stats ── -->
-<div class="stats-section reveal">
+<!-- ── Stats ── -->
+<div class="stats-section reveal" id="stats">
     <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="70">0</div><div class="stat-label">Total KB Entries</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="35">0</div><div class="stat-label">Break Scenarios</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="35">0</div><div class="stat-label">Fix Procedures</div></div>
@@ -356,13 +408,17 @@
     <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
 </div>
 
+<!-- Section divider -->
+<div class="section-divider"></div>
+
 <!-- ── Phase Cards ── -->
-<section class="phases-section reveal">
+<section class="phases-section reveal" id="phases">
     <div class="section-title">Phases</div>
     <div class="phases-grid">
 
         <!-- Phase 1 -->
-        <a href="phase1.html" class="phase-card">
+        <a href="phase1.html" class="phase-card" data-color="cyan">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--accent),var(--accent-light),#90e0ef)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(0,180,216,0.12);border:1px solid rgba(0,180,216,0.25);color:var(--accent-light)">1</div>
                 <div>
@@ -391,7 +447,8 @@
         </a>
 
         <!-- Phase 2 -->
-        <a href="phase2.html" class="phase-card">
+        <a href="phase2.html" class="phase-card" data-color="teal">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--success),var(--success-light),#90e0ef)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(46,196,182,0.12);border:1px solid rgba(46,196,182,0.25);color:var(--success-light)">2</div>
                 <div>
@@ -420,7 +477,8 @@
         </a>
 
         <!-- Phase 3 -->
-        <a href="phase3.html" class="phase-card">
+        <a href="phase3.html" class="phase-card" data-color="red">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--danger),var(--danger-light),var(--warning))"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(230,57,70,0.12);border:1px solid rgba(230,57,70,0.25);color:var(--danger-light)">3</div>
                 <div>
@@ -449,7 +507,8 @@
         </a>
 
         <!-- Phase 4 -->
-        <a href="phase4.html" class="phase-card">
+        <a href="phase4.html" class="phase-card" data-color="amber">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--warning),var(--warning-light),#ffd166)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);color:var(--warning-light)">4</div>
                 <div>
@@ -478,7 +537,8 @@
         </a>
 
         <!-- Phase 5 -->
-        <a href="phase5.html" class="phase-card">
+        <a href="phase5.html" class="phase-card" data-color="sky">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,#90e0ef,#48cae4,var(--accent))"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(144,224,239,0.12);border:1px solid rgba(144,224,239,0.25);color:#90e0ef">5</div>
                 <div>
@@ -507,7 +567,8 @@
         </a>
 
         <!-- Phase 6 -->
-        <a href="phase6.html" class="phase-card">
+        <a href="phase6.html" class="phase-card" data-color="gold">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,#ffb74d,#ffd166,var(--warning))"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(255,183,77,0.12);border:1px solid rgba(255,183,77,0.25);color:#ffb74d">6</div>
                 <div>
@@ -536,7 +597,8 @@
         </a>
 
         <!-- Phase 7 -->
-        <a href="phase7.html" class="phase-card">
+        <a href="phase7.html" class="phase-card" data-color="purple">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,#ab82ff,#c4b5fd,#ddd6fe)"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(171,130,255,0.12);border:1px solid rgba(171,130,255,0.25);color:#ab82ff">7</div>
                 <div>
@@ -565,7 +627,8 @@
         </a>
 
         <!-- Decision Tree -->
-        <a href="decision-tree.html" class="phase-card" style="border-color:rgba(244,162,97,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(244,162,97,0.04));">
+        <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(244,162,97,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(244,162,97,0.04));">
+            <div class="phase-card-bar" style="background:linear-gradient(90deg,var(--warning),var(--danger),var(--warning))"></div>
             <div class="phase-card-header">
                 <div class="phase-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);color:var(--warning-light);font-size:1.3rem;">&#9881;</div>
                 <div>
@@ -590,8 +653,11 @@
     </div>
 </section>
 
+<!-- Section divider -->
+<div class="section-divider"></div>
+
 <!-- ── Full KB Index ── -->
-<section class="filter-section reveal">
+<section class="filter-section reveal" id="kbindex">
     <div class="section-title">Complete KB Index</div>
     <div class="filter-tabs">
         <button class="filter-tab active" onclick="filterIndex('all', this)">All (70)</button>
@@ -916,6 +982,19 @@ renderIndex(kbEntries);
         orbs.forEach(function(orb, i) {
             orb.style.transform = 'translateY(' + (sy * rates[i % rates.length]) + 'px)';
         });
+    }, { passive: true });
+})();
+
+/* ═══════════ Enhancement: Sticky Nav on Scroll ═══════════ */
+(function() {
+    var nav = document.getElementById('stickyNav');
+    var hero = document.querySelector('.hero');
+    if (!nav || !hero) return;
+    var threshold = hero.offsetTop + hero.offsetHeight - 60;
+    var shown = false;
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > threshold && !shown) { nav.classList.add('visible'); shown = true; }
+        else if (window.scrollY <= threshold && shown) { nav.classList.remove('visible'); shown = false; }
     }, { passive: true });
 })();
 </script>
