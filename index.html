@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VMware vSAN Knowledge Base — Eng. Mustafa Al-Qadi</title>
-    <meta name="description" content="VMware vSAN Knowledge Base — 70 fix & break scenarios with official Broadcom/VMware remediation procedures.">
-    <meta property="og:title" content="VMware vSAN Knowledge Base">
-    <meta property="og:description" content="Professional vSAN troubleshooting reference — 70 KB entries covering ESA, OSA, VCF, DR, Performance & Networking.">
+    <title>VMware Knowledge Base — Eng. Mustafa Al-Qadi</title>
+    <meta name="description" content="VMware Knowledge Base Portal — Professional troubleshooting references for vSAN, NSX-T, vSphere &amp; more by Eng. Mustafa Al-Qadi.">
+    <meta property="og:title" content="VMware Knowledge Base Portal">
+    <meta property="og:description" content="Professional VMware troubleshooting references — vSAN, NSX-T, vSphere &amp; more. Fix &amp; break scenarios with official Broadcom/VMware remediation.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0f1923">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f1923'/%3E%3Cpath d='M16 4 L28 10 V18 C28 24 22 28 16 30 C10 28 4 24 4 18 V10 Z' fill='none' stroke='%2300b4d8' stroke-width='1.5'/%3E%3Cpath d='M10 16 L14 20 L22 12' stroke='%232ec4b6' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -24,6 +24,8 @@
             --success-light: #52d6c8;
             --warning: #f4a261;
             --warning-light: #f4c089;
+            --purple: #a78bfa;
+            --purple-light: #c4b5fd;
             --text-primary: #e8edf2;
             --text-secondary: #8fa3b8;
             --text-muted: #5c7a94;
@@ -112,7 +114,7 @@
         }
         .hero .subtitle {
             font-size: 1.15rem; color: var(--text-secondary); font-weight: 300;
-            max-width: 700px; margin: 0 auto 2rem;
+            max-width: 750px; margin: 0 auto 2rem;
             position: relative;
         }
         .hero-badges {
@@ -168,13 +170,15 @@
             content: ''; flex: 1; height: 1px; background: var(--border);
         }
 
-        /* ── Course / KB Card ── */
-        .cards-grid {
+        /* ── Product Grid ── */
+        .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 1.5rem;
         }
-        .card {
+
+        /* ── Product Card ── */
+        .product-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 16px;
@@ -182,53 +186,55 @@
             transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
             display: flex;
             flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
         }
-        .card:hover {
+        .product-card:hover {
             border-color: var(--accent);
             box-shadow: var(--shadow);
             transform: translateY(-4px);
         }
-        .card-header {
-            padding: 1.75rem 1.75rem 1rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
+        .product-card .card-accent-bar {
+            height: 4px;
+            width: 100%;
         }
-        .card-icon {
-            width: 56px; height: 56px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.6rem; flex-shrink: 0;
-        }
-        .card-icon.vsan {
-            background: rgba(0,180,216,0.12);
-            border: 1px solid rgba(0,180,216,0.25);
-        }
-        .card-badge {
-            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 1px; color: var(--text-muted);
-            margin-bottom: 0.3rem;
-        }
-        .card-title {
-            font-size: 1.15rem; font-weight: 700; line-height: 1.4;
-        }
-        .card-desc {
-            padding: 0 1.75rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
+        .product-card .card-body {
+            padding: 1.75rem;
             flex: 1;
+            display: flex;
+            flex-direction: column;
         }
-        .card-stats {
-            display: flex; gap: 1rem; flex-wrap: wrap;
-            padding: 1rem 1.75rem;
+        .product-card .card-icon-wrap {
+            width: 64px; height: 64px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1.25rem;
         }
-        .card-stat {
-            font-size: 0.75rem; font-weight: 600;
-            display: flex; align-items: center; gap: 0.3rem;
+        .product-card .card-label {
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; margin-bottom: 0.4rem;
         }
-        .card-stat .num { color: var(--accent-light); }
-        .card-stat .lbl { color: var(--text-muted); }
-        .card-footer {
+        .product-card .card-title {
+            font-size: 1.25rem; font-weight: 700; line-height: 1.4;
+            margin-bottom: 0.75rem;
+        }
+        .product-card .card-desc {
+            font-size: 0.85rem; color: var(--text-secondary); line-height: 1.65;
+            flex: 1; padding: 0;
+        }
+        .product-card .card-stats {
+            display: flex; gap: 1.25rem; flex-wrap: wrap;
+            padding-top: 1rem; margin-top: 1rem;
+            border-top: 1px solid rgba(42,63,82,0.5);
+        }
+        .product-card .card-stat {
+            font-size: 0.78rem; font-weight: 600;
+            display: flex; align-items: center; gap: 0.35rem;
+        }
+        .product-card .card-stat .num { font-weight: 700; }
+        .product-card .card-stat .lbl { color: var(--text-muted); font-weight: 500; }
+        .product-card .card-footer {
             padding: 1rem 1.75rem;
             border-top: 1px solid var(--border);
             background: var(--bg-secondary);
@@ -236,26 +242,62 @@
             justify-content: space-between;
             align-items: center;
         }
-        .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-        .card-tag {
-            font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 4px;
-            background: rgba(0,180,216,0.08); color: var(--accent-light);
-            border: 1px solid rgba(0,180,216,0.15);
+        .product-card .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .product-card .card-tag {
+            font-size: 0.68rem; padding: 0.15rem 0.55rem; border-radius: 4px;
         }
-        .card-link {
-            font-size: 0.82rem; font-weight: 700; color: var(--accent-light);
-            text-decoration: none; display: flex; align-items: center; gap: 0.3rem;
-            transition: color 0.2s;
+        .product-card .card-arrow {
+            font-size: 0.85rem; font-weight: 700;
+            display: flex; align-items: center; gap: 0.3rem;
+            transition: gap 0.2s;
+            white-space: nowrap;
         }
-        .card-link:hover { color: #90e0ef; }
+        .product-card:hover .card-arrow { gap: 0.6rem; }
 
-        /* ── Coming Soon Card ── */
-        .card.coming-soon {
-            opacity: 0.6;
-            pointer-events: none;
+        /* ── vSAN Theme ── */
+        .product-card.vsan .card-accent-bar { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+        .product-card.vsan .card-icon-wrap { background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.2); }
+        .product-card.vsan .card-label { color: var(--accent-light); }
+        .product-card.vsan .card-stat .num { color: var(--accent-light); }
+        .product-card.vsan .card-tag { background: rgba(0,180,216,0.08); color: var(--accent-light); border: 1px solid rgba(0,180,216,0.15); }
+        .product-card.vsan .card-arrow { color: var(--accent-light); }
+        .product-card.vsan:hover { border-color: var(--accent); }
+
+        /* ── NSX-T Theme ── */
+        .product-card.nsx .card-accent-bar { background: linear-gradient(90deg, var(--success), var(--success-light)); }
+        .product-card.nsx .card-icon-wrap { background: rgba(46,196,182,0.1); border: 1px solid rgba(46,196,182,0.2); }
+        .product-card.nsx .card-label { color: var(--success-light); }
+        .product-card.nsx .card-stat .num { color: var(--success-light); }
+        .product-card.nsx .card-tag { background: rgba(46,196,182,0.08); color: var(--success-light); border: 1px solid rgba(46,196,182,0.15); }
+        .product-card.nsx .card-arrow { color: var(--success-light); }
+        .product-card.nsx:hover { border-color: var(--success); }
+
+        /* ── vSphere Theme ── */
+        .product-card.vsphere .card-accent-bar { background: linear-gradient(90deg, var(--purple), var(--purple-light)); }
+        .product-card.vsphere .card-icon-wrap { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); }
+        .product-card.vsphere .card-label { color: var(--purple-light); }
+        .product-card.vsphere .card-stat .num { color: var(--purple-light); }
+        .product-card.vsphere .card-tag { background: rgba(167,139,250,0.08); color: var(--purple-light); border: 1px solid rgba(167,139,250,0.15); }
+        .product-card.vsphere .card-arrow { color: var(--purple-light); }
+        .product-card.vsphere:hover { border-color: var(--purple); }
+
+        /* ── VCF Theme ── */
+        .product-card.vcf .card-accent-bar { background: linear-gradient(90deg, var(--warning), var(--warning-light)); }
+        .product-card.vcf .card-icon-wrap { background: rgba(244,162,97,0.1); border: 1px solid rgba(244,162,97,0.2); }
+        .product-card.vcf .card-label { color: var(--warning-light); }
+        .product-card.vcf .card-stat .num { color: var(--warning-light); }
+        .product-card.vcf .card-tag { background: rgba(244,162,97,0.08); color: var(--warning-light); border: 1px solid rgba(244,162,97,0.15); }
+        .product-card.vcf .card-arrow { color: var(--warning-light); }
+        .product-card.vcf:hover { border-color: var(--warning); }
+
+        /* ── Coming Soon ── */
+        .product-card.coming-soon {
+            opacity: 0.55;
+            cursor: default;
         }
-        .card.coming-soon .card-footer {
-            background: rgba(244,162,97,0.05);
+        .product-card.coming-soon:hover {
+            transform: none;
+            box-shadow: none;
         }
         .coming-badge {
             font-size: 0.72rem; font-weight: 700;
@@ -264,6 +306,25 @@
             border-radius: 12px;
             background: rgba(244,162,97,0.1);
             border: 1px solid rgba(244,162,97,0.2);
+        }
+        .status-live {
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--success-light);
+            padding: 0.2rem 0.7rem;
+            border-radius: 12px;
+            background: rgba(46,196,182,0.1);
+            border: 1px solid rgba(46,196,182,0.2);
+            display: inline-flex; align-items: center; gap: 0.35rem;
+        }
+        .status-live::before {
+            content: '';
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--success-light);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         /* ── CTA Section ── */
@@ -314,7 +375,7 @@
             .hero h1 { font-size: 2rem; }
             .hero .subtitle { font-size: 0.95rem; }
             .features { gap: 1.5rem; }
-            .cards-grid { grid-template-columns: 1fr; }
+            .product-grid { grid-template-columns: 1fr; }
             .topbar { padding: 0.6rem 1rem; }
             .section { padding: 2rem 1rem; }
         }
@@ -334,7 +395,7 @@
 
 <!-- ═══════════ TOP BAR ═══════════ -->
 <div class="topbar">
-    <a href="https://mustafamalqadi.github.io/training-courses/" class="topbar-brand">
+    <a href="./" class="topbar-brand">
         <div class="initials">MA</div>
         <span class="name">Eng. Mustafa Al-Qadi</span>
     </a>
@@ -347,16 +408,16 @@
 
 <!-- ═══════════ HERO ═══════════ -->
 <div class="hero">
-    <div class="hero-label">Knowledge Base &amp; Reference</div>
-    <h1>VMware vSAN<br>Knowledge Base</h1>
+    <div class="hero-label">Knowledge Base Portal</div>
+    <h1>VMware<br>Knowledge Base</h1>
     <p class="subtitle">
-        قاعدة معرفة احترافية لاستكشاف الأخطاء وإصلاحها في VMware vSAN — 70 سيناريو عملي مع إجراءات الإصلاح الرسمية من Broadcom / VMware
+        بوابة قواعد المعرفة الاحترافية لمنتجات VMware — سيناريوهات الكسر والإصلاح مع إجراءات المعالجة الرسمية من Broadcom / VMware
     </p>
     <div class="hero-badges">
-        <span class="badge badge-accent">&#128218; 70 KB Entries</span>
-        <span class="badge badge-danger">&#9888; Break Scenarios</span>
-        <span class="badge badge-success">&#10003; Fix Procedures</span>
-        <span class="badge badge-warning">&#128736; 7 Phases</span>
+        <span class="badge badge-accent">&#128218; vSAN</span>
+        <span class="badge badge-success">&#128737; NSX-T</span>
+        <span class="badge badge-warning">&#9881; VCF</span>
+        <span class="badge badge-danger">&#128421; vSphere</span>
     </div>
     <div class="features">
         <div class="feature">
@@ -365,7 +426,7 @@
         </div>
         <div class="feature">
             <div class="feature-icon">&#128300;</div>
-            <span>Decision Tree</span>
+            <span>Decision Trees</span>
         </div>
         <div class="feature">
             <div class="feature-icon">&#9989;</div>
@@ -382,35 +443,33 @@
     </div>
 </div>
 
-<!-- ═══════════ VMWARE vSAN SECTION ═══════════ -->
+<!-- ═══════════ PRODUCT GRID ═══════════ -->
 <div class="section">
     <div class="section-header">
-        <div class="section-icon" style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.2);">&#128421;</div>
+        <div class="section-icon" style="background:rgba(0,180,216,0.1);border:1px solid rgba(0,180,216,0.2);">&#128218;</div>
         <div>
-            <div class="section-title">VMWARE vSAN — Fix &amp; Break Reference</div>
-            <div class="section-subtitle">البنية التحتية للتخزين الافتراضي — سيناريوهات الكسر والإصلاح</div>
+            <div class="section-title">VMware Knowledge Bases</div>
+            <div class="section-subtitle">اختر المنتج للوصول إلى قاعدة المعرفة المخصصة</div>
         </div>
     </div>
 
-    <div class="cards-grid">
+    <div class="product-grid">
 
-        <!-- ── vSAN KB Main ── -->
-        <div class="card fade-in" style="animation-delay:0.1s;">
-            <div class="card-header">
-                <div class="card-icon vsan">&#128218;</div>
-                <div>
-                    <div class="card-badge">VMware vSAN Knowledge Base</div>
-                    <div class="card-title">vSAN Fix &amp; Break — Complete Reference</div>
+        <!-- ══ vSAN — LIVE ══ -->
+        <a href="vsan-kb/" class="product-card vsan fade-in" style="animation-delay:0.1s;">
+            <div class="card-accent-bar"></div>
+            <div class="card-body">
+                <div class="card-icon-wrap">&#128421;</div>
+                <div class="card-label">VMware vSAN</div>
+                <div class="card-title">vSAN Fix &amp; Break<br>Knowledge Base</div>
+                <div class="card-desc">
+                    قاعدة معرفة شاملة تغطي 70 سيناريو في vSAN — من مشاكل Disk Group وNetwork Partition إلى ESA Deep Dive وVCF Integration. أوامر esxcli جاهزة للنسخ مع خطوات التحقق والجدول الزمني للاسترداد.
                 </div>
-            </div>
-            <div class="card-desc">
-                قاعدة معرفة شاملة تغطي 70 سيناريو في vSAN — من مشاكل Disk Group وNetwork Partition إلى ESA Deep Dive وVCF Integration. كل مدخل يتضمن أوامر esxcli جاهزة للنسخ، مع خطوات التحقق والجدول الزمني للاسترداد.
-            </div>
-            <div class="card-stats">
-                <div class="card-stat"><span class="num">📖 70</span><span class="lbl">KB Entries</span></div>
-                <div class="card-stat"><span class="num">🔧 7</span><span class="lbl">Phases</span></div>
-                <div class="card-stat"><span class="num">🔍 1</span><span class="lbl">Decision Tree</span></div>
-                <div class="card-stat"><span class="num">📋 6</span><span class="lbl">Enrichment Layers</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="num">70</span>&nbsp;<span class="lbl">KB Entries</span></div>
+                    <div class="card-stat"><span class="num">7</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num">6</span>&nbsp;<span class="lbl">Enrichments</span></div>
+                </div>
             </div>
             <div class="card-footer">
                 <div class="card-tags">
@@ -420,97 +479,77 @@
                     <span class="card-tag">VCF</span>
                     <span class="card-tag">DR</span>
                 </div>
-                <a href="vsan-kb/" class="card-link">Open Dashboard &#8594;</a>
+                <span class="status-live">Live</span>
             </div>
-        </div>
+        </a>
 
-        <!-- ── Phase Quick Links ── -->
-        <div class="card fade-in" style="animation-delay:0.2s;">
-            <div class="card-header">
-                <div class="card-icon" style="background:rgba(244,162,97,0.12);border:1px solid rgba(244,162,97,0.25);">&#9881;</div>
-                <div>
-                    <div class="card-badge">Quick Navigation</div>
-                    <div class="card-title">Phase-by-Phase Access</div>
+        <!-- ══ NSX-T — Coming Soon ══ -->
+        <div class="product-card nsx coming-soon fade-in" style="animation-delay:0.2s;">
+            <div class="card-accent-bar"></div>
+            <div class="card-body">
+                <div class="card-icon-wrap">&#128737;</div>
+                <div class="card-label">VMware NSX-T</div>
+                <div class="card-title">NSX-T Troubleshooting<br>Knowledge Base</div>
+                <div class="card-desc">
+                    قاعدة معرفة لاستكشاف أخطاء NSX-T — Segments, T0/T1 Gateways, Distributed Firewall, Edge Nodes, BGP/OSPF, وTransport Zones.
                 </div>
-            </div>
-            <div class="card-desc" style="padding-bottom:1rem;">
-                <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
-                    <a href="vsan-kb/phase1.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(42,63,82,0.5);">
-                        <span style="color:var(--danger-light);font-weight:700;min-width:20px;">1</span> Top 10 Common Issues (KB #1-10)
-                    </a>
-                    <a href="vsan-kb/phase2.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(42,63,82,0.5);">
-                        <span style="color:var(--success-light);font-weight:700;min-width:20px;">2</span> Day-2 Operations (KB #11-20)
-                    </a>
-                    <a href="vsan-kb/phase3.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(42,63,82,0.5);">
-                        <span style="color:var(--warning-light);font-weight:700;min-width:20px;">3</span> DR &amp; Data Protection (KB #21-30)
-                    </a>
-                    <a href="vsan-kb/phase4.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(42,63,82,0.5);">
-                        <span style="color:var(--accent-light);font-weight:700;min-width:20px;">4</span> VCF Integration (KB #31-40)
-                    </a>
-                    <a href="vsan-kb/phase5.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(42,63,82,0.5);">
-                        <span style="color:var(--danger-light);font-weight:700;min-width:20px;">5</span> ESA Deep Dive (KB #41-50)
-                    </a>
-                    <a href="vsan-kb/phase6.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(42,63,82,0.5);">
-                        <span style="color:var(--success-light);font-weight:700;min-width:20px;">6</span> Performance &amp; Capacity (KB #51-60)
-                    </a>
-                    <a href="vsan-kb/phase7.html" style="color:var(--accent-light);text-decoration:none;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;">
-                        <span style="color:var(--warning-light);font-weight:700;min-width:20px;">7</span> Networking (KB #61-70)
-                    </a>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="num">—</span>&nbsp;<span class="lbl">Coming Soon</span></div>
                 </div>
             </div>
             <div class="card-footer">
                 <div class="card-tags">
-                    <span class="card-tag">esxcli</span>
-                    <span class="card-tag">vSphere UI</span>
-                    <span class="card-tag">SDDC Manager</span>
-                </div>
-                <a href="vsan-kb/decision-tree.html" class="card-link">Decision Tree &#8594;</a>
-            </div>
-        </div>
-
-        <!-- ── Placeholder: Coming Soon ── -->
-        <div class="card coming-soon fade-in" style="animation-delay:0.3s;">
-            <div class="card-header">
-                <div class="card-icon" style="background:rgba(143,163,184,0.08);border:1px solid rgba(143,163,184,0.15);">&#128640;</div>
-                <div>
-                    <div class="card-badge">Coming Soon</div>
-                    <div class="card-title">NSX-T Troubleshooting KB</div>
-                </div>
-            </div>
-            <div class="card-desc">
-                قاعدة معرفة لاستكشاف أخطاء NSX-T — Segments, T0/T1 Gateways, Distributed Firewall, Edge Nodes, BGP/OSPF, وTransport Zones.
-            </div>
-            <div class="card-stats">
-                <div class="card-stat"><span class="num">📖 —</span><span class="lbl">Coming Soon</span></div>
-            </div>
-            <div class="card-footer">
-                <div class="card-tags">
-                    <span class="card-tag">NSX-T</span>
-                    <span class="card-tag">VCF</span>
+                    <span class="card-tag">NSX-T 3.x/4.x</span>
+                    <span class="card-tag">DFW</span>
+                    <span class="card-tag">Edge</span>
                 </div>
                 <span class="coming-badge">قريباً</span>
             </div>
         </div>
 
-        <!-- ── Placeholder: Coming Soon ── -->
-        <div class="card coming-soon fade-in" style="animation-delay:0.4s;">
-            <div class="card-header">
-                <div class="card-icon" style="background:rgba(143,163,184,0.08);border:1px solid rgba(143,163,184,0.15);">&#128640;</div>
-                <div>
-                    <div class="card-badge">Coming Soon</div>
-                    <div class="card-title">vSphere Cluster Troubleshooting KB</div>
+        <!-- ══ vSphere — Coming Soon ══ -->
+        <div class="product-card vsphere coming-soon fade-in" style="animation-delay:0.3s;">
+            <div class="card-accent-bar"></div>
+            <div class="card-body">
+                <div class="card-icon-wrap">&#128187;</div>
+                <div class="card-label">VMware vSphere</div>
+                <div class="card-title">vSphere Cluster<br>Troubleshooting KB</div>
+                <div class="card-desc">
+                    قاعدة معرفة لمشاكل vSphere Clusters — HA, DRS, vMotion, PSOD, VMFS, vCenter, وCertificate Management.
                 </div>
-            </div>
-            <div class="card-desc">
-                قاعدة معرفة لمشاكل vSphere Clusters — HA, DRS, vMotion, PSOD, VMFS, vCenter, وCertificate Management.
-            </div>
-            <div class="card-stats">
-                <div class="card-stat"><span class="num">📖 —</span><span class="lbl">Coming Soon</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="num">—</span>&nbsp;<span class="lbl">Coming Soon</span></div>
+                </div>
             </div>
             <div class="card-footer">
                 <div class="card-tags">
-                    <span class="card-tag">vSphere</span>
+                    <span class="card-tag">vSphere 7/8</span>
                     <span class="card-tag">ESXi</span>
+                    <span class="card-tag">vCenter</span>
+                </div>
+                <span class="coming-badge">قريباً</span>
+            </div>
+        </div>
+
+        <!-- ══ VCF — Coming Soon ══ -->
+        <div class="product-card vcf coming-soon fade-in" style="animation-delay:0.4s;">
+            <div class="card-accent-bar"></div>
+            <div class="card-body">
+                <div class="card-icon-wrap">&#9881;</div>
+                <div class="card-label">VMware Cloud Foundation</div>
+                <div class="card-title">VCF Lifecycle<br>Troubleshooting KB</div>
+                <div class="card-desc">
+                    قاعدة معرفة لمشاكل VCF — SDDC Manager, Lifecycle Management, Workload Domains, Certificates, وBring-Up Issues.
+                </div>
+                <div class="card-stats">
+                    <div class="card-stat"><span class="num">—</span>&nbsp;<span class="lbl">Coming Soon</span></div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="card-tags">
+                    <span class="card-tag">VCF 4.x/5.x</span>
+                    <span class="card-tag">SDDC</span>
+                    <span class="card-tag">LCM</span>
                 </div>
                 <span class="coming-badge">قريباً</span>
             </div>
@@ -521,7 +560,7 @@
 
 <!-- ═══════════ CTA ═══════════ -->
 <div class="cta">
-    <h2>📩 هل تريد أن يصلك إشعار عند إطلاق محتوى جديد؟</h2>
+    <h2>&#128233; هل تريد أن يصلك إشعار عند إطلاق محتوى جديد؟</h2>
     <p>تواصل معي على LinkedIn أو GitHub للحصول على آخر التحديثات</p>
     <div class="cta-links">
         <a href="https://www.linkedin.com/in/mustafa-al-qadi-18027120a" target="_blank" class="cta-btn cta-btn-primary">
