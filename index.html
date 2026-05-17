@@ -372,6 +372,8 @@
             text-decoration: none;
             color: inherit;
             position: relative;
+            transform-style: preserve-3d;
+            will-change: transform;
         }
         .product-card::before {
             content: '';
@@ -383,11 +385,37 @@
             pointer-events: none;
             z-index: 0;
         }
+        /* Shimmer sweep overlay */
+        .product-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; right: 0; bottom: 0;
+            width: 60%;
+            background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%);
+            transition: left 0.6s ease;
+            pointer-events: none;
+            z-index: 3;
+        }
+        .product-card:hover::after {
+            left: 150%;
+        }
         .product-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-8px);
             border-color: transparent;
         }
         .product-card:hover::before { opacity: 1; }
+
+        /* Inner spotlight (mouse-following via JS) */
+        .card-spotlight {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .product-card:hover .card-spotlight { opacity: 1; }
 
         /* Per-theme hover glow */
         .product-card.vsan::before { box-shadow: 0 0 40px rgba(99,102,241,0.2), 0 8px 32px rgba(99,102,241,0.15); }
@@ -401,6 +429,24 @@
 
         .card-accent-bar {
             height: 3px; width: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: height 0.3s ease;
+        }
+        /* Animated shimmer on accent bar */
+        .card-accent-bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: none;
+        }
+        .product-card:hover .card-accent-bar::after {
+            animation: accent-shimmer 1.2s ease forwards;
+        }
+        @keyframes accent-shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
         .card-body {
             padding: 2rem;
@@ -418,7 +464,11 @@
             margin-bottom: 1.25rem;
             transition: transform 0.3s;
         }
-        .product-card:hover .card-icon-wrap { transform: scale(1.08) rotate(-3deg); }
+        .product-card:hover .card-icon-wrap { transform: scale(1.12) rotate(-5deg); }
+        .product-card:hover .card-icon-wrap svg {
+            filter: drop-shadow(0 0 8px currentColor);
+            transition: filter 0.4s;
+        }
         .card-icon-wrap svg { width: 28px; height: 28px; }
 
         .card-label {
@@ -428,6 +478,10 @@
         .card-title {
             font-size: 1.2rem; font-weight: 700; line-height: 1.4;
             margin-bottom: 0.75rem; letter-spacing: -0.01em;
+            transition: letter-spacing 0.4s;
+        }
+        .product-card:hover .card-title {
+            letter-spacing: 0.01em;
         }
         .card-desc {
             font-size: 0.84rem; color: var(--text-secondary); line-height: 1.7;
@@ -461,6 +515,11 @@
         .card-tag {
             font-size: 0.66rem; padding: 0.18rem 0.55rem; border-radius: 6px;
             font-weight: 500;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .product-card:hover .card-tag {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         .card-arrow {
             font-size: 0.82rem; font-weight: 700;
@@ -469,9 +528,18 @@
             white-space: nowrap;
         }
         .product-card:hover .card-arrow { gap: 0.7rem; }
+        .product-card:hover .card-arrow svg,
+        .product-card:hover .card-arrow::after {
+            animation: arrow-bounce 0.8s ease infinite;
+        }
+        @keyframes arrow-bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(3px); }
+        }
 
         /* ── vSAN Theme ── */
-        .product-card.vsan .card-accent-bar { background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--cyan)); }
+        .product-card.vsan .card-accent-bar { background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--cyan)); background-size: 200% 100%; }
+        .product-card.vsan:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
         .product-card.vsan .card-icon-wrap { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); }
         .product-card.vsan .card-label { color: var(--accent-light); }
         .product-card.vsan .card-stat .num { color: var(--accent-light); }
@@ -479,7 +547,12 @@
         .product-card.vsan .card-arrow { color: var(--accent-light); }
 
         /* ── NSX-T Theme ── */
-        .product-card.nsx .card-accent-bar { background: linear-gradient(90deg, var(--cyan), var(--cyan-light)); }
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .product-card.nsx .card-accent-bar { background: linear-gradient(90deg, var(--cyan), var(--cyan-light)); background-size: 200% 100%; }
+        .product-card.nsx:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
         .product-card.nsx .card-icon-wrap { background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2); }
         .product-card.nsx .card-label { color: var(--cyan-light); }
         .product-card.nsx .card-stat .num { color: var(--cyan-light); }
@@ -487,7 +560,8 @@
         .product-card.nsx .card-arrow { color: var(--cyan-light); }
 
         /* ── vSphere Theme ── */
-        .product-card.vsphere .card-accent-bar { background: linear-gradient(90deg, var(--purple), var(--purple-light)); }
+        .product-card.vsphere .card-accent-bar { background: linear-gradient(90deg, var(--purple), var(--purple-light)); background-size: 200% 100%; }
+        .product-card.vsphere:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
         .product-card.vsphere .card-icon-wrap { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); }
         .product-card.vsphere .card-label { color: var(--purple-light); }
         .product-card.vsphere .card-stat .num { color: var(--purple-light); }
@@ -495,7 +569,8 @@
         .product-card.vsphere .card-arrow { color: var(--purple-light); }
 
         /* ── VCF Theme ── */
-        .product-card.vcf .card-accent-bar { background: linear-gradient(90deg, var(--warning), var(--warning-light)); }
+        .product-card.vcf .card-accent-bar { background: linear-gradient(90deg, var(--warning), var(--warning-light)); background-size: 200% 100%; }
+        .product-card.vcf:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
         .product-card.vcf .card-icon-wrap { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); }
         .product-card.vcf .card-label { color: var(--warning-light); }
         .product-card.vcf .card-stat .num { color: var(--warning-light); }
@@ -508,8 +583,14 @@
             cursor: default;
         }
         .product-card.coming-soon:hover {
-            transform: none;
+            transform: none !important;
         }
+        .product-card.coming-soon:hover .card-tag {
+            transform: none;
+            box-shadow: none;
+        }
+        .product-card.coming-soon::after { display: none; }
+        .product-card.coming-soon:hover .card-accent-bar { height: 3px; animation: none; }
         .product-card.coming-soon:hover::before { opacity: 0; }
         .product-card.coming-soon:hover .card-icon-wrap { transform: none; }
 
@@ -928,6 +1009,7 @@
 
         <!-- ══ vSAN — LIVE ══ -->
         <a href="vsan-kb/" class="product-card vsan reveal" style="transition-delay:0.1s;">
+            <div class="card-spotlight"></div>
             <div class="entry-count">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 70 Entries
@@ -968,6 +1050,7 @@
 
         <!-- ══ NSX-T — Coming Soon ══ -->
         <div class="product-card nsx coming-soon reveal" style="transition-delay:0.2s;">
+            <div class="card-spotlight"></div>
             <div class="card-accent-bar"></div>
             <div class="card-body">
                 <div class="card-icon-wrap">
@@ -997,6 +1080,7 @@
 
         <!-- ══ vSphere — Coming Soon ══ -->
         <div class="product-card vsphere coming-soon reveal" style="transition-delay:0.3s;">
+            <div class="card-spotlight"></div>
             <div class="card-accent-bar"></div>
             <div class="card-body">
                 <div class="card-icon-wrap">
@@ -1028,6 +1112,7 @@
 
         <!-- ══ VCF — Coming Soon ══ -->
         <div class="product-card vcf coming-soon reveal" style="transition-delay:0.4s;">
+            <div class="card-spotlight"></div>
             <div class="card-accent-bar"></div>
             <div class="card-body">
                 <div class="card-icon-wrap">
@@ -1144,6 +1229,31 @@
             var rect = hero.getBoundingClientRect();
             glow.style.left = (e.clientX - rect.left) + 'px';
             glow.style.top = (e.clientY - rect.top) + 'px';
+        });
+    }
+
+    /* Enhancement #21: 3D tilt + inner spotlight on cards */
+    if (window.matchMedia('(pointer: fine)').matches) {
+        var cards = document.querySelectorAll('.product-card:not(.coming-soon)');
+        cards.forEach(function(card) {
+            var spotlight = card.querySelector('.card-spotlight');
+            card.addEventListener('mousemove', function(e) {
+                var rect = card.getBoundingClientRect();
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+                var cx = rect.width / 2;
+                var cy = rect.height / 2;
+                var rotateX = ((y - cy) / cy) * -4;
+                var rotateY = ((x - cx) / cx) * 4;
+                card.style.transform = 'translateY(-8px) perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+                if (spotlight) {
+                    spotlight.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px, rgba(255,255,255,0.06) 0%, transparent 60%)';
+                }
+            });
+            card.addEventListener('mouseleave', function() {
+                card.style.transform = '';
+                if (spotlight) spotlight.style.background = '';
+            });
         });
     }
 
