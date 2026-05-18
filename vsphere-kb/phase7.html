@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 7: Networking — vDS, vSS &amp; vMotion Network</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 7 — Networking</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html" class="active">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search vDS, port group, VLAN, MTU, vMotion, NIOC, teaming, SR-IOV..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Networking Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">4</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">6</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 7</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #61: vDS Misconfiguration — Host Network Disconnect -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-61" data-type="break" data-severity="critical" data-keywords="vds vswitch distributed switch uplink portgroup management network disconnect esxcli vss standard switch dcui console">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">61</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vDS Misconfiguration — Host Network Disconnect</div>
+            <div class="kb-entry-subtitle">Changing vDS uplink or port group configuration disconnects host from vCenter — management network lost</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">vDS</span>
+                <span class="tag">Management Network</span>
+                <span class="tag">Disconnect</span>
+                <span class="tag">DCUI</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Host becomes completely unreachable from vCenter. Management network connectivity is severed. VMs continue running but cannot be managed. Emergency console access required for recovery.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host shows <strong>"Not Responding"</strong> in vCenter after vDS change</li>
+                    <li>Cannot SSH or ping the ESXi management IP</li>
+                    <li>vCenter logs: <code class="inline">Lost connection to host</code></li>
+                    <li>Other hosts on same vDS may also lose connectivity</li>
+                    <li>VMs running but <strong>unmanageable</strong> from vCenter</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Management VMkernel port migrated to vDS without a fallback NIC on vSS</li>
+                    <li>vDS uplink removed or reassigned — physical NIC no longer bridging traffic</li>
+                    <li>Port group VLAN changed on management port group</li>
+                    <li>vDS configuration pushed that conflicts with physical switch trunking</li>
+                    <li>All uplinks moved to vDS simultaneously — no rollback path</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>When the management VMkernel adapter (<code class="inline">vmk0</code>) is moved from a vSS to a vDS without keeping at least one physical NIC on the vSS, or when a vDS uplink configuration change disconnects the management VLAN, the host loses all network connectivity to vCenter. Since the vDS configuration is managed by vCenter itself, a catch-22 occurs: you need vCenter to fix the vDS, but the host can't reach vCenter. Recovery requires direct console (DCUI) or SSH if still reachable via out-of-band management.</p>
+
+        <div class="section-label">Recovery Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Access the host via DCUI or iLO/iDRAC console</strong></p>
+                    <pre><code># Enable ESXi Shell from DCUI if not already enabled:
+# DCUI → Troubleshooting Options → Enable ESXi Shell
+
+# Or via iLO/iDRAC remote console, press Alt+F1 for ESXi Shell
+# Login with root credentials</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Restore management network to vSS</strong></p>
+                    <pre><code># List current virtual switches and uplinks:
+esxcli network vswitch standard list
+esxcli network vswitch dvs vmware list
+
+# Create a new vSS if none exists:
+esxcli network vswitch standard add -v vSwitch0
+
+# Add a physical NIC back to vSS:
+esxcli network vswitch standard uplink add -v vSwitch0 -u vmnic0
+
+# Add a port group for management:
+esxcli network vswitch standard portgroup add -v vSwitch0 -p "Management Network"
+
+# Set VLAN if required:
+esxcli network vswitch standard portgroup set -p "Management Network" --vlan-id 100
+
+# Move vmk0 to vSS management port group:
+esxcli network ip interface remove -i vmk0
+esxcli network ip interface add -i vmk0 -p "Management Network"
+esxcli network ip interface ipv4 set -i vmk0 -I 10.0.0.10 -N 255.255.255.0 -t static
+
+# Restart management agents:
+/etc/init.d/hostd restart
+/etc/init.d/vpxa restart</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify connectivity and reconnect host in vCenter</strong></p>
+                    <pre><code># Test network connectivity:
+vmkping 10.0.0.1
+vmkping &lt;vcenter-ip&gt;
+
+# Check management network interface:
+esxcli network ip interface list
+esxcli network ip interface ipv4 get -i vmk0
+
+# In vCenter: Right-click host → Connection → Reconnect
+# Then re-plan vDS migration with a safe rollback strategy</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always keep the management VMkernel on a vSS with at least one dedicated physical NIC as a safety net. When migrating to vDS, move one NIC at a time and verify connectivity before moving the second. Never migrate all uplinks simultaneously. Test vDS changes on a single non-critical host first before rolling out cluster-wide.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #62: vMotion VMkernel Network Troubleshooting -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-62" data-type="break" data-severity="high" data-keywords="vmotion vmkernel network vmk migration fail timeout vmkping tcp ip stack tag enabled">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">62</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vMotion VMkernel Network Troubleshooting</div>
+            <div class="kb-entry-subtitle">vMotion fails due to VMkernel misconfiguration — wrong VLAN, missing vMotion tag, or firewall blocking port 8000</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vMotion</span>
+                <span class="tag">VMkernel</span>
+                <span class="tag">Migration</span>
+                <span class="tag">Port 8000</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Live migrations fail, preventing DRS load balancing, host maintenance mode, and evacuation during patching. VMs cannot be moved without downtime.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vMotion fails with <strong>"A general system error occurred: Migrate"</strong></li>
+                    <li>Migration stuck at <strong>10%</strong> or <strong>32%</strong> then times out</li>
+                    <li>Error: <code class="inline">The vMotion interface is not configured</code></li>
+                    <li>DRS cannot balance cluster — <strong>"vMotion not available"</strong></li>
+                    <li><code class="inline">vmkping</code> between hosts on vMotion interface fails</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VMkernel adapter missing the <strong>vMotion</strong> traffic type tag</li>
+                    <li>vMotion VMkernel on wrong VLAN — hosts can't reach each other</li>
+                    <li>ESXi firewall blocking TCP port <strong>8000</strong></li>
+                    <li>MTU mismatch between source and destination vMotion interfaces</li>
+                    <li>Multiple default gateways conflicting with vMotion routing</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic &amp; Fix Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify VMkernel configuration and vMotion tag</strong></p>
+                    <pre><code># List all VMkernel interfaces and their enabled services:
+esxcli network ip interface list
+
+# Check which VMkernel has vMotion enabled:
+esxcli network ip interface tag get -i vmk1
+
+# If vMotion is NOT listed, enable it:
+# vCenter UI: Host → Configure → VMkernel adapters → vmk1 → Edit → Enable vMotion
+
+# Verify vMotion interface IP:
+esxcli network ip interface ipv4 get -i vmk1
+
+# Check VLAN assignment:
+esxcli network vswitch dvs vmware list
+esxcli network vswitch standard portgroup list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Test vMotion network connectivity between hosts</strong></p>
+                    <pre><code># Ping target host vMotion IP using the vMotion VMkernel interface:
+vmkping -I vmk1 &lt;target-host-vMotion-IP&gt;
+
+# Test with jumbo frames (if MTU 9000 configured):
+vmkping -I vmk1 -d -s 8972 &lt;target-host-vMotion-IP&gt;
+
+# Check for firewall rules blocking vMotion (port 8000):
+esxcli network firewall ruleset list | grep -i vmotion
+esxcli network firewall ruleset set -e true -r vMotion
+
+# Verify TCP port 8000 connectivity:
+nc -z &lt;target-host-vMotion-IP&gt; 8000</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check TCP/IP stack and routing for vMotion</strong></p>
+                    <pre><code># List TCP/IP stacks — vMotion should use dedicated stack:
+esxcli network ip netstack list
+
+# Check routing table for vMotion stack:
+esxcli network ip route ipv4 list -N vmotion
+
+# If using default stack, ensure no conflicting default gateways:
+esxcli network ip route ipv4 list -N defaultTcpipStack
+
+# Test vMotion after fixes — migrate a test VM:
+# PowerCLI:
+Move-VM -VM "test-vm" -Destination "target-host" -VMotionPriority High</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use a dedicated VLAN and subnet for vMotion traffic, separate from management and VM traffic. Use the dedicated vMotion TCP/IP stack for proper routing isolation. Enable vMotion on exactly one VMkernel adapter per host (or multi-NIC vMotion with two). Always test with <code class="inline">vmkping -I vmkN</code> between all hosts before relying on DRS.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #63: MTU / Jumbo Frames Mismatch          -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-63" data-type="break" data-severity="high" data-keywords="mtu jumbo frames 9000 1500 vmkping fragmentation nfs iscsi vmotion physical switch mismatch end-to-end">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">63</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">MTU / Jumbo Frames Mismatch</div>
+            <div class="kb-entry-subtitle">End-to-end MTU inconsistency causes vMotion failures at 32%, NFS timeouts, and iSCSI connection drops</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">MTU</span>
+                <span class="tag">Jumbo Frames</span>
+                <span class="tag">vMotion</span>
+                <span class="tag">NFS</span>
+                <span class="tag">iSCSI</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vMotion stalls at 32% and fails. NFS datastore I/O timeouts cause VM pauses and APD events. iSCSI connections drop causing storage path failures. Performance degrades on all jumbo-frame-dependent traffic.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vMotion consistently <strong>fails at ~32%</strong> (memory pre-copy phase)</li>
+                    <li>NFS datastore shows <strong>intermittent APD</strong> (All Paths Down)</li>
+                    <li>iSCSI sessions drop with <strong>connection reset</strong> errors</li>
+                    <li><code class="inline">vmkping -d -s 8972</code> fails but <code class="inline">vmkping</code> (default size) succeeds</li>
+                    <li>Packet loss on large frames only — small frames pass fine</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VMkernel adapter set to MTU 9000 but <strong>physical switch port at 1500</strong></li>
+                    <li>vDS/vSS MTU set to 9000 but one intermediate switch in path at 1500</li>
+                    <li>Storage array NFS/iSCSI interface not configured for jumbo frames</li>
+                    <li>Only some hosts in cluster configured for jumbo frames — mixed MTU</li>
+                    <li>Physical switch trunk port MTU not increased to support jumbo frames</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic &amp; Fix Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Test end-to-end MTU path</strong></p>
+                    <pre><code># Test jumbo frame connectivity (9000 MTU = 8972 payload + 28 header):
+vmkping -I vmk1 -d -s 8972 &lt;target-IP&gt;
+
+# -d = set Don't Fragment bit (critical for MTU testing)
+# -s 8972 = payload size (9000 - 20 IP header - 8 ICMP header)
+
+# If this fails but regular ping works, MTU mismatch exists:
+vmkping -I vmk1 &lt;target-IP&gt;            # Should work (1500 MTU)
+vmkping -I vmk1 -d -s 8972 &lt;target-IP&gt;  # Fails = MTU mismatch
+
+# Binary search to find actual MTU:
+vmkping -I vmk1 -d -s 4000 &lt;target-IP&gt;
+vmkping -I vmk1 -d -s 6000 &lt;target-IP&gt;
+vmkping -I vmk1 -d -s 7000 &lt;target-IP&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check and set MTU on all layers</strong></p>
+                    <pre><code># Check VMkernel adapter MTU:
+esxcli network ip interface list | grep -A5 vmk1
+
+# Check vSwitch / vDS MTU:
+esxcli network vswitch standard list     # vSS
+esxcli network vswitch dvs vmware list   # vDS
+
+# Set MTU on vSS:
+esxcli network vswitch standard set -v vSwitch1 -m 9000
+
+# Set MTU on VMkernel adapter:
+esxcli network ip interface set -i vmk1 -m 9000
+
+# For vDS — set via vCenter UI:
+# vDS → Configure → Properties → Advanced → MTU: 9000
+
+# Verify physical switch MTU (example Cisco):
+# show interface TenGigabitEthernet1/1 | include MTU
+# configure: system jumbo mtu 9216</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Validate end-to-end after changes</strong></p>
+                    <pre><code># Re-test from EVERY host to every target (storage, other hosts):
+vmkping -I vmk1 -d -s 8972 &lt;storage-IP&gt;
+vmkping -I vmk1 -d -s 8972 &lt;host2-vMotion-IP&gt;
+vmkping -I vmk1 -d -s 8972 &lt;host3-vMotion-IP&gt;
+
+# PowerCLI — Check MTU across all hosts:
+Get-VMHost | ForEach-Object {
+    $vmk = Get-VMHostNetworkAdapter -VMHost $_ -VMKernel | Where { $_.VMotionEnabled }
+    [PSCustomObject]@{
+        Host = $_.Name
+        VMkernel = $vmk.Name
+        MTU = $vmk.Mtu
+        IP = $vmk.IP
+    }
+} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Best Practice:</strong> MTU must be 9000 at every hop: VMkernel adapter, vSwitch/vDS, physical NIC, every physical switch in the path, and the target device (storage array, other hosts). One link at 1500 breaks the entire jumbo frame path. Always test with <code class="inline">vmkping -d -s 8972</code> — never assume MTU is correct just because small pings work.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #64: NIC Teaming & Failover Policy        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-64" data-type="fix" data-severity="high" data-keywords="nic teaming failover load balancing lacp lag ip hash route originating port physical nic active standby failover order beacon probing link status">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">64</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NIC Teaming &amp; Failover Policy</div>
+            <div class="kb-entry-subtitle">Configure load balancing, failover order, and network failover detection for optimal redundancy and throughput</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">NIC Teaming</span>
+                <span class="tag">Failover</span>
+                <span class="tag">LACP</span>
+                <span class="tag">Load Balancing</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> NIC teaming determines how ESXi distributes outbound traffic across multiple physical NICs and how it detects NIC failures. Incorrect policies cause traffic black holes, asymmetric routing, or no failover on NIC failure.</span>
+        </div>
+
+        <div class="section-label">Load Balancing Policies</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Load Balancing Options</div>
+                <ul>
+                    <li><strong>Route based on originating virtual port:</strong> Default — each VM pinned to one uplink. Simple, works with any physical switch</li>
+                    <li><strong>Route based on IP hash:</strong> Distributes per flow. <strong>Requires</strong> LACP/EtherChannel on physical switch</li>
+                    <li><strong>Route based on source MAC hash:</strong> Per VM MAC. Rarely used</li>
+                    <li><strong>Route based on physical NIC load:</strong> vDS only — dynamically rebalances. Best for most workloads</li>
+                    <li><strong>Explicit failover order:</strong> Always uses first active NIC. No load balancing</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Failover Detection</div>
+                <ul>
+                    <li><strong>Link Status Only:</strong> Detects cable pull and switch port down. Does NOT detect upstream switch failure</li>
+                    <li><strong>Beacon Probing:</strong> Sends probe packets between NICs. Detects upstream failures but requires ≥3 NICs for reliability</li>
+                    <li><strong>Notify Switches:</strong> Sends RARP on failover — keep enabled for fast failover</li>
+                    <li><strong>Failback:</strong> Return to preferred NIC when it recovers. Can cause flapping — consider disabling</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current NIC teaming policy</strong></p>
+                    <pre><code># vSS — Check teaming policy:
+esxcli network vswitch standard policy failover get -v vSwitch0
+
+# vDS — Check via vCenter UI:
+# vDS → Port Groups → Edit → Teaming and failover
+
+# PowerCLI — Audit NIC teaming across all hosts:
+Get-VMHost | ForEach-Object {
+    $vs = Get-VirtualSwitch -VMHost $_ -Standard
+    foreach ($v in $vs) {
+        $policy = Get-NicTeamingPolicy -VirtualSwitch $v
+        [PSCustomObject]@{
+            Host = $_.Name
+            vSwitch = $v.Name
+            LoadBalancing = $policy.LoadBalancingPolicy
+            FailoverDetection = $policy.NetworkFailoverDetectionPolicy
+            ActiveNic = ($policy.ActiveNic -join ",")
+            StandbyNic = ($policy.StandbyNic -join ",")
+        }
+    }
+} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure recommended teaming policy</strong></p>
+                    <pre><code># vSS — Set load balancing to "Route based on physical NIC load" (vDS) or "originating port" (vSS):
+esxcli network vswitch standard policy failover set -v vSwitch0 \
+    -l portid          # portid = originating port (default, safest)
+                        # iphash = IP hash (needs LACP)
+                        # mac    = source MAC hash
+                        # explicit = explicit failover order
+
+# Set failover order — Active and Standby NICs:
+esxcli network vswitch standard policy failover set -v vSwitch0 \
+    -a vmnic0,vmnic2 \
+    -s vmnic1,vmnic3
+
+# Enable notify switches and set failback:
+esxcli network vswitch standard policy failover set -v vSwitch0 \
+    -n true  \          # Notify switches on failover
+    -b true             # Failback enabled
+
+# Configure LACP on vDS (if using IP hash):
+# vDS → Configure → LACP → New LAG → Mode: Active, Ports: 2</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Test failover behavior</strong></p>
+                    <pre><code># Simulate NIC failure — disconnect one uplink and verify:
+esxcli network nic down -n vmnic0
+
+# Check traffic continues on standby NIC:
+esxcli network nic stats get -n vmnic1
+vmkping &lt;gateway-ip&gt;
+
+# Restore NIC:
+esxcli network nic up -n vmnic0
+
+# Verify failback occurred:
+esxcli network vswitch standard policy failover get -v vSwitch0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use "Route based on physical NIC load" on vDS for best dynamic balancing. For vSS, "Route based on originating virtual port" is the safest default. Only use IP hash if you have properly configured LACP/EtherChannel on the physical switch. Separate management, vMotion, and VM traffic onto different NIC teams or port groups with distinct failover orders.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #65: Port Group VLAN Configuration Issues -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-65" data-type="break" data-severity="high" data-keywords="vlan port group portgroup trunking 4095 access trunk pvid native untagged tagged dvportgroup vds vss communication">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">65</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Port Group VLAN Configuration Issues</div>
+            <div class="kb-entry-subtitle">VMs can't communicate — wrong VLAN ID, missing trunking, or native VLAN mismatch with physical switch</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">VLAN</span>
+                <span class="tag">Port Group</span>
+                <span class="tag">Trunking</span>
+                <span class="tag">vDS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs lose network connectivity. Applications fail health checks. Inter-VM communication breaks. Services that depend on network reachability go down.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs on same port group <strong>can ping each other</strong> but not external hosts</li>
+                    <li>VMs cannot reach their <strong>default gateway</strong></li>
+                    <li>New VMs get no DHCP address — <strong>APIPA (169.254.x.x)</strong> assigned</li>
+                    <li>Intermittent connectivity — some VMs work, others don't</li>
+                    <li>Physical switch shows <strong>VLAN mismatch</strong> or <strong>native VLAN mismatch</strong> logs</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Port group VLAN ID doesn't match physical switch access/trunk VLAN</li>
+                    <li>Physical switch port set to <strong>access mode</strong> but ESXi sending tagged frames</li>
+                    <li>VLAN <strong>4095 (trunk all)</strong> set on port group but physical switch not trunking</li>
+                    <li>VLAN <strong>0 (no VLAN)</strong> but physical switch expects tagged traffic</li>
+                    <li>Native VLAN mismatch between ESXi uplink and physical switch trunk</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic &amp; Fix Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current VLAN configuration</strong></p>
+                    <pre><code># List vSS port groups and their VLAN IDs:
+esxcli network vswitch standard portgroup list
+
+# List vDS port groups:
+esxcli network vswitch dvs vmware list
+
+# VLAN types in ESXi:
+# VLAN 0     = No VLAN tagging (frames sent untagged)
+# VLAN 1-4094 = Specific VLAN (ESXi tags frames with this VLAN ID)
+# VLAN 4095  = VLAN Trunking (passes all VLAN tags to guest OS — guest must tag)
+
+# Check which port group a VM is connected to:
+# PowerCLI:
+Get-VM "web-server" | Get-NetworkAdapter | Select NetworkName, MacAddress</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Match ESXi VLAN with physical switch configuration</strong></p>
+                    <pre><code># ESXi port group VLAN must match physical switch:
+#
+# ESXi Port Group VLAN 100 → Physical switch: trunk allowed vlan 100
+# ESXi Port Group VLAN 0   → Physical switch: access port (native vlan)
+# ESXi Port Group VLAN 4095 → Physical switch: trunk all VLANs
+
+# Set correct VLAN on vSS port group:
+esxcli network vswitch standard portgroup set -p "VM Network" --vlan-id 100
+
+# For vDS — set via vCenter:
+# vDS → Port Groups → Edit → VLAN type: VLAN, VLAN ID: 100
+
+# Verify physical switch (Cisco example):
+# show interface GigabitEthernet0/1 switchport
+# Expected: Trunking, Allowed VLANs: 100,200,300
+# If access port: switchport access vlan 100</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Validate connectivity after VLAN fix</strong></p>
+                    <pre><code># From inside the VM, test connectivity:
+ping &lt;default-gateway&gt;
+ping &lt;external-host&gt;
+
+# From ESXi, use packet capture to verify VLAN tagging:
+pktcap-uw --uplink vmnic0 --vlan 100 -o /tmp/vlan100.pcap
+
+# Capture on specific port group:
+pktcap-uw --switchport &lt;port-id&gt; --dir 0 -o /tmp/capture.pcap
+
+# PowerCLI — Audit all port group VLANs across cluster:
+Get-VDPortgroup | Select Name, VlanConfiguration | Format-Table -AutoSize
+Get-VirtualPortGroup | Select Name, VLanId, VirtualSwitch | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Document your VLAN-to-port-group mapping. Always verify the physical switch trunk configuration allows the VLAN IDs used by ESXi port groups. Use VLAN 4095 (trunk mode) only when the guest OS handles VLAN tagging (e.g., nested ESXi, router VMs). Standardize VLAN assignments across all hosts in the cluster.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #66: vSS to vDS Migration Procedure       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-66" data-type="fix" data-severity="high" data-keywords="vss vds migration distributed switch standard switch migrate nic uplink portgroup rollback vmkernel">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">66</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSS to vDS Migration Procedure</div>
+            <div class="kb-entry-subtitle">Safely migrate hosts from Standard vSwitch to Distributed vSwitch with rollback capability</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vSS</span>
+                <span class="tag">vDS</span>
+                <span class="tag">Migration</span>
+                <span class="tag">Rollback</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Risk:</strong> Incorrect vDS migration can disconnect hosts from vCenter. Always keep one physical NIC on the vSS until the migration is fully verified. Plan a rollback strategy before starting.</span>
+        </div>
+
+        <div class="section-label">Pre-Migration Planning</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Prerequisites</div>
+                <ul>
+                    <li>vCenter Server running and accessible (vDS requires vCenter)</li>
+                    <li>Enterprise Plus license (or vDS-capable license)</li>
+                    <li>Document current vSS config: port groups, VLANs, NIC teaming, MTU</li>
+                    <li>Map vSS port groups → equivalent vDS port groups</li>
+                    <li>Schedule maintenance window — VM networking will briefly interrupt</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Migration Strategy</div>
+                <ul>
+                    <li><strong>One NIC at a time:</strong> Move vmnic1 to vDS, keep vmnic0 on vSS</li>
+                    <li><strong>One host first:</strong> Migrate a non-critical host, verify, then proceed</li>
+                    <li><strong>VMkernel last:</strong> Migrate VM port groups first, then VMkernel adapters</li>
+                    <li><strong>Management NIC last:</strong> Management network migrated only after everything else works</li>
+                    <li><strong>Rollback plan:</strong> Document how to move NIC back to vSS if needed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Migration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create vDS and configure port groups</strong></p>
+                    <pre><code># PowerCLI — Create a new vDS:
+$dc = Get-Datacenter "Production"
+$vds = New-VDSwitch -Name "Production-vDS" -Location $dc `
+    -NumUplinkPorts 4 -Mtu 9000 -Version "7.0.3"
+
+# Create port groups matching your vSS port groups:
+New-VDPortgroup -VDSwitch $vds -Name "VLAN100-Web" -VlanId 100
+New-VDPortgroup -VDSwitch $vds -Name "VLAN200-App" -VlanId 200
+New-VDPortgroup -VDSwitch $vds -Name "VLAN300-DB" -VlanId 300
+New-VDPortgroup -VDSwitch $vds -Name "vMotion-VLAN500" -VlanId 500
+
+# Add hosts to vDS (without assigning uplinks yet):
+Get-VMHost "esxi-01.lab.local" | Add-VDSwitchVMHost -VDSwitch $vds</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Migrate one uplink and VM networking</strong></p>
+                    <pre><code># Move ONE physical NIC from vSS to vDS (keep the other on vSS):
+$vmhost = Get-VMHost "esxi-01.lab.local"
+$pnic = Get-VMHostNetworkAdapter -VMHost $vmhost -Physical -Name "vmnic1"
+Add-VDSwitchPhysicalNetworkAdapter -DistributedSwitch $vds `
+    -VMHostPhysicalNic $pnic -Confirm:$false
+
+# Migrate VM networking from vSS port groups to vDS port groups:
+Get-VM -Location $vmhost | Where {
+    ($_ | Get-NetworkAdapter).NetworkName -eq "VM Network"
+} | Get-NetworkAdapter | Set-NetworkAdapter `
+    -NetworkName "VLAN100-Web" -Confirm:$false
+
+# Verify VMs can still communicate:
+# Test ping from VMs to gateway and between VMs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Migrate VMkernel adapters and remaining uplinks</strong></p>
+                    <pre><code># After VM networking verified, migrate VMkernel adapters:
+$vmk = Get-VMHostNetworkAdapter -VMHost $vmhost -VMKernel -Name "vmk1"
+$pg = Get-VDPortgroup -Name "vMotion-VLAN500"
+Set-VMHostNetworkAdapter -VirtualNic $vmk -PortGroup $pg -Confirm:$false
+
+# Move remaining uplinks to vDS:
+$pnic0 = Get-VMHostNetworkAdapter -VMHost $vmhost -Physical -Name "vmnic0"
+Add-VDSwitchPhysicalNetworkAdapter -DistributedSwitch $vds `
+    -VMHostPhysicalNic $pnic0 -Confirm:$false
+
+# Remove the now-empty vSS (optional — keep for rollback):
+# Remove-VirtualSwitch -VirtualSwitch (Get-VirtualSwitch -VMHost $vmhost -Name "vSwitch0")
+
+# Repeat for remaining hosts one at a time</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Keep the old vSS with at least one NIC as a rollback path until you've verified all hosts are stable on the vDS for at least 48 hours. Use vDS network health check (vDS → Configure → Health Check) to automatically detect VLAN and MTU mismatches between ESXi and the physical switch. Export the vDS configuration as a backup before making changes.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #67: Network I/O Control (NIOC)           -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-67" data-type="fix" data-severity="medium" data-keywords="nioc network io control traffic shaping shares reservation bandwidth qos vds distributed switch priority vmotion management nfs iscsi vm">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">67</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Network I/O Control (NIOC) — Traffic Shaping</div>
+            <div class="kb-entry-subtitle">Prioritize network traffic types when multiple workloads share the same physical NICs on a vDS</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">NIOC</span>
+                <span class="tag">Traffic Shaping</span>
+                <span class="tag">QoS</span>
+                <span class="tag">vDS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> NIOC (Network I/O Control) is a vDS feature that ensures critical traffic types (management, vMotion, NFS) get guaranteed bandwidth when physical NICs are saturated. Without NIOC, a VM backup flood can starve vMotion or management traffic.</span>
+        </div>
+
+        <div class="section-label">Traffic Types &amp; Default Shares</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">System Traffic Types</div>
+                <ul>
+                    <li><strong>Management:</strong> vCenter-to-host communication (50 shares)</li>
+                    <li><strong>vMotion:</strong> Live migration traffic (50 shares)</li>
+                    <li><strong>Fault Tolerance:</strong> FT logging traffic (50 shares)</li>
+                    <li><strong>vSAN:</strong> vSAN node-to-node traffic (100 shares)</li>
+                    <li><strong>NFS:</strong> NFS datastore I/O (50 shares)</li>
+                    <li><strong>iSCSI:</strong> iSCSI storage traffic (50 shares)</li>
+                    <li><strong>Virtual Machine:</strong> VM network traffic (varies)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">NIOC v3 Features</div>
+                <ul>
+                    <li><strong>Shares:</strong> Relative priority when contention occurs (25/50/100 = Low/Normal/High)</li>
+                    <li><strong>Reservation:</strong> Guaranteed bandwidth in Gbps per traffic type</li>
+                    <li><strong>Limit:</strong> Maximum bandwidth cap per traffic type</li>
+                    <li><strong>Per-VM reservation:</strong> Guarantee bandwidth per individual VM</li>
+                    <li><strong>Network Resource Pools:</strong> Custom pools for tenant isolation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable NIOC on the vDS</strong></p>
+                    <pre><code># vCenter UI:
+# Networking → vDS → Configure → Resource Allocation → Enable Network I/O Control
+
+# PowerCLI — Enable NIOC:
+$vds = Get-VDSwitch -Name "Production-vDS"
+$vds | Set-VDSwitch -EnableNetworkIOControl $true
+
+# Check NIOC status:
+(Get-VDSwitch -Name "Production-vDS").ExtensionData.Config.NetworkResourceManagementEnabled</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure traffic type shares and reservations</strong></p>
+                    <pre><code># vCenter UI:
+# vDS → Configure → Resource Allocation → System Traffic
+# Click each traffic type → Edit:
+#   Management: Shares = High (100), Reservation = 0.5 Gbps
+#   vMotion:    Shares = High (100), Reservation = 2 Gbps
+#   VM Traffic: Shares = Normal (50), Reservation = 1 Gbps
+#   NFS:        Shares = High (100), Reservation = 2 Gbps
+
+# PowerCLI — Set shares for a traffic type:
+$vds = Get-VDSwitch -Name "Production-vDS"
+
+# Get current resource allocation:
+$vds.ExtensionData.Config.InfrastructureTrafficResourceConfig |
+    Select Key,
+    @{N='Shares';E={$_.AllocationInfo.Shares.Shares}},
+    @{N='Level';E={$_.AllocationInfo.Shares.Level}},
+    @{N='Reservation';E={$_.AllocationInfo.Reservation}},
+    @{N='Limit';E={$_.AllocationInfo.Limit}} |
+    Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Create Network Resource Pools for VM traffic isolation</strong></p>
+                    <pre><code># Create custom resource pool for specific workloads:
+# vDS → Configure → Resource Allocation → Network Resource Pools → New
+
+# Assign a port group to a resource pool:
+# vDS → Port Groups → Edit Settings → Resource Allocation → Pool
+
+# Monitor NIOC effectiveness:
+# vDS → Monitor → Resource Allocation
+# Check per-host bandwidth utilization per traffic type
+
+# PowerCLI — View network resource pools:
+$vds = Get-VDSwitch -Name "Production-vDS"
+$vds.ExtensionData.NetworkResourcePool | Select Key, Name,
+    @{N='Shares';E={$_.AllocationInfo.Shares.Shares}},
+    @{N='Limit';E={$_.AllocationInfo.Limit}} |
+    Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Enable NIOC on all production vDS switches. Set higher shares and reservations for management and storage traffic — these are critical and should never be starved by VM traffic. Use reservations sparingly as total reservations across all traffic types cannot exceed physical NIC bandwidth. Monitor bandwidth allocation regularly under peak load.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #68: TCP/IP Stack & VMkernel Routing      -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-68" data-type="fix" data-severity="medium" data-keywords="tcpip stack vmkernel routing netstack default vmotion provisioning gateway multi-homing route table esxcli">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">68</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">TCP/IP Stack &amp; VMkernel Routing</div>
+            <div class="kb-entry-subtitle">Configure custom TCP/IP stacks for vMotion and provisioning with separate routing tables and gateways</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">TCP/IP Stack</span>
+                <span class="tag">VMkernel</span>
+                <span class="tag">Routing</span>
+                <span class="tag">Multi-Homing</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> ESXi provides dedicated TCP/IP stacks (default, vMotion, provisioning) each with their own routing table. This avoids the "single default gateway" problem where vMotion traffic tries to route through the management gateway instead of the vMotion gateway.</span>
+        </div>
+
+        <div class="section-label">TCP/IP Stack Overview</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Available Stacks</div>
+                <ul>
+                    <li><strong>defaultTcpipStack:</strong> Management, VM traffic, NFS — has THE default gateway</li>
+                    <li><strong>vmotion:</strong> Dedicated stack for vMotion — own gateway and DNS</li>
+                    <li><strong>vSphereProvisioning:</strong> Cold migration, snapshots, cloning — own gateway</li>
+                    <li><strong>Custom stacks:</strong> User-defined stacks for special use cases (API only)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Common Issues</div>
+                <ul>
+                    <li>vMotion VMkernel on default stack — uses management gateway, traffic can't route</li>
+                    <li>Multiple VMkernel adapters on default stack with conflicting routes</li>
+                    <li>No default gateway set on vMotion stack — cross-subnet vMotion fails</li>
+                    <li>DNS not configured on vMotion stack — hostname resolution fails</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>List TCP/IP stacks and current routing</strong></p>
+                    <pre><code># List all TCP/IP stacks:
+esxcli network ip netstack list
+
+# Check routing table for each stack:
+esxcli network ip route ipv4 list -N defaultTcpipStack
+esxcli network ip route ipv4 list -N vmotion
+esxcli network ip route ipv4 list -N vSphereProvisioning
+
+# List VMkernel adapters and their TCP/IP stack assignment:
+esxcli network ip interface list
+# Look for "NetStack" field — shows which stack each vmk uses
+
+# Check DNS per stack:
+esxcli network ip dns server list -N defaultTcpipStack
+esxcli network ip dns server list -N vmotion</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Create VMkernel adapter on dedicated vMotion stack</strong></p>
+                    <pre><code># Remove existing vMotion vmk from default stack (if needed):
+esxcli network ip interface remove -i vmk1
+
+# Create VMkernel adapter on the vMotion TCP/IP stack:
+# vCenter UI: Host → Configure → VMkernel Adapters → Add
+#   Port Group: vMotion-PG
+#   TCP/IP Stack: vMotion  (CANNOT change after creation)
+#   IPv4: 10.10.50.10/24
+
+# Set default gateway on vMotion stack:
+esxcli network ip route ipv4 add -N vmotion -n default -g 10.10.50.1
+
+# Set DNS on vMotion stack (optional):
+esxcli network ip dns server add -N vmotion -s 10.0.0.53
+
+# Verify:
+esxcli network ip route ipv4 list -N vmotion</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix routing issues on default stack</strong></p>
+                    <pre><code># Problem: multiple VMkernel adapters on default stack with wrong routes
+# Check current routes:
+esxcli network ip route ipv4 list -N defaultTcpipStack
+
+# Add a static route for a specific subnet:
+esxcli network ip route ipv4 add -N defaultTcpipStack \
+    -n 172.16.0.0/16 -g 10.0.0.1
+
+# Remove a conflicting route:
+esxcli network ip route ipv4 remove -N defaultTcpipStack \
+    -n 172.16.0.0/16 -g 10.0.0.1
+
+# Change default gateway:
+esxcli network ip route ipv4 add -N defaultTcpipStack \
+    -n default -g 10.0.0.1
+
+# PowerCLI — Audit VMkernel stack assignments across hosts:
+Get-VMHost | ForEach-Object {
+    $vmks = Get-VMHostNetworkAdapter -VMHost $_ -VMKernel
+    foreach ($vmk in $vmks) {
+        [PSCustomObject]@{
+            Host = $_.Name
+            VMkernel = $vmk.Name
+            IP = $vmk.IP
+            VMotion = $vmk.VMotionEnabled
+            Mtu = $vmk.Mtu
+        }
+    }
+} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always use the dedicated vMotion TCP/IP stack for vMotion VMkernel adapters — this gives vMotion its own routing table and default gateway, avoiding conflicts with management routing. Note: once a VMkernel is assigned to a TCP/IP stack, you cannot change it — you must delete and recreate. For cross-subnet vMotion, ensure the vMotion stack has a valid default gateway.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #69: ESXi Firewall & Port Requirements    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-69" data-type="fix" data-severity="medium" data-keywords="firewall esxcli port 443 902 8000 2049 iscsi nfs vcenter ssh syslog ruleset iptables xml">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">69</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Firewall &amp; Port Requirements</div>
+            <div class="kb-entry-subtitle">Manage ESXi firewall rulesets, open required ports, and configure custom firewall rules for services</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Firewall</span>
+                <span class="tag">Ports</span>
+                <span class="tag">Security</span>
+                <span class="tag">Rulesets</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> ESXi has a built-in firewall that controls inbound and outbound connections on the management interface. Services like NFS, syslog, SSH, and vMotion require specific firewall rulesets to be enabled. Misconfigured firewall rules can block vCenter communication, storage, or monitoring.</span>
+        </div>
+
+        <div class="section-label">Key Ports Reference</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Inbound Ports</div>
+                <ul>
+                    <li><strong>22 (TCP):</strong> SSH access to ESXi</li>
+                    <li><strong>80/443 (TCP):</strong> vSphere Client, API, SDK</li>
+                    <li><strong>427 (TCP/UDP):</strong> CIM SLP service location</li>
+                    <li><strong>902 (TCP/UDP):</strong> Console, heartbeat (vpxa/hostd)</li>
+                    <li><strong>5989 (TCP):</strong> CIM server (hardware monitoring)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Outbound / Service Ports</div>
+                <ul>
+                    <li><strong>8000 (TCP):</strong> vMotion traffic between hosts</li>
+                    <li><strong>8100/8200 (TCP/UDP):</strong> Fault Tolerance logging</li>
+                    <li><strong>2049 (TCP):</strong> NFS datastore access</li>
+                    <li><strong>3260 (TCP):</strong> iSCSI target connections</li>
+                    <li><strong>514 (UDP) / 1514 (TCP):</strong> Syslog forwarding</li>
+                    <li><strong>6999 (UDP):</strong> NSX VXLAN / Geneve overlay</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>List and manage firewall rulesets</strong></p>
+                    <pre><code># List all firewall rulesets and their status:
+esxcli network firewall ruleset list
+
+# Check if firewall is enabled globally:
+esxcli network firewall get
+
+# Get details of a specific ruleset (allowed IPs, ports):
+esxcli network firewall ruleset rule list -r sshServer
+esxcli network firewall ruleset rule list -r nfsClient
+esxcli network firewall ruleset rule list -r vMotion
+
+# List only enabled rulesets:
+esxcli network firewall ruleset list | grep true</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Enable/disable rulesets and restrict by IP</strong></p>
+                    <pre><code># Enable a firewall ruleset:
+esxcli network firewall ruleset set -e true -r syslog
+esxcli network firewall ruleset set -e true -r nfsClient
+esxcli network firewall ruleset set -e true -r sshServer
+
+# Disable a ruleset:
+esxcli network firewall ruleset set -e false -r CIMSLP
+
+# Restrict SSH to specific IPs (security hardening):
+esxcli network firewall ruleset set -r sshServer -a false  # Disable "allow all"
+esxcli network firewall ruleset allowedip add -r sshServer -i 10.0.0.0/24
+esxcli network firewall ruleset allowedip add -r sshServer -i 192.168.1.100
+
+# Restrict vCenter access:
+esxcli network firewall ruleset set -r vpxClient -a false
+esxcli network firewall ruleset allowedip add -r vpxClient -i 10.0.0.50
+
+# Refresh firewall rules:
+esxcli network firewall refresh</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Create custom firewall rules</strong></p>
+                    <pre><code># Custom rules are XML files in /etc/vmware/firewall/
+# Example: Allow custom monitoring agent on port 9100
+
+cat &gt; /etc/vmware/firewall/custom-monitor.xml &lt;&lt; 'EOF'
+&lt;ConfigRoot&gt;
+  &lt;service id="0050"&gt;
+    &lt;id&gt;customMonitor&lt;/id&gt;
+    &lt;rule id="0000"&gt;
+      &lt;direction&gt;inbound&lt;/direction&gt;
+      &lt;protocol&gt;tcp&lt;/protocol&gt;
+      &lt;porttype&gt;dst&lt;/porttype&gt;
+      &lt;port&gt;9100&lt;/port&gt;
+    &lt;/rule&gt;
+    &lt;enabled&gt;true&lt;/enabled&gt;
+    &lt;required&gt;false&lt;/required&gt;
+  &lt;/service&gt;
+&lt;/ConfigRoot&gt;
+EOF
+
+# Refresh firewall to load new rules:
+esxcli network firewall refresh
+
+# Verify custom rule loaded:
+esxcli network firewall ruleset list | grep customMonitor
+esxcli network firewall ruleset rule list -r customMonitor</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Best Practice:</strong> Never disable the ESXi firewall entirely. Instead, enable only the specific rulesets needed and restrict allowed IPs to known management networks. Custom firewall rules in <code class="inline">/etc/vmware/firewall/</code> do not persist across reboots unless added to a VIB or host profile. Use host profiles to enforce consistent firewall configuration across all cluster hosts.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #70: SR-IOV & DirectPath I/O Configuration -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-70" data-type="fix" data-severity="medium" data-keywords="sriov sr-iov directpath io passthrough pci virtual function vf physical function pf vt-d amd-vi iommu bypass performance latency">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">70</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">SR-IOV &amp; DirectPath I/O Configuration</div>
+            <div class="kb-entry-subtitle">Bypass hypervisor virtual switch for maximum network performance using hardware-level NIC virtualization</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">SR-IOV</span>
+                <span class="tag">DirectPath I/O</span>
+                <span class="tag">PCI Passthrough</span>
+                <span class="tag">Performance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Important Limitations:</strong> VMs using SR-IOV or DirectPath I/O <strong>cannot use vMotion</strong>, snapshots, Fault Tolerance, or suspend/resume. These features bypass the hypervisor virtual switch entirely. Plan accordingly — these are for performance-critical workloads only.</span>
+        </div>
+
+        <div class="section-label">SR-IOV vs DirectPath I/O</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">SR-IOV (Single Root I/O Virtualization)</div>
+                <ul>
+                    <li>NIC creates multiple <strong>Virtual Functions (VFs)</strong> from one <strong>Physical Function (PF)</strong></li>
+                    <li>Each VF assigned directly to a VM — <strong>bypasses vSwitch</strong></li>
+                    <li>Near bare-metal network performance with low latency</li>
+                    <li>Multiple VMs share one physical NIC via hardware</li>
+                    <li>Requires: compatible NIC (Intel X710, Mellanox ConnectX), VT-d/IOMMU</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">DirectPath I/O (PCI Passthrough)</div>
+                <ul>
+                    <li>Entire PCI device (NIC, GPU, etc.) passed directly to a single VM</li>
+                    <li>Maximum performance — <strong>full device dedicated</strong> to one VM</li>
+                    <li>No sharing — one physical device per VM</li>
+                    <li>Used for: GPU workloads, FPGA, specialized hardware</li>
+                    <li>Requires: Intel VT-d or AMD-Vi (IOMMU) enabled in BIOS</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable IOMMU and verify hardware support</strong></p>
+                    <pre><code># Step 1: Enable Intel VT-d / AMD-Vi in server BIOS/UEFI
+# Dell: BIOS → Processor Settings → Virtualization Technology → Intel VT-d: Enabled
+# HP:   BIOS → Virtualization → Intel(R) VT-d: Enabled
+
+# Verify IOMMU is enabled in ESXi:
+esxcli system settings kernel list | grep -i iommu
+
+# Check if passthrough-capable devices are detected:
+esxcli hardware pci list | grep -i "network\|ethernet"
+
+# vCenter UI: Host → Configure → Hardware → PCI Devices
+# Devices available for passthrough will be listed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure SR-IOV Virtual Functions</strong></p>
+                    <pre><code># Enable SR-IOV on a compatible NIC:
+# vCenter UI: Host → Configure → Hardware → PCI Devices
+# Select NIC → Configure SR-IOV → Number of VFs: 8 (max varies by NIC)
+
+# Reboot host for SR-IOV to take effect
+
+# After reboot, verify VFs are created:
+lspci | grep "Virtual Function"
+esxcli network sriovnic vf list -n vmnic4
+
+# Check SR-IOV NIC status:
+esxcli network sriovnic list
+
+# Assign VF to a VM:
+# VM → Edit Settings → Add New Device → Network Adapter
+# Adapter Type: SR-IOV Passthrough
+# Physical Function: vmnic4
+# VM will get a VF from the NIC hardware</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure DirectPath I/O (PCI Passthrough)</strong></p>
+                    <pre><code># Mark device for passthrough:
+# vCenter UI: Host → Configure → Hardware → PCI Devices
+# Select device → Toggle Passthrough → Reboot host
+
+# Assign passthrough device to VM:
+# VM → Edit Settings → Add New Device → PCI Device
+# Select the passthrough device
+
+# IMPORTANT: VM settings must also have:
+# - Memory Reservation: Full (all memory must be reserved)
+# - VM → Edit Settings → Memory → Reserve all guest memory
+
+# PowerCLI — Check passthrough devices:
+$vmhost = Get-VMHost "esxi-01.lab.local"
+$vmhost.ExtensionData.Config.PciPassthruInfo | Where { $_.PassthruEnabled } |
+    Select Id, PassthruEnabled, PassthruCapable, PassthruActive |
+    Format-Table -AutoSize
+
+# Verify VM has passthrough device:
+(Get-VM "perf-vm").ExtensionData.Config.Hardware.Device |
+    Where { $_ -is [VMware.Vim.VirtualPCIPassthrough] } |
+    Select @{N='Device';E={$_.DeviceInfo.Summary}}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use SR-IOV over DirectPath I/O when possible — it allows multiple VMs to share one NIC and is more flexible. Reserve DirectPath I/O for specialized devices (GPU, FPGA). Always document which VMs use passthrough since they cannot be vMotioned. Plan for host maintenance by having application-level HA (clustering, load balancers) for passthrough VMs since hypervisor-level migration is unavailable.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 7: Networking &mdash; vDS, vSS &amp; vMotion Network</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase6.html">&larr; Phase 6</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-61)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

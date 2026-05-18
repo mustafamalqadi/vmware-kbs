@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 4: DRS &amp; Resource Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 4 — DRS &amp; Resource Management</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html" class="active">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search DRS, affinity, resource pool, EVC, NUMA, memory, ballooning..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">DRS &amp; Resource Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">5</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 4</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+    <button class="nav-tab" onclick="filterByType('medium', this)">Medium</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #31: DRS Affinity / Anti-Affinity Rule Conflicts -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-31" data-type="break" data-severity="high" data-keywords="drs affinity anti-affinity rule conflict must should vm host group migration fault deadlock">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">31</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">DRS Affinity / Anti-Affinity Rule Conflicts</div>
+            <div class="kb-entry-subtitle">Conflicting rules prevent DRS from migrating VMs — rule conflict faults and migration deadlocks</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">DRS</span>
+                <span class="tag">Affinity</span>
+                <span class="tag">Anti-Affinity</span>
+                <span class="tag">Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> DRS cannot generate valid placement recommendations. VMs remain on suboptimal hosts, and new VM power-on requests may fail with "no suitable host" errors. Conflicting must-rules create an unresolvable deadlock.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>DRS faults: <strong>"Rule conflict"</strong> in Monitor → Faults</li>
+                    <li>VMs fail to power on: <strong>"No suitable host found"</strong></li>
+                    <li>DRS recommendations appear but are <strong>immediately cancelled</strong></li>
+                    <li>Cluster shows <strong>yellow/red DRS status</strong> in Configure tab</li>
+                    <li>vMotion blocked with <strong>"Would violate affinity rule"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Two <strong>must-rules</strong> that contradict each other (e.g., keep VM-A with VM-B AND separate VM-A from VM-B)</li>
+                    <li>VM-Host affinity rule conflicts with VM-VM anti-affinity</li>
+                    <li>Too many must-rules with limited host count</li>
+                    <li>Legacy rules left from decommissioned VMs/hosts</li>
+                    <li>HA failover constrained by mandatory placement rules</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>DRS evaluates all affinity and anti-affinity rules before generating migration recommendations. <strong>Must-rules</strong> are mandatory constraints — DRS will never violate them. When two must-rules conflict (e.g., "VM-A must run on Host-1" and "VM-A must be separated from VM-B" but VM-B is also pinned to Host-1), DRS enters a deadlock state. It generates faults instead of recommendations, and VMs cannot be placed or migrated. <strong>Should-rules</strong> are soft constraints that DRS will violate if necessary — but must-rules always override should-rules.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>List all DRS rules and identify conflicts</strong></p>
+                    <pre><code># PowerCLI — List all DRS rules in the cluster:
+$cluster = Get-Cluster "ClusterName"
+Get-DrsRule -Cluster $cluster | Format-Table Name, Type, Enabled, Mandatory -AutoSize
+
+# Check VM-Host rules:
+Get-DrsVMHostRule -Cluster $cluster | Format-Table Name, Type, Enabled, VMGroup, VMHostGroup -AutoSize
+
+# List VM groups and Host groups:
+Get-DrsClusterGroup -Cluster $cluster | Format-Table Name, GroupType, Member -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check DRS faults and failed recommendations</strong></p>
+                    <pre><code># PowerCLI — Get DRS faults:
+Get-DrsRecommendation -Cluster $cluster | Format-Table -AutoSize
+
+# vSphere Client path:
+# Cluster → Monitor → vSphere DRS → Recommendations
+# Cluster → Monitor → vSphere DRS → Faults
+
+# Check for rule conflicts in events:
+Get-VIEvent -Entity $cluster -MaxSamples 100 |
+  Where { $_.FullFormattedMessage -match "rule|conflict|affinity" } |
+  Select CreatedTime, FullFormattedMessage | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve conflicting rules</strong></p>
+                    <pre><code># Option 1: Disable conflicting must-rule temporarily:
+Get-DrsRule -Cluster $cluster -Name "ConflictingRuleName" |
+  Set-DrsRule -Enabled:$false
+
+# Option 2: Change must-rule to should-rule:
+# vSphere Client → Cluster → Configure → VM/Host Rules
+# Edit rule → Change "Must" to "Should"
+
+# Option 3: Remove obsolete rules:
+Get-DrsRule -Cluster $cluster -Name "ObsoleteRule" | Remove-DrsRule -Confirm:$false
+
+# Verify DRS health after changes:
+Get-Cluster $cluster | Select Name, DrsEnabled, DrsAutomationLevel</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Prefer should-rules over must-rules unless regulatory or licensing requirements demand strict enforcement. Audit DRS rules quarterly to remove stale entries. Document every must-rule with a business justification. In clusters with fewer than 4 hosts, minimize must-rules to avoid deadlocks.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #32: Resource Pool Misconfiguration — Nested Pools -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-32" data-type="break" data-severity="high" data-keywords="resource pool nested reservation shares expandable starved limit hierarchy flat misconfiguration">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">32</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Resource Pool Misconfiguration — Nested Pools</div>
+            <div class="kb-entry-subtitle">Resources trapped in nested pools — VMs starved due to reservation/share imbalance and excessive hierarchy</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Resource Pool</span>
+                <span class="tag">Reservation</span>
+                <span class="tag">Shares</span>
+                <span class="tag">DRS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs in deeply nested pools are starved of CPU and memory resources. Production workloads experience severe performance degradation while resources sit idle in parent pool reservations that are never consumed.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs show <strong>high CPU ready time</strong> (&gt;5%) despite cluster having available capacity</li>
+                    <li>Memory ballooning in VMs inside nested pools while parent pools show <strong>unused reservations</strong></li>
+                    <li>DRS cannot migrate VMs across pool boundaries effectively</li>
+                    <li>New VM power-on fails: <strong>"Insufficient resources"</strong></li>
+                    <li>Resource pool hierarchy is 3+ levels deep</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Excessive nesting (used as folder organization instead of resource control)</li>
+                    <li>Fixed <strong>reservations</strong> at parent level that lock resources</li>
+                    <li><strong>Expandable reservation</strong> disabled on child pools</li>
+                    <li>Share values not adjusted — child pools get equal shares regardless of workload priority</li>
+                    <li>No one audits or cleans up pool hierarchy over time</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>Resource pools are designed for resource management, not for organizing VMs like folders. When administrators create deeply nested pools (Dev → Team-A → Project-X → Sprint-1), each level adds reservation overhead. A parent pool with a fixed 32 GB memory reservation locks that memory even if its child VMs only use 8 GB. Meanwhile, VMs in sibling pools starve because the cluster appears fully reserved. The <strong>Expandable Reservation</strong> checkbox (enabled by default) allows child pools to borrow from the parent — disabling it creates hard silos.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Audit resource pool hierarchy and reservations</strong></p>
+                    <pre><code># PowerCLI — List all resource pools with reservations:
+Get-Cluster "ClusterName" | Get-ResourcePool | Sort Name |
+  Select Name, Parent,
+    @{N='CpuReservationMHz';E={$_.CpuReservationMHz}},
+    @{N='MemReservationGB';E={[math]::Round($_.MemReservationGB,2)}},
+    @{N='CpuExpandable';E={$_.CpuExpandableReservation}},
+    @{N='MemExpandable';E={$_.MemExpandableReservation}},
+    @{N='CpuShares';E={$_.NumCpuShares}},
+    @{N='MemShares';E={$_.NumMemShares}} |
+  Format-Table -AutoSize
+
+# Count nesting depth:
+Get-ResourcePool | ForEach {
+    $depth = 0; $p = $_.Parent
+    while ($p -is [VMware.VimAutomation.ViCore.Types.V1.Inventory.ResourcePool]) {
+        $depth++; $p = $p.Parent
+    }
+    [PSCustomObject]@{ Pool=$_.Name; Depth=$depth }
+} | Sort Depth -Descending | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check actual VM resource consumption vs pool reservations</strong></p>
+                    <pre><code># PowerCLI — Compare pool reservation to actual VM usage:
+$pools = Get-Cluster "ClusterName" | Get-ResourcePool
+foreach ($pool in $pools) {
+    $vms = Get-VM -Location $pool -NoRecursion
+    $usedCpu = ($vms | Measure-Object -Property UsedSpaceGB -Sum).Sum
+    $usedMem = ($vms | ForEach { $_.MemoryGB }) | Measure-Object -Sum
+    [PSCustomObject]@{
+        Pool = $pool.Name
+        VMCount = $vms.Count
+        ReservedMemGB = [math]::Round($pool.MemReservationGB,1)
+        ActualMemGB = [math]::Round($usedMem.Sum,1)
+        Waste = [math]::Round($pool.MemReservationGB - $usedMem.Sum,1)
+    }
+} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Flatten pool hierarchy and fix shares</strong></p>
+                    <pre><code># Move VMs out of deeply nested pools:
+# Use vSphere Client → Drag VMs to top-level resource pool
+
+# PowerCLI — Reset expandable reservations:
+Get-ResourcePool -Name "NestedPool" |
+  Set-ResourcePool -MemExpandableReservation:$true -CpuExpandableReservation:$true
+
+# Remove empty nested pools:
+Get-ResourcePool | Where { (Get-VM -Location $_ -NoRecursion).Count -eq 0 } |
+  Where { $_.Name -ne "Resources" } |
+  Remove-ResourcePool -Confirm:$false
+
+# Best practice: Use VM folders for organization, resource pools only for resource control</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> Never use resource pools as organizational folders. Use VM Folders for logical grouping. Resource pools should only exist when you need to enforce resource guarantees (reservations) or priorities (shares) between groups of workloads. One level of pools is usually sufficient.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #33: DRS Migration Threshold Tuning       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-33" data-type="fix" data-severity="medium" data-keywords="drs migration threshold tuning level aggressive conservative balance vmotion overhead recommendation">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">33</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">DRS Migration Threshold Tuning</div>
+            <div class="kb-entry-subtitle">Optimizing DRS aggressiveness — balancing load distribution against vMotion overhead</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">DRS</span>
+                <span class="tag">Migration</span>
+                <span class="tag">Threshold</span>
+                <span class="tag">Tuning</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> DRS migration threshold controls how aggressively DRS moves VMs to balance load. The right setting depends on your environment's tolerance for vMotion storms vs. resource imbalance.</span>
+        </div>
+
+        <div class="section-label">Migration Threshold Levels</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Threshold Scale</div>
+                <ul>
+                    <li><strong>Level 1 (Conservative):</strong> Only mandatory moves (host entering maintenance, affinity rules)</li>
+                    <li><strong>Level 2:</strong> Apply recommendations with significant cluster-wide benefit</li>
+                    <li><strong>Level 3 (Default):</strong> Apply recommendations for good improvements in load balance</li>
+                    <li><strong>Level 4:</strong> Apply recommendations for moderate improvements</li>
+                    <li><strong>Level 5 (Aggressive):</strong> Apply recommendations for even small improvements</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Trade-offs</div>
+                <ul>
+                    <li><strong>Aggressive (4-5):</strong> Better balance, more vMotion traffic, higher network overhead</li>
+                    <li><strong>Conservative (1-2):</strong> Fewer migrations, less overhead, potential hot spots</li>
+                    <li><strong>Default (3):</strong> Balanced approach for most environments</li>
+                    <li>Each vMotion consumes <strong>~1-3 seconds of CPU</strong> and network bandwidth</li>
+                    <li>Latency-sensitive workloads suffer from frequent migrations</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current DRS settings and migration history</strong></p>
+                    <pre><code># PowerCLI — Check DRS automation level and threshold:
+Get-Cluster "ClusterName" | Select Name, DrsEnabled, DrsAutomationLevel,
+  @{N='MigrationThreshold';E={
+    $_.ExtensionData.Configuration.DrsConfig.VmotionRate
+  }}
+
+# Review recent DRS migration events:
+Get-VIEvent -Entity (Get-Cluster "ClusterName") -MaxSamples 200 |
+  Where { $_.FullFormattedMessage -match "DRS|migrat|vMotion" } |
+  Group { $_.CreatedTime.ToString("yyyy-MM-dd") } |
+  Select Name, Count | Sort Name</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Adjust DRS migration threshold</strong></p>
+                    <pre><code># PowerCLI — Set DRS to Fully Automated with threshold level 3:
+Set-Cluster "ClusterName" -DrsAutomationLevel FullyAutomated -Confirm:$false
+
+# vSphere Client path:
+# Cluster → Configure → vSphere DRS → Edit
+# Automation Level: Fully Automated
+# Migration Threshold slider: Position 3 (default, recommended)
+
+# For performance-sensitive clusters, use Level 2:
+# This reduces unnecessary migrations while still balancing significant imbalances</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Set per-VM DRS overrides for sensitive workloads</strong></p>
+                    <pre><code># For latency-sensitive VMs, set individual DRS behavior:
+# vSphere Client → Cluster → Configure → VM Overrides → Add
+# Select VM → DRS Automation Level: "Partially Automated" or "Manual"
+
+# PowerCLI — Set per-VM DRS override:
+$cluster = Get-Cluster "ClusterName"
+$vm = Get-VM "LatencySensitiveVM"
+$spec = New-Object VMware.Vim.ClusterConfigSpecEx
+$vmSpec = New-Object VMware.Vim.ClusterDrsVmConfigSpec
+$vmSpec.Operation = "add"
+$vmSpec.Info = New-Object VMware.Vim.ClusterDrsVmConfigInfo
+$vmSpec.Info.Key = $vm.ExtensionData.MoRef
+$vmSpec.Info.Behavior = "partiallyAutomated"
+$spec.DrsVmConfigSpec += $vmSpec
+$cluster.ExtensionData.ReconfigureComputeResource($spec, $true)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Best Practice:</strong> Use Level 3 (default) for general-purpose clusters. Use Level 2 for clusters hosting latency-sensitive or database workloads. Use per-VM overrides instead of lowering the cluster-wide threshold. Monitor DRS migration count — if exceeding 50+ migrations/hour consistently, consider reducing aggressiveness.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #34: EVC Mode Mismatch — CPU Compatibility -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-34" data-type="break" data-severity="high" data-keywords="evc enhanced vmotion compatibility cpu incompatible baseline mismatch host feature mask generation">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">34</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">EVC Mode Mismatch — CPU Compatibility</div>
+            <div class="kb-entry-subtitle">vMotion fails with "CPU incompatible with EVC mode" — host CPU generation doesn't match cluster baseline</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">EVC</span>
+                <span class="tag">CPU</span>
+                <span class="tag">vMotion</span>
+                <span class="tag">Compatibility</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vMotion between hosts fails, preventing DRS load balancing and HA failover. VMs are pinned to their current host. Maintenance mode operations blocked — host cannot evacuate VMs.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vMotion fails: <strong>"The host's CPU is incompatible with the cluster's EVC mode"</strong></li>
+                    <li>Host cannot join cluster: <strong>"CPU mismatch"</strong></li>
+                    <li>DRS fault: <strong>"Cannot migrate VM — CPU features not available"</strong></li>
+                    <li>Host maintenance mode hangs — VMs cannot be evacuated</li>
+                    <li>Cluster EVC status shows <strong>host non-compliance</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>New host has <strong>older CPU generation</strong> than EVC baseline</li>
+                    <li>EVC set to a CPU level that newer host doesn't support (rare)</li>
+                    <li>BIOS/firmware update <strong>changed CPU feature flags</strong></li>
+                    <li>VM was created/migrated from a non-EVC cluster with exposed CPU features</li>
+                    <li>EVC mode was <strong>never enabled</strong> on a mixed-CPU cluster</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p><strong>EVC (Enhanced vMotion Compatibility)</strong> masks advanced CPU features to create a common baseline across all hosts in a cluster. When EVC is set to "Intel Skylake" baseline, all hosts present the same CPU feature set regardless of their actual hardware generation. If a new host has an older CPU (e.g., Haswell) that lacks features required by the EVC baseline, it cannot join the cluster. Similarly, if EVC is not enabled and hosts have different CPU generations, vMotion fails because the VM's CPU instructions differ between source and destination.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current EVC mode and host CPU compatibility</strong></p>
+                    <pre><code># PowerCLI — Check cluster EVC mode:
+Get-Cluster "ClusterName" | Select Name,
+  @{N='EVCMode';E={$_.ExtensionData.Summary.CurrentEVCModeKey}},
+  @{N='EVCEnabled';E={$_.EVCMode -ne $null}}
+
+# List host CPU models:
+Get-Cluster "ClusterName" | Get-VMHost | Select Name,
+  @{N='CPUModel';E={$_.ProcessorType}},
+  @{N='CpuFeatureLevel';E={$_.MaxEVCMode}},
+  @{N='State';E={$_.ConnectionState}} |
+  Format-Table -AutoSize
+
+# vSphere Client:
+# Cluster → Configure → VMware EVC → View current baseline and compliance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify the lowest common CPU denominator</strong></p>
+                    <pre><code># PowerCLI — Find the lowest EVC mode across all hosts:
+$hosts = Get-Cluster "ClusterName" | Get-VMHost
+$hosts | Select Name, ProcessorType, MaxEVCMode |
+  Sort MaxEVCMode | Format-Table -AutoSize
+
+# The EVC baseline must be ≤ the lowest MaxEVCMode in the cluster
+
+# Check if a specific host can join at current EVC level:
+# Compare host's MaxEVCMode with cluster's CurrentEVCModeKey
+# If host.MaxEVCMode &lt; cluster.EVCMode → host CANNOT join</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix EVC mode or remove incompatible host</strong></p>
+                    <pre><code># Option 1: Lower EVC mode to accommodate the oldest CPU
+# REQUIREMENT: All VMs must be powered off or migrated first
+# vSphere Client → Cluster → Configure → VMware EVC → Change EVC Mode
+# Select the lowest common baseline (e.g., "Intel Haswell")
+
+# Option 2: Remove the incompatible host from the cluster
+Remove-VMHost -VMHost "incompatible-host.domain.com" -Confirm:$false
+
+# Option 3: Enable EVC on a cluster that has none (all VMs must be off):
+Set-Cluster "ClusterName" -EVCMode "intel-broadwell" -Confirm:$false
+
+# Verify after change:
+Get-Cluster "ClusterName" | Select Name,
+  @{N='EVCMode';E={$_.ExtensionData.Summary.CurrentEVCModeKey}}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Best Practice:</strong> Always enable EVC when creating a new cluster — it's much harder to enable later with running VMs. Set EVC to the lowest CPU generation you plan to use in the cluster's lifecycle. When purchasing new hosts, verify their CPU family matches or exceeds the cluster EVC baseline before racking them. Per-VM EVC (vSphere 6.7+) allows individual VM CPU masking without cluster-wide constraints.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #35: VM-Host Affinity Rules & Licensing   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-35" data-type="fix" data-severity="medium" data-keywords="vm host affinity rule licensing compliance pin group must should hardware failover drs">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">35</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VM-Host Affinity Rules &amp; Licensing</div>
+            <div class="kb-entry-subtitle">Pinning VMs to specific hosts for licensing compliance and hardware affinity — should vs. must rules</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Affinity</span>
+                <span class="tag">Licensing</span>
+                <span class="tag">DRS</span>
+                <span class="tag">Compliance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> Some software licenses (Oracle, SQL Server, SAP) require VMs to run on specific hosts or a limited set of sockets. VM-Host affinity rules enforce this at the DRS level — but misconfiguration can break HA failover.</span>
+        </div>
+
+        <div class="section-label">Use Cases &amp; Configuration</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Common Use Cases</div>
+                <ul>
+                    <li><strong>Oracle licensing:</strong> Pin Oracle VMs to hosts with purchased licenses (per-socket)</li>
+                    <li><strong>SQL Server:</strong> Restrict to licensed hosts for Standard Edition</li>
+                    <li><strong>GPU passthrough:</strong> Pin VMs to hosts with specific GPU hardware</li>
+                    <li><strong>Data locality:</strong> Keep VMs close to local SSD storage</li>
+                    <li><strong>Compliance:</strong> Ensure VMs stay within a geographic boundary</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Should vs. Must Rules</div>
+                <ul>
+                    <li><strong>Should run on:</strong> DRS prefers these hosts but can violate during HA failover</li>
+                    <li><strong>Must run on:</strong> Hard constraint — HA will NOT restart VM on non-member hosts</li>
+                    <li><strong>Should NOT run on:</strong> Soft anti-affinity to hosts</li>
+                    <li><strong>Must NOT run on:</strong> Hard exclusion — VM cannot power on these hosts</li>
+                    <li><strong>Warning:</strong> "Must" rules + insufficient hosts = VM stays offline after failure</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create VM Group and Host Group</strong></p>
+                    <pre><code># PowerCLI — Create a VM group for Oracle VMs:
+$cluster = Get-Cluster "ClusterName"
+$oracleVMs = Get-VM "OracleDB-01","OracleDB-02","OracleDB-03"
+
+New-DrsClusterGroup -Cluster $cluster -Name "Oracle-VMs" -VM $oracleVMs
+
+# Create a Host group for licensed hosts:
+$licensedHosts = Get-VMHost "esxi-01.domain.com","esxi-02.domain.com"
+
+New-DrsClusterGroup -Cluster $cluster -Name "Oracle-Licensed-Hosts" -VMHost $licensedHosts
+
+# Verify groups:
+Get-DrsClusterGroup -Cluster $cluster | Format-Table Name, GroupType, Member -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Create the VM-Host affinity rule</strong></p>
+                    <pre><code># PowerCLI — Create "Should run on" rule (recommended for HA safety):
+New-DrsVMHostRule -Cluster $cluster -Name "Oracle-Licensing-Affinity" `
+  -VMGroup "Oracle-VMs" -VMHostGroup "Oracle-Licensed-Hosts" `
+  -Type ShouldRunOn -Enabled:$true
+
+# For strict licensing compliance, use "Must run on":
+# WARNING: If all hosts in the group fail, VMs will NOT be restarted by HA
+New-DrsVMHostRule -Cluster $cluster -Name "Oracle-Strict-Licensing" `
+  -VMGroup "Oracle-VMs" -VMHostGroup "Oracle-Licensed-Hosts" `
+  -Type MustRunOn -Enabled:$true
+
+# vSphere Client path:
+# Cluster → Configure → VM/Host Rules → Add → VM-Host Affinity Rule</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Validate HA behavior with affinity rules</strong></p>
+                    <pre><code># Check that HA can still protect VMs with "Must" rules:
+# Ensure the host group has N+1 hosts for HA to work
+
+# PowerCLI — Verify rule compliance:
+Get-DrsVMHostRule -Cluster $cluster | Select Name, Type, Enabled,
+  VMGroup, VMHostGroup | Format-Table -AutoSize
+
+# Simulate host failure impact:
+$hostGroup = Get-DrsClusterGroup -Cluster $cluster -Name "Oracle-Licensed-Hosts"
+$hostCount = ($hostGroup.Member).Count
+Write-Host "Licensed host count: $hostCount"
+Write-Host "HA can tolerate $($hostCount - 1) host failure(s) for 'Must' rules"
+
+# If hostCount = 1 and rule is "Must", HA CANNOT protect these VMs!</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> "Must run on" rules override HA failover. If all hosts in the affinity group fail simultaneously, VMs will remain powered off with no automatic recovery. Always use "Should run on" unless your licensing audit explicitly requires strict host pinning. Ensure at least N+1 hosts in every "Must" host group.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #36: NUMA Optimization & CPU Scheduling   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-36" data-type="fix" data-severity="high" data-keywords="numa node cpu scheduling vcpu core socket performance esxtop autosize preferht topology optimization">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">36</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NUMA Optimization &amp; CPU Scheduling</div>
+            <div class="kb-entry-subtitle">VM performance degrades when vCPUs span NUMA nodes — optimizing CPU topology for maximum throughput</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">NUMA</span>
+                <span class="tag">CPU</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Scheduling</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs spanning multiple NUMA nodes experience 10-30% higher memory latency due to remote memory access. CPU-intensive workloads (databases, analytics) show measurable throughput degradation and inconsistent response times.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VM shows <strong>high %RDY</strong> and inconsistent CPU performance</li>
+                    <li>esxtop shows VM vCPUs on <strong>different NUMA home nodes</strong></li>
+                    <li>Memory latency spikes in database/analytics workloads</li>
+                    <li>VM has more vCPUs than <strong>physical cores per NUMA node</strong></li>
+                    <li>Performance counters show high <strong>remote NUMA memory access</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Optimization Goals</div>
+                <ul>
+                    <li>Keep VM vCPUs within a <strong>single NUMA node</strong></li>
+                    <li>VM vCPU count ≤ cores per NUMA node</li>
+                    <li>Memory allocated from <strong>local NUMA node</strong> for lowest latency</li>
+                    <li>Avoid vNUMA misconfiguration with wrong cores-per-socket</li>
+                    <li>Right-size VMs to minimize NUMA spanning</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic &amp; Optimization Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify NUMA topology and check VM placement</strong></p>
+                    <pre><code># SSH to ESXi — Check NUMA topology:
+vsish -e get /hardware/numa/config
+# Shows: number of NUMA nodes, cores per node, memory per node
+
+# esxtop — Check VM NUMA placement:
+# Press 'm' for memory view
+# Look for NHN (NUMA Home Node) column
+# VMs should ideally have all vCPUs on the same NHN
+
+# Alternative — sched-stats:
+vsish -e get /sched/groups/&lt;vmGroupID&gt;/stats
+# Check numa.local and numa.remote memory access counters
+
+# PowerCLI — Get host NUMA info:
+Get-VMHost "esxi-01.domain.com" | Select Name,
+  @{N='NumaNodes';E={$_.ExtensionData.Hardware.NumaInfo.NumNodes}},
+  @{N='CoresPerNode';E={
+    $_.NumCpu / $_.ExtensionData.Hardware.NumaInfo.NumNodes
+  }}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Right-size VMs for NUMA boundaries</strong></p>
+                    <pre><code># Rule: VM vCPU count ≤ physical cores per NUMA node
+# Example: Host with 2 NUMA nodes, 18 cores each → VM max 18 vCPUs for single-node
+
+# Check VMs exceeding NUMA node size:
+$hosts = Get-Cluster "ClusterName" | Get-VMHost
+foreach ($h in $hosts) {
+    $coresPerNode = $h.NumCpu / $h.ExtensionData.Hardware.NumaInfo.NumNodes
+    Get-VM -Location $h | Where { $_.NumCpu -gt $coresPerNode } |
+      Select Name, NumCpu, @{N='CoresPerNode';E={$coresPerNode}},
+        @{N='SpansNUMA';E={"YES"}}
+} | Format-Table -AutoSize
+
+# Fix: Reduce vCPU count to fit within a single NUMA node
+# Or configure cores-per-socket to match NUMA topology:
+# VM → Edit Settings → CPU → Cores per Socket = CoresPerNode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Advanced NUMA tuning parameters</strong></p>
+                    <pre><code># VM Advanced Settings for NUMA optimization:
+# VM → Edit Settings → VM Options → Advanced → Configuration Parameters
+
+# Force NUMA node affinity (use with caution):
+# numa.nodeAffinity = 0        # Pin to NUMA node 0
+
+# Automatic NUMA sizing (default, recommended):
+# numa.autosize = true
+
+# Prefer Hyper-Threading for NUMA scheduling:
+# numa.vcpu.preferHT = true    # Use HT siblings before spanning nodes
+
+# vNUMA settings (VMs with >8 vCPUs auto-expose vNUMA):
+# Set cores-per-socket to match physical NUMA topology
+# Example: 16 vCPU VM on host with 18 cores/node
+# → Set 1 socket × 16 cores (fits in 1 NUMA node)
+# → NOT 2 sockets × 8 cores (forces 2 vNUMA nodes)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Best Practice:</strong> Size VMs with vCPU count ≤ cores per NUMA node. Set cores-per-socket to match the NUMA topology (prefer 1 socket with N cores over N sockets with 1 core). Let <code class="inline">numa.autosize</code> handle placement automatically. Only use manual NUMA pinning for extreme latency-sensitive workloads after thorough testing.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #37: Memory Overcommitment & Ballooning Crisis -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-37" data-type="break" data-severity="high" data-keywords="memory overcommit balloon ballooning swap swapping pressure mctlsz swcur tps transparent page sharing esxtop oom">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">37</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Memory Overcommitment &amp; Ballooning Crisis</div>
+            <div class="kb-entry-subtitle">VMs aggressively ballooning and swapping due to host memory pressure — performance collapse under overcommit</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Memory</span>
+                <span class="tag">Ballooning</span>
+                <span class="tag">Swap</span>
+                <span class="tag">Overcommit</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs experience severe performance degradation. Guest OS sees memory being reclaimed (balloon driver inflates), forcing applications to page to disk. When host enters "Hard" or "Low" memory state, VMs swap to .vswp files — performance drops by 100-1000x compared to physical memory.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>esxtop: <strong>MCTLSZ &gt; 0</strong> (balloon driver active, reclaiming memory)</li>
+                    <li>esxtop: <strong>SWCUR &gt; 0</strong> (host swapping VM memory to .vswp file)</li>
+                    <li>Guest OS: high page fault rates, applications OOM killed</li>
+                    <li>VM performance drops dramatically — disk I/O spikes from swapping</li>
+                    <li>vCenter alarm: <strong>"Host memory usage"</strong> exceeds threshold</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Memory State Thresholds</div>
+                <ul>
+                    <li><strong>High (&gt;6% free):</strong> Normal — TPS active, no ballooning</li>
+                    <li><strong>Clear (6% free):</strong> TPS aggressive — beginning memory pressure</li>
+                    <li><strong>Soft (4% free):</strong> Balloon driver activated, reclaims from VMs</li>
+                    <li><strong>Hard (2% free):</strong> Swapping begins — .vswp files used</li>
+                    <li><strong>Low (1% free):</strong> Memory compression + aggressive swap — critical</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>ESXi is designed to overcommit memory — the total configured VM memory can exceed physical RAM. This works because VMs rarely use 100% of their allocated memory. ESXi uses a <strong>hierarchy of memory reclamation techniques</strong>: TPS (Transparent Page Sharing) → Balloon driver → Memory compression → Swapping. Under normal conditions, TPS and ballooning are invisible to VMs. But when too many VMs actively consume memory simultaneously, the host enters progressively worse memory states. Once the host hits <strong>"Hard" state</strong>, it swaps VM pages to the .vswp file on datastore — this is essentially disk-speed memory access and causes catastrophic performance loss.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check host memory state and VM ballooning/swapping</strong></p>
+                    <pre><code># SSH to ESXi — Check memory state:
+esxtop
+# Press 'm' for memory view
+# Key columns:
+# MCTLSZ — Balloon size (MB reclaimed by balloon driver)
+# SWCUR  — Current swap usage (MB swapped to .vswp)
+# MEMSZ  — Configured memory size
+# GRANT  — Memory granted to VM
+# TCHSZ  — Touched (actively used) memory
+
+# Check host-level memory state:
+vsish -e get /memory/comprehensive
+# Look for: state (high/clear/soft/hard/low)
+
+# PowerCLI — Quick memory audit:
+Get-VMHost | Select Name,
+  @{N='TotalMemGB';E={[math]::Round($_.MemoryTotalGB,1)}},
+  @{N='UsedMemGB';E={[math]::Round($_.MemoryUsageGB,1)}},
+  @{N='FreeMemGB';E={[math]::Round($_.MemoryTotalGB - $_.MemoryUsageGB,1)}},
+  @{N='FreePct';E={[math]::Round(($_.MemoryTotalGB - $_.MemoryUsageGB)/$_.MemoryTotalGB*100,1)}} |
+  Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify over-provisioned VMs and memory waste</strong></p>
+                    <pre><code># PowerCLI — Find VMs with large memory that are barely using it:
+Get-VM | Where { $_.PowerState -eq "PoweredOn" } | Select Name,
+  @{N='ConfiguredGB';E={$_.MemoryGB}},
+  @{N='HostMemUsageGB';E={
+    [math]::Round(($_.ExtensionData.Summary.QuickStats.HostMemoryUsage)/1024,1)
+  }},
+  @{N='BalloonMB';E={$_.ExtensionData.Summary.QuickStats.BalloonedMemory}},
+  @{N='SwapMB';E={$_.ExtensionData.Summary.QuickStats.SwappedMemory}} |
+  Sort BalloonMB -Descending | Format-Table -AutoSize
+
+# Find VMs actively being ballooned or swapped:
+Get-VM | Where { $_.PowerState -eq "PoweredOn" } | ForEach {
+    $stats = $_.ExtensionData.Summary.QuickStats
+    if ($stats.BalloonedMemory -gt 0 -or $stats.SwappedMemory -gt 0) {
+        [PSCustomObject]@{
+            VM = $_.Name
+            BalloonMB = $stats.BalloonedMemory
+            SwapMB = $stats.SwappedMemory
+            Host = $_.VMHost.Name
+        }
+    }
+} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve memory pressure</strong></p>
+                    <pre><code># Immediate relief:
+# 1. vMotion VMs to hosts with available memory
+# 2. Power off non-critical VMs
+# 3. Reduce memory allocation on over-provisioned VMs
+
+# Long-term fixes:
+# Add physical memory to hosts
+# Right-size VMs — reduce configured memory to actual usage + 20% headroom
+# Remove unnecessary memory reservations:
+Get-VM | Where { $_.ExtensionData.ResourceConfig.MemoryAllocation.Reservation -gt 0 } |
+  Select Name, @{N='MemReservMB';E={
+    $_.ExtensionData.ResourceConfig.MemoryAllocation.Reservation
+  }} | Format-Table -AutoSize
+
+# Enable TPS (Transparent Page Sharing) — salted since vSphere 6.0:
+# Intra-VM TPS is on by default. Inter-VM TPS requires same salt:
+# Host Advanced Setting: Mem.ShareForceSalting = 0  (enables inter-VM TPS)
+# WARNING: Security implications — shared pages can be side-channel attacked
+
+# Set memory limits to prevent individual VMs from consuming too much:
+# Use resource pools with memory shares instead of per-VM limits</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical Rule:</strong> If <code class="inline">SWCUR &gt; 0</code> on ANY VM in production, treat it as a P1 incident. Host-level swapping means the VM's memory pages are being served from datastore disk — this is 1000x slower than RAM. Immediately migrate VMs or add resources. Never allow production hosts to remain in "Hard" or "Low" memory state.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #38: Storage DRS & Datastore Clusters     -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-38" data-type="fix" data-severity="medium" data-keywords="storage drs sdrs datastore cluster io latency space utilization threshold affinity recommendation svmotion">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">38</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Storage DRS &amp; Datastore Clusters</div>
+            <div class="kb-entry-subtitle">Automated storage load balancing — configuring SDRS thresholds, affinity rules, and datastore clusters</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Storage DRS</span>
+                <span class="tag">SDRS</span>
+                <span class="tag">Datastore Cluster</span>
+                <span class="tag">Storage</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> Storage DRS (SDRS) automates datastore load balancing by migrating VM disk files (Storage vMotion) across datastores in a cluster. It balances both space utilization and I/O latency to prevent hot spots.</span>
+        </div>
+
+        <div class="section-label">Configuration &amp; Thresholds</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">SDRS Thresholds</div>
+                <ul>
+                    <li><strong>Space utilization:</strong> Default 80% — triggers recommendation when datastore exceeds this</li>
+                    <li><strong>I/O latency:</strong> Default 15ms — triggers recommendation for high-latency datastores</li>
+                    <li><strong>I/O imbalance threshold:</strong> Default 5% — minimum imbalance before SDRS acts</li>
+                    <li><strong>Evaluation period:</strong> Every 8 hours (configurable)</li>
+                    <li><strong>Automation level:</strong> No automation / Fully automated</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Common Issues</div>
+                <ul>
+                    <li>SDRS recommendations blocked by <strong>VMDK affinity rules</strong></li>
+                    <li>Datastore maintenance mode stalls due to <strong>no available target</strong></li>
+                    <li>SDRS cannot balance <strong>RDMs or independent-persistent disks</strong></li>
+                    <li>Excessive Storage vMotion during peak hours degrades I/O</li>
+                    <li>Mixed datastore sizes cause uneven space distribution</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create and configure a Datastore Cluster with SDRS</strong></p>
+                    <pre><code># vSphere Client:
+# Storage view → Right-click Datacenter → New Datastore Cluster
+# Enable Storage DRS → Set automation level
+# Add datastores to the cluster
+
+# PowerCLI — Check existing datastore cluster configuration:
+Get-DatastoreCluster | Select Name,
+  @{N='SdrsEnabled';E={$_.SdrsAutomationLevel -ne 'Disabled'}},
+  @{N='AutomationLevel';E={$_.SdrsAutomationLevel}},
+  @{N='SpaceThreshold';E={$_.SpaceUtilizationThresholdPercent}},
+  @{N='IOLatencyThresholdMs';E={$_.IOLatencyThresholdMillisecond}},
+  @{N='DatastoreCount';E={(Get-Datastore -Location $_).Count}} |
+  Format-Table -AutoSize
+
+# List datastores in the cluster with utilization:
+Get-DatastoreCluster "DSCluster-01" | Get-Datastore |
+  Select Name,
+    @{N='CapacityGB';E={[math]::Round($_.CapacityGB,1)}},
+    @{N='FreeGB';E={[math]::Round($_.FreeSpaceGB,1)}},
+    @{N='UsedPct';E={[math]::Round((1-$_.FreeSpaceGB/$_.CapacityGB)*100,1)}} |
+  Sort UsedPct -Descending | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Tune SDRS thresholds and check recommendations</strong></p>
+                    <pre><code># PowerCLI — Adjust SDRS settings:
+Set-DatastoreCluster "DSCluster-01" -SdrsAutomationLevel FullyAutomated `
+  -SpaceUtilizationThresholdPercent 80 `
+  -IOLatencyThresholdMillisecond 15
+
+# Check pending SDRS recommendations:
+Get-SdrsRecommendation -DatastoreCluster "DSCluster-01" |
+  Format-Table -AutoSize
+
+# vSphere Client path:
+# Datastore Cluster → Configure → Storage DRS → Edit Settings
+# Space: Utilized space threshold (default 80%)
+# I/O: I/O latency threshold (default 15ms)
+# Advanced: SDRS invocation frequency, No-Recommendation period</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure SDRS affinity and anti-affinity rules</strong></p>
+                    <pre><code># VMDK affinity: Keep all disks of a VM on the same datastore
+# (Default behavior — recommended for most workloads)
+
+# VMDK anti-affinity: Spread disks across different datastores
+# Use for: I/O-intensive VMs that benefit from parallel datastore access
+
+# VM anti-affinity: Keep specific VMs on different datastores
+# Use for: HA pairs, replicated VMs
+
+# vSphere Client:
+# Datastore Cluster → Configure → Rules → Add
+# Types: VMDK Affinity, VMDK Anti-Affinity, VM Anti-Affinity
+
+# Common fix for "SDRS recommendations not applied":
+# Check if VMDK affinity rules are blocking the recommendation
+# Check if VM has snapshots (SDRS cannot move VMs with snapshots)
+# Check if VM disks include RDMs (not supported by SDRS)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Best Practice:</strong> Use fully automated SDRS for general-purpose datastores. Keep datastore sizes uniform within a cluster for even distribution. Set I/O latency threshold based on your storage backend (15ms for HDD, 5ms for SSD/NVMe). Schedule SDRS runs during off-peak hours using the automation schedule feature. Exclude template datastores and ISO libraries from SDRS.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #39: DRS Faults & Recommendations Not Applied -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-39" data-type="break" data-severity="high" data-keywords="drs fault recommendation not applied failed vmotion override insufficient resources migration error cluster">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">39</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">DRS Faults &amp; Recommendations Not Applied</div>
+            <div class="kb-entry-subtitle">DRS generates faults instead of actionable recommendations — underlying issues blocking automated balancing</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">DRS</span>
+                <span class="tag">Faults</span>
+                <span class="tag">vMotion</span>
+                <span class="tag">Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> DRS cannot balance the cluster. VMs remain on overloaded hosts while other hosts sit idle. Automated load management is effectively disabled despite DRS being enabled. Manual intervention required for every migration.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>DRS tab shows <strong>faults</strong> instead of recommendations</li>
+                    <li>vMotion attempts fail: <strong>"Migration to host failed"</strong></li>
+                    <li>DRS recommendations appear but <strong>immediately disappear or fail</strong></li>
+                    <li>Cluster imbalance score remains <strong>high (&gt;20%)</strong> despite fully automated DRS</li>
+                    <li>Events log: <strong>"DRS did not find any hosts to migrate VM"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li><strong>VM-level DRS override</strong> set to "Disabled" or "Manual"</li>
+                    <li>vMotion network <strong>misconfigured or down</strong> between hosts</li>
+                    <li>VM disk <strong>too large</strong> for destination datastore</li>
+                    <li><strong>CPU compatibility</strong> issue (no EVC, different CPU generations)</li>
+                    <li>VM has <strong>connected USB device, passthrough, or latency-sensitive</strong> config</li>
+                    <li>Insufficient resources on all destination hosts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>DRS runs every 5 minutes and generates recommendations based on cluster load balance analysis. Before recommending a migration, DRS performs a <strong>pre-check</strong> for each VM: Is vMotion feasible? Does the destination have enough resources? Are there compatibility issues? If the pre-check fails, DRS generates a <strong>fault</strong> rather than a recommendation. Common blockers include: vMotion VMkernel port group mismatch, connected devices that prevent migration (USB, PCI passthrough), disk space constraints on the target datastore, and per-VM DRS overrides that suppress automation.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check DRS faults and recommendations</strong></p>
+                    <pre><code># PowerCLI — Get DRS recommendations and faults:
+$cluster = Get-Cluster "ClusterName"
+Get-DrsRecommendation -Cluster $cluster | Format-Table -AutoSize
+
+# Check DRS events for fault details:
+Get-VIEvent -Entity $cluster -MaxSamples 200 |
+  Where { $_.FullFormattedMessage -match "DRS|fault|cannot.*migrat|vMotion.*fail" } |
+  Select CreatedTime, FullFormattedMessage |
+  Sort CreatedTime -Descending | Select -First 20 | Format-Table -AutoSize
+
+# vSphere Client:
+# Cluster → Monitor → vSphere DRS → Recommendations (check for faults)
+# Cluster → Monitor → vSphere DRS → Faults (detailed fault list)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check VM-level DRS overrides and migration blockers</strong></p>
+                    <pre><code># PowerCLI — Find VMs with DRS overrides:
+$cluster = Get-Cluster "ClusterName"
+$cluster.ExtensionData.Configuration.DrsVmConfig | ForEach {
+    $vm = Get-VM -Id ("VirtualMachine-" + $_.Key.Value)
+    [PSCustomObject]@{
+        VM = $vm.Name
+        DRSBehavior = $_.Behavior
+        Enabled = $_.Enabled
+    }
+} | Format-Table -AutoSize
+
+# Check for connected devices blocking vMotion:
+Get-VM | ForEach {
+    $usb = ($_.ExtensionData.Config.Hardware.Device |
+      Where { $_ -is [VMware.Vim.VirtualUSB] })
+    $pci = ($_.ExtensionData.Config.Hardware.Device |
+      Where { $_ -is [VMware.Vim.VirtualPCIPassthrough] })
+    if ($usb -or $pci) {
+        [PSCustomObject]@{
+            VM = $_.Name; USB = [bool]$usb; PCIPassthrough = [bool]$pci
+        }
+    }
+} | Format-Table -AutoSize
+
+# Verify vMotion network on all hosts:
+Get-VMHost | Get-VMHostNetworkAdapter -VMKernel |
+  Where { $_.VMotionEnabled } |
+  Select VMHost, Name, IP, SubnetMask | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve DRS faults</strong></p>
+                    <pre><code># Fix 1: Remove per-VM DRS overrides:
+# vSphere Client → Cluster → Configure → VM Overrides
+# Remove entries with "Disabled" or "Manual" that shouldn't be there
+
+# Fix 2: Verify vMotion connectivity between all hosts:
+# Test vMotion from each host to every other host:
+$hosts = Get-Cluster "ClusterName" | Get-VMHost
+foreach ($src in $hosts) {
+    foreach ($dst in $hosts | Where { $_ -ne $src }) {
+        Write-Host "Testing vMotion: $($src.Name) → $($dst.Name)"
+        # Manual test: try to migrate a small test VM
+    }
+}
+
+# Fix 3: Disconnect USB devices or PCI passthrough on blocked VMs:
+# VM → Edit Settings → Remove USB Controller (if not needed)
+
+# Fix 4: Enable EVC for CPU compatibility (see KB #34)
+# Fix 5: Ensure destination datastores have enough free space
+# Fix 6: Check and fix vMotion VMkernel port group configuration
+
+# After fixing, force DRS to re-evaluate:
+# Right-click Cluster → Run DRS Now (vSphere 7.0+)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Regularly audit the DRS Faults tab — it's often overlooked. Remove VM-level DRS overrides unless documented with a business reason. Test vMotion between all host pairs quarterly. Use "Run DRS Now" (vSphere 7+) after resolving faults to immediately rebalance. Monitor DRS migration success rate in vRealize Operations or vCenter performance charts.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #40: Latency Sensitivity & Performance Tuning -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-40" data-type="fix" data-severity="medium" data-keywords="latency sensitivity low performance tuning trading voip real-time reservation exclusive scheduling coalesce balloon disable">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">40</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Latency Sensitivity &amp; Performance Tuning</div>
+            <div class="kb-entry-subtitle">Configuring low-latency VM settings for trading, VoIP, and real-time applications</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Latency</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Real-Time</span>
+                <span class="tag">Tuning</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> vSphere's latency sensitivity feature optimizes the hypervisor scheduler for applications that require consistently low response times — financial trading systems, VoIP gateways, HPC workloads, and real-time control systems.</span>
+        </div>
+
+        <div class="section-label">Feature Effects &amp; Requirements</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">What "High" Latency Sensitivity Enables</div>
+                <ul>
+                    <li><strong>Exclusive CPU scheduling:</strong> vCPUs get dedicated pCPUs (no co-scheduling)</li>
+                    <li><strong>Disables memory ballooning:</strong> Balloon driver will not inflate</li>
+                    <li><strong>Disables interrupt coalescing:</strong> Network/storage interrupts processed immediately</li>
+                    <li><strong>Disables memory compression:</strong> No compression overhead</li>
+                    <li><strong>Pass-through virtual devices:</strong> Reduced virtualization overhead for NIC/disk</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Requirements &amp; Trade-offs</div>
+                <ul>
+                    <li><strong>Full memory reservation</strong> is required (no overcommit for this VM)</li>
+                    <li>Reduces <strong>host consolidation ratio</strong> — dedicated resources locked</li>
+                    <li>DRS migration may be <strong>less frequent</strong> due to overhead avoidance</li>
+                    <li>VM consumes exact configured resources even if idle</li>
+                    <li>Best combined with <strong>NUMA pinning</strong> and <strong>CPU affinity</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable latency sensitivity on the VM</strong></p>
+                    <pre><code># vSphere Client:
+# VM → Edit Settings → VM Options → Advanced → Latency Sensitivity
+# Set to: "High"
+
+# PowerCLI — Enable latency sensitivity:
+$vm = Get-VM "TradingEngine-01"
+$spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+$spec.LatencySensitivity = New-Object VMware.Vim.LatencySensitivity
+$spec.LatencySensitivity.Level = "high"
+$vm.ExtensionData.ReconfigVM($spec)
+
+# Verify:
+Get-VM "TradingEngine-01" | Select Name,
+  @{N='LatencySensitivity';E={
+    $_.ExtensionData.Config.LatencySensitivity.Level
+  }}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure required memory reservation</strong></p>
+                    <pre><code># Latency Sensitivity = High REQUIRES full memory reservation
+# VM → Edit Settings → Resources → Memory → Reservation = Max
+
+# PowerCLI — Set full memory reservation:
+$vm = Get-VM "TradingEngine-01"
+$vm | Get-VMResourceConfiguration |
+  Set-VMResourceConfiguration -MemReservationGB $vm.MemoryGB
+
+# Verify reservation equals configured memory:
+Get-VM "TradingEngine-01" | Select Name, MemoryGB,
+  @{N='MemReservGB';E={
+    [math]::Round($_.ExtensionData.ResourceConfig.MemoryAllocation.Reservation/1024,1)
+  }}
+
+# Without full reservation, the VM will fail to power on with:
+# "Insufficient resources to satisfy configured failover level"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Additional performance tuning for low-latency VMs</strong></p>
+                    <pre><code># Combine with NUMA pinning for best results:
+# VM → Edit Settings → VM Options → Advanced → Configuration Parameters
+# numa.nodeAffinity = 0          # Pin to specific NUMA node
+# sched.cpu.affinity = 0-7       # Pin to specific pCPUs (use with caution)
+
+# Network optimization for low latency:
+# Use VMXNET3 adapter (lowest virtualization overhead)
+# Enable SR-IOV for near-native network performance
+# Disable TCP Segmentation Offload if using UDP-heavy workloads
+
+# Storage optimization:
+# Use PVSCSI controller for lowest storage latency
+# Place VM on local SSD/NVMe datastore if possible
+# Enable TRIM/UNMAP for thin-provisioned disks
+
+# Host-level tuning:
+# Disable power management: esxcli system settings advanced set -o /Power/CpuPolicy -s "High Performance"
+# Disable C-States in BIOS for consistent CPU frequency
+# Disable Hyper-Threading if workload is CPU-cache sensitive
+
+# Verify latency improvements with esxtop:
+# Check %RDY (should be &lt;1%), %CSTP, and %MLMTD</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> Latency-sensitive VMs consume dedicated resources and cannot share them with other VMs. Only enable "High" latency sensitivity for workloads that genuinely require sub-millisecond response consistency. Over-using this feature reduces your cluster's consolidation ratio and wastes resources. Benchmark before and after to confirm actual latency improvement.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 4: DRS &amp; Resource Management</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase3.html">&larr; Phase 3</a> &nbsp;|&nbsp; <a href="phase5.html">Next: Phase 5 &rarr;</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, high, medium)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'high' || type === 'medium') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-31)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

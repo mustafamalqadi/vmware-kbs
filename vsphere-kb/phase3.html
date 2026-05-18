@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 3: HA &amp; Fault Tolerance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 3 — HA &amp; Fault Tolerance</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html" class="active">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search HA, admission control, FDM, heartbeat, isolation, fault tolerance..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">HA &amp; FT Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">5</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 3</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #21: HA Admission Control Blocking VM Power-On -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-21" data-type="break" data-severity="high" data-keywords="ha admission control power on insufficient resources failover reserve capacity slot percentage overcommit">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">21</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HA Admission Control Blocking VM Power-On</div>
+            <div class="kb-entry-subtitle">"Insufficient resources to satisfy HA failover" prevents VM start — admission control reserves too much capacity</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">HA</span>
+                <span class="tag">Admission Control</span>
+                <span class="tag">Capacity</span>
+                <span class="tag">Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs cannot be powered on even though physical resources are available. New deployments and DR recovery are blocked. Business-critical workloads may fail to start after maintenance windows.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VM power-on fails with <strong>"Insufficient resources to satisfy vSphere HA failover level"</strong></li>
+                    <li>vCenter events show <strong>"Admission control denied"</strong></li>
+                    <li>Cluster shows <strong>yellow HA status</strong> — resources over-committed</li>
+                    <li>DRS cannot place VM on any host in the cluster</li>
+                    <li>New VMs or cloned VMs fail to power on</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Admission control policy reserves too much capacity (e.g., 50%)</li>
+                    <li>Slot size inflated by a single VM with large CPU/memory reservation</li>
+                    <li>Host in maintenance mode reduces available capacity below threshold</li>
+                    <li>Overcommitted cluster with aggressive VM density</li>
+                    <li>Dedicated failover host policy with host already failed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>HA Admission Control reserves a portion of cluster resources to guarantee VM restarts after host failures. When the policy is set to <strong>"Cluster resource percentage"</strong>, it may reserve 25–50% of CPU/memory. If the remaining capacity after reserving failover resources is insufficient for the new VM, the power-on is blocked — even if the physical hosts have idle resources. The <strong>slot-based policy</strong> can be especially restrictive when one VM has a large reservation, inflating the slot size for the entire cluster.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current admission control policy and slot sizes</strong></p>
+                    <pre><code># PowerCLI — view HA admission control settings:
+Get-Cluster "ClusterName" | Select Name, HAAdmissionControlEnabled, HAFailoverLevel
+
+# Check slot size information:
+Get-Cluster "ClusterName" | Get-View | Select -ExpandProperty Summary |
+  Select CurrentFailoverLevel, NumVmotions</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Identify VMs with large reservations inflating slot size</strong></p>
+                    <pre><code># PowerCLI — find VMs with CPU/memory reservations:
+Get-VM -Location "ClusterName" | Where-Object {
+    $_.ExtensionData.ResourceConfig.CpuAllocation.Reservation -gt 0 -or
+    $_.ExtensionData.ResourceConfig.MemoryAllocation.Reservation -gt 0
+} | Select Name,
+  @{N='CPUResMHz';E={$_.ExtensionData.ResourceConfig.CpuAllocation.Reservation}},
+  @{N='MemResMB';E={$_.ExtensionData.ResourceConfig.MemoryAllocation.Reservation}} |
+  Sort-Object MemResMB -Descending</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Review cluster capacity vs. reservation</strong></p>
+                    <pre><code># PowerCLI — cluster capacity overview:
+$cluster = Get-Cluster "ClusterName"
+$hosts = $cluster | Get-VMHost
+$hosts | Select Name, ConnectionState,
+  @{N='CPUTotalMHz';E={$_.CpuTotalMHz}},
+  @{N='CPUUsageMHz';E={$_.CpuUsageMHz}},
+  @{N='MemTotalGB';E={[math]::Round($_.MemoryTotalGB,1)}},
+  @{N='MemUsageGB';E={[math]::Round($_.MemoryUsageGB,1)}} |
+  Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Adjust admission control policy to percentage-based</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → Edit
+# Admission Control Policy: "Cluster resource percentage"
+# Set CPU/Memory to match your N+1 requirements (e.g., 25% for 4-host cluster)
+
+# PowerCLI:
+$spec = New-Object VMware.Vim.ClusterConfigSpecEx
+$spec.DasConfig = New-Object VMware.Vim.ClusterDasConfigInfo
+$spec.DasConfig.AdmissionControlEnabled = $true
+# Apply via Set-Cluster or Reconfigure-Cluster</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Temporary: Disable admission control to power on critical VMs</strong></p>
+                    <pre><code># WARNING: Only use temporarily — re-enable immediately after
+# vSphere Client:
+# Cluster → Configure → vSphere Availability → Edit
+# Uncheck "Enable Admission Control"
+
+# Power on the VM, then RE-ENABLE admission control:
+# Cluster → Configure → vSphere Availability → Edit
+# Check "Enable Admission Control"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> Disabling admission control removes HA protection guarantees. Only disable temporarily for emergency VM power-on and re-enable immediately. Consider switching from slot-based to percentage-based policy to avoid slot size inflation.</span>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use "Cluster resource percentage" policy instead of slot-based for mixed workloads. Set percentage based on N+1 or N+2 requirements. If using slot policy, define explicit slot size to prevent one large VM from inflating it. Review admission control after any host maintenance or decommission.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #22: HA Master Election Failure            -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-22" data-type="break" data-severity="critical" data-keywords="ha master election fdm network partition management agent unprotected cluster master slave">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">22</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HA Master Election Failure</div>
+            <div class="kb-entry-subtitle">No HA master elected — cluster unprotected, FDM agents cannot communicate across management network</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">HA</span>
+                <span class="tag">FDM</span>
+                <span class="tag">Master Election</span>
+                <span class="tag">Network</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Without an HA master, the cluster is completely unprotected. If a host fails, no VM restarts will be initiated. This is a silent failure — vCenter may still report HA as "enabled" while no actual protection exists.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client shows HA status: <strong>"Agent unreachable"</strong> on multiple hosts</li>
+                    <li>Cluster-level alarm: <strong>"vSphere HA host status"</strong> — red/yellow</li>
+                    <li>FDM log: <code class="inline">Failed to elect master</code> or <code class="inline">No master found</code></li>
+                    <li>HA-protected VM count shows <strong>0</strong> in cluster summary</li>
+                    <li>Events: <strong>"Cannot complete the HA configuration"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Management network partition — hosts can't reach each other on port <strong>8182</strong></li>
+                    <li>FDM agent crashed on all potential master hosts</li>
+                    <li>Firewall rules blocking FDM communication (TCP/UDP 8182)</li>
+                    <li>DNS resolution failure for ESXi hostnames</li>
+                    <li>Corrupted HA configuration files on hosts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vSphere HA uses the <strong>FDM (Fault Domain Manager)</strong> agent on each host. One host is elected as the <strong>master</strong>, which monitors all <strong>slave</strong> hosts and initiates VM restarts on failure. The master election uses the management network (port 8182). If a network partition, firewall misconfiguration, or agent crash prevents communication between all hosts, no master can be elected. The cluster appears "HA enabled" in vCenter but has <strong>zero actual protection</strong>.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check FDM status and logs on each host</strong></p>
+                    <pre><code># SSH to each ESXi host:
+/etc/init.d/fdm status
+
+# Check FDM election logs:
+cat /var/log/fdm.log | grep -i "master\|elect\|error\|fail" | tail -40
+
+# Check if FDM is listening:
+esxcli network ip connection list | grep 8182</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify management network connectivity between hosts</strong></p>
+                    <pre><code># From each ESXi host, ping other hosts on management network:
+vmkping -I vmk0 &lt;other-host-mgmt-ip&gt;
+
+# Test FDM port connectivity:
+nc -z &lt;other-host-mgmt-ip&gt; 8182
+
+# Check firewall rules:
+esxcli network firewall ruleset list | grep fdm</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check DNS resolution for all cluster hosts</strong></p>
+                    <pre><code># Verify each host can resolve other hosts:
+nslookup esxi-host01.domain.local
+nslookup esxi-host02.domain.local
+
+# Check /etc/hosts for local overrides:
+cat /etc/hosts
+
+# Verify DNS settings:
+esxcli network ip dns server list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart management agents on all hosts</strong></p>
+                    <pre><code># SSH to each ESXi host:
+/etc/init.d/hostd restart
+/etc/init.d/vpxa restart
+/etc/init.d/fdm restart
+
+# Verify FDM is running:
+/etc/init.d/fdm status
+# Expected: "VMware Fault Domain Manager is running"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reconfigure HA on the entire cluster</strong></p>
+                    <pre><code># vSphere Client:
+# 1. Cluster → Configure → vSphere Availability → Edit
+# 2. Uncheck "Turn ON vSphere HA" → OK
+# 3. Wait for all hosts to show "HA Disabled"
+# 4. Re-enable: Check "Turn ON vSphere HA" → OK
+
+# PowerCLI alternative:
+Set-Cluster "ClusterName" -HAEnabled:$false -Confirm:$false
+Start-Sleep -Seconds 30
+Set-Cluster "ClusterName" -HAEnabled:$true -Confirm:$false</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Monitor HA master election status via vCenter alarms. Ensure management network redundancy with NIC teaming. Verify that ESXi host firewall allows FDM traffic on port 8182. After any network changes, verify HA reconfiguration completes on all hosts. Use <code class="inline">/var/log/fdm.log</code> as your primary HA troubleshooting log.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #23: HA Heartbeat Datastore Issues          -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-23" data-type="break" data-severity="high" data-keywords="ha heartbeat datastore isolation detection shared storage vmfs nfs datastore heartbeat das">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">23</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HA Heartbeat Datastore Issues</div>
+            <div class="kb-entry-subtitle">Missing or insufficient heartbeat datastores — unreliable host isolation detection leads to false positives</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">HA</span>
+                <span class="tag">Heartbeat</span>
+                <span class="tag">Datastore</span>
+                <span class="tag">Isolation</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Without sufficient heartbeat datastores, HA cannot reliably distinguish between a host failure and a network isolation. This can lead to false isolation events, unnecessary VM restarts, or missed failovers.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Alarm: <strong>"No heartbeat datastores found for host"</strong></li>
+                    <li>HA configuration warning: <strong>"Only 1 heartbeat datastore"</strong> (minimum 2)</li>
+                    <li>False host isolation events during network blips</li>
+                    <li>VMs unexpectedly restarted due to incorrect isolation detection</li>
+                    <li>FDM log: <code class="inline">Insufficient heartbeat datastores</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Only local datastores in cluster — no shared VMFS/NFS</li>
+                    <li>Shared datastores not accessible from all hosts</li>
+                    <li>HA heartbeat datastore selection set to <strong>"Use datastores only from the specified list"</strong> but list is empty</li>
+                    <li>Storage connectivity issues reducing visible datastores</li>
+                    <li>vSAN cluster with only one fault domain</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vSphere HA uses two heartbeat mechanisms: <strong>network heartbeats</strong> (management network) and <strong>datastore heartbeats</strong> (shared storage). When the management network fails, HA relies on datastore heartbeats to determine if a host is actually down or just network-isolated. With fewer than 2 heartbeat datastores, the master cannot reliably make this distinction. A network blip may be misinterpreted as a host failure, triggering unnecessary VM restarts — or a real failure may go undetected.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current heartbeat datastore configuration</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → Heartbeat Datastores
+# Verify at least 2 datastores are listed
+
+# PowerCLI — list heartbeat datastores:
+$cluster = Get-Cluster "ClusterName"
+$clusterView = $cluster | Get-View
+$clusterView.RetrieveDasAdvancedRuntimeInfo().HeartbeatDatastoreInfo |
+  Select Datastore, @{N='Name';E={
+    (Get-View $_.Datastore).Name
+  }}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify shared datastore visibility across all hosts</strong></p>
+                    <pre><code># PowerCLI — find datastores shared by all hosts:
+$hosts = Get-Cluster "ClusterName" | Get-VMHost
+$allDS = $hosts | ForEach-Object { ($_ | Get-Datastore).Name }
+$shared = $allDS | Group-Object | Where-Object { $_.Count -eq $hosts.Count }
+$shared | Select Name, Count | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Add shared datastores and configure heartbeat selection</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → Heartbeat Datastores → Edit
+# Select: "Use datastores from the specified list and complement automatically"
+# Choose at least 2 shared VMFS/NFS datastores accessible from all hosts
+
+# Ensure datastores are on different storage arrays for true redundancy</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify heartbeat configuration after changes</strong></p>
+                    <pre><code># After adding datastores, reconfigure HA:
+# Right-click each host → Reconfigure for vSphere HA
+
+# Verify in FDM log on each host:
+cat /var/log/fdm.log | grep -i "heartbeat" | tail -20
+# Expected: "Using datastore [DatastoreName] for heartbeating"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always configure at least 2 heartbeat datastores on different storage arrays. Use "complement automatically" to let HA add extra datastores beyond your manual selection. For vSAN, ensure multiple fault domains exist. Monitor heartbeat datastore alarms in vCenter and respond immediately to "insufficient heartbeat datastores" warnings.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #24: FDM Agent Crash / Restart Loop        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-24" data-type="break" data-severity="high" data-keywords="fdm agent crash restart loop fault domain manager ha config error unreachable agent init">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">24</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">FDM Agent Crash / Restart Loop</div>
+            <div class="kb-entry-subtitle">FDM (Fault Domain Manager) agent failing on host — HA shows "Agent Unreachable" or configuration errors</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">FDM</span>
+                <span class="tag">HA</span>
+                <span class="tag">Agent</span>
+                <span class="tag">Crash</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> A host with a crashed FDM agent is not protected by HA. If this host fails, VMs on it will not be restarted on other hosts. If the crashing host is the HA master, the entire cluster may lose protection.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host HA status: <strong>"Agent Unreachable"</strong> or <strong>"Configuration Error"</strong></li>
+                    <li>Repeated events: <strong>"HA agent on host has an error"</strong></li>
+                    <li>FDM process consumes high CPU then crashes</li>
+                    <li><code class="inline">/etc/init.d/fdm status</code> returns <strong>"not running"</strong></li>
+                    <li>Zdump/core files in <code class="inline">/var/core/</code> for fdm process</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Corrupted FDM configuration in <code class="inline">/etc/opt/vmware/fdm/</code></li>
+                    <li>Ramdisk full — <code class="inline">/var/run/</code> or <code class="inline">/tmp/</code> out of space</li>
+                    <li>ESXi patch incompatibility with FDM agent version</li>
+                    <li>SSL certificate mismatch between host and vCenter</li>
+                    <li>Management network IP conflict or VMkernel adapter issue</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>The FDM agent runs as a daemon on each ESXi host and is critical for HA operation. When the agent crashes due to corrupted configs, ramdisk pressure, or certificate issues, it may enter a restart loop — starting, failing, and restarting repeatedly. During this loop, the host is effectively unprotected. If vCenter cannot push a clean FDM configuration to the host, the loop persists until manual intervention.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check FDM status and crash logs</strong></p>
+                    <pre><code># SSH to the affected ESXi host:
+/etc/init.d/fdm status
+
+# Check for recent FDM crash/error entries:
+cat /var/log/fdm.log | grep -i "error\|crash\|fatal\|exception" | tail -30
+
+# Check for core dumps:
+ls -la /var/core/ | grep fdm
+
+# Check ramdisk usage:
+vdf -h</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify FDM configuration integrity</strong></p>
+                    <pre><code># Check FDM config directory:
+ls -la /etc/opt/vmware/fdm/
+
+# Verify SSL certificates:
+ls -la /etc/vmware/ssl/
+openssl x509 -in /etc/vmware/ssl/rui.crt -noout -dates
+
+# Check management VMkernel adapter:
+esxcli network ip interface list | grep -A5 vmk0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart FDM agent and clear stale config</strong></p>
+                    <pre><code># Stop FDM:
+/etc/init.d/fdm stop
+
+# Clear stale FDM state (safe to remove — vCenter will repush):
+rm -rf /etc/opt/vmware/fdm/*
+
+# Restart management agents:
+/etc/init.d/hostd restart
+/etc/init.d/vpxa restart
+
+# Start FDM:
+/etc/init.d/fdm start
+/etc/init.d/fdm status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reconfigure HA on the cluster from vCenter</strong></p>
+                    <pre><code># vSphere Client:
+# Right-click affected host → Reconfigure for vSphere HA
+
+# If that fails, disable/re-enable HA on the cluster:
+# Cluster → Configure → vSphere Availability → Edit
+# Uncheck HA → OK → Wait → Re-check HA → OK
+
+# Verify agent status after reconfiguration:
+# Host → Monitor → vSphere HA → Heartbeat
+# Status should show "Connected" and "Agent running"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Monitor FDM agent status via vCenter alarms for "HA agent error." After ESXi patches, verify FDM restarts cleanly. Keep ramdisk usage below 80% — use <code class="inline">vdf -h</code> regularly. If FDM crashes persist after config clearing and reconfiguration, collect a support bundle and open a VMware SR.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #25: VM Component Protection (VMCP)        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-25" data-type="fix" data-severity="high" data-keywords="vmcp vm component protection apd pdl storage failure all paths down permanent device loss das">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">25</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VM Component Protection (VMCP) Configuration</div>
+            <div class="kb-entry-subtitle">Protect VMs from APD/PDL storage failures — configure cluster-level VMCP response policies</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">VMCP</span>
+                <span class="tag">APD</span>
+                <span class="tag">PDL</span>
+                <span class="tag">Storage</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Objective:</strong> Configure VM Component Protection to automatically respond to APD (All Paths Down) and PDL (Permanent Device Loss) storage events, preventing prolonged VM unavailability during storage failures.</span>
+        </div>
+
+        <div class="section-label">Configuration Overview</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">APD (All Paths Down)</div>
+                <ul>
+                    <li><strong>What:</strong> All storage paths to a datastore are lost (potentially transient)</li>
+                    <li><strong>Conservative:</strong> Wait for timeout, then power off and restart VMs</li>
+                    <li><strong>Aggressive:</strong> Immediately power off and restart VMs</li>
+                    <li><strong>Default timeout:</strong> 140 seconds before APD is declared</li>
+                    <li><strong>VM recovery delay:</strong> Additional 180 seconds (configurable)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">PDL (Permanent Device Loss)</div>
+                <ul>
+                    <li><strong>What:</strong> Storage array confirms the device is permanently unavailable</li>
+                    <li><strong>Response:</strong> Power off and restart VMs on hosts with access</li>
+                    <li><strong>Detection:</strong> SCSI sense codes from the storage array</li>
+                    <li><strong>No delay:</strong> PDL is definitive — immediate action recommended</li>
+                    <li><strong>Requires:</strong> Storage array must return proper SCSI sense codes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable VMCP on the cluster</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → Edit
+# Under "Failure conditions and VM response":
+#   → Datastore with PDL: "Power off and restart VMs"
+#   → Datastore with APD:
+#       Response: "Power off and restart VMs (conservative)"
+#       Delay: 180 seconds (default)
+#       VM Storage Protection: "Disabled" / "Enabled"
+
+# PowerCLI — check current VMCP settings:
+Get-Cluster "ClusterName" | Get-View |
+  Select -ExpandProperty ConfigurationEx |
+  Select -ExpandProperty DasConfig |
+  Select -ExpandProperty DefaultVmSettings |
+  Select -ExpandProperty VmComponentProtectionSettings</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure advanced APD/PDL settings</strong></p>
+                    <pre><code># Advanced HA settings for VMCP tuning:
+# Cluster → Configure → vSphere Availability → Advanced Options
+
+# Key settings:
+# das.config.fdm.reportFailed.APDTimeout = 140
+#   (seconds before APD is reported — default 140)
+# vpxd.das.config.fdm.storageVMotion.APDTimeout = 180
+#   (seconds to wait before taking action on APD VMs)
+
+# Verify on ESXi host:
+esxcli storage core device list | grep -A3 "Status\|APD"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Test VMCP response with non-production VMs</strong></p>
+                    <pre><code># Test APD scenario (simulate by blocking storage paths):
+# 1. Identify test datastore and test VM
+# 2. Block iSCSI/FC paths at switch level (controlled test)
+# 3. Monitor: Cluster → Monitor → vSphere HA → VM Protection
+# 4. Verify VM is restarted on a host with storage access
+# 5. Restore paths and verify datastore reconnects
+
+# Check VMCP events:
+# vCenter → Monitor → Events → filter "VMCP\|APD\|PDL"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> APD "aggressive" mode can cause premature VM restarts during transient storage issues (e.g., storage firmware upgrade). Use "conservative" mode unless your environment requires minimal storage RTO. Always test VMCP behavior in a maintenance window before relying on it in production.</span>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Enable VMCP with "conservative" APD response for most environments. Enable PDL response as "Power off and restart VMs" — PDL is definitive and shouldn't be ignored. Ensure your storage array supports proper SCSI sense codes for PDL detection. Document your VMCP settings in your runbook.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #26: vSphere Fault Tolerance Setup & Troubleshooting -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-26" data-type="fix" data-severity="high" data-keywords="fault tolerance ft shadow vm zero downtime vcpu ft logging network secondary vm ft compatible">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">26</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSphere Fault Tolerance Setup &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">FT provides zero-downtime protection via shadow VM — requirements, limits, and common issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Fault Tolerance</span>
+                <span class="tag">FT</span>
+                <span class="tag">Shadow VM</span>
+                <span class="tag">Zero Downtime</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Objective:</strong> Configure and troubleshoot vSphere Fault Tolerance for mission-critical VMs that require zero downtime and zero data loss during host failures.</span>
+        </div>
+
+        <div class="section-label">Requirements &amp; Limits</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">FT Requirements</div>
+                <ul>
+                    <li><strong>CPUs:</strong> FT-compatible processors (Intel/AMD with hardware virtualization)</li>
+                    <li><strong>Network:</strong> Dedicated FT logging VMkernel adapter (10 GbE recommended)</li>
+                    <li><strong>Storage:</strong> Shared storage (VMFS, NFS, or vSAN) — no local disks</li>
+                    <li><strong>VM restrictions:</strong> No snapshots, no Storage vMotion, no hot-add CPU/memory</li>
+                    <li><strong>HA:</strong> vSphere HA must be enabled on the cluster</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">FT Limits (vSphere 7/8)</div>
+                <ul>
+                    <li><strong>Max vCPUs:</strong> Up to 8 vCPUs per FT-protected VM</li>
+                    <li><strong>Max memory:</strong> Up to 256 GB per FT VM</li>
+                    <li><strong>Max FT VMs per host:</strong> 8 (primary + secondary combined)</li>
+                    <li><strong>Disk format:</strong> Thick provisioned (eager zeroed) required</li>
+                    <li><strong>No USB/PCI passthrough</strong> on FT VMs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Setup &amp; Troubleshooting Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure FT logging network and enable FT</strong></p>
+                    <pre><code># 1. Create a dedicated FT logging VMkernel adapter:
+#    Host → Configure → Networking → VMkernel adapters → Add
+#    Enable "Fault Tolerance logging" service
+#    Assign to a dedicated 10 GbE portgroup
+
+# 2. Enable FT on the VM:
+#    Right-click VM → Fault Tolerance → Turn On Fault Tolerance
+
+# PowerCLI — check FT compatibility:
+Get-VM "CriticalVM" | Get-View |
+  Select @{N='FTCompatible';E={$_.Runtime.FaultToleranceState}}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Troubleshoot FT logging latency and bandwidth</strong></p>
+                    <pre><code># Check FT latency on the host:
+esxtop
+# Press 'n' for network view
+# Look at FT logging VMkernel: check %DRPTX, %DRPRX, MbRX/MbTX
+
+# Check FT status in vCenter:
+# VM → Summary → Fault Tolerance section
+# "Secondary VM" should show "Running" and "Up to date"
+
+# If FT latency &gt; 8ms, check:
+# - Network bandwidth (10 GbE recommended)
+# - NIC teaming / load balancing policy
+# - Physical switch MTU (jumbo frames if needed)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve common FT compatibility issues</strong></p>
+                    <pre><code># FT not available? Check these VM settings:
+# 1. Remove all snapshots: VM → Snapshots → Manage Snapshots → Delete All
+# 2. Convert disk to thick eager zeroed:
+vmkfstools -i "thin.vmdk" -d eagerzeroedthick "thick.vmdk"
+
+# 3. Verify CPU compatibility:
+esxcli hardware cpu global get
+
+# 4. Disable features incompatible with FT:
+# - No USB controllers, no PCI passthrough
+# - No Storage DRS, no VM encryption (pre-vSphere 7 U2)
+# - Remove CD/DVD devices if connected to client device</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Reserve FT for truly mission-critical VMs (DB servers, domain controllers) where even seconds of downtime are unacceptable. Use a dedicated 10 GbE network for FT logging — shared networks cause latency issues. Monitor FT latency via esxtop and set vCenter alarms for FT degradation. For most workloads, HA with VM Monitoring provides sufficient protection at lower resource cost.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #27: HA Network Partition — Split Brain     -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-27" data-type="break" data-severity="critical" data-keywords="ha network partition split brain multiple masters isolation management network das isolation address">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">27</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HA Network Partition — Split Brain</div>
+            <div class="kb-entry-subtitle">Management network partition causes multiple HA masters — VMs may appear on both partitions simultaneously</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">HA</span>
+                <span class="tag">Split Brain</span>
+                <span class="tag">Network Partition</span>
+                <span class="tag">Isolation</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Split brain is the most dangerous HA failure mode. VMs may run simultaneously on two different hosts, causing data corruption on shared storage. VMDK files may become locked by multiple hosts, leading to irreversible data loss.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Multiple HA master hosts detected in the cluster</li>
+                    <li>VM appears <strong>"Powered On"</strong> on two different hosts simultaneously</li>
+                    <li>VMDK lock errors: <strong>"Failed to lock the file"</strong></li>
+                    <li>FDM log: <code class="inline">Network partition detected</code></li>
+                    <li>Hosts show <strong>"Network Isolated"</strong> in HA status</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Physical switch failure splitting management VLAN</li>
+                    <li>Routing change breaking management network reachability</li>
+                    <li>NIC teaming failure on management VMkernel adapter</li>
+                    <li>Isolation address unreachable (misconfigured gateway/IP)</li>
+                    <li>Firewall or ACL change blocking FDM traffic (port 8182)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>When the management network is partitioned, hosts in each partition cannot communicate. Each partition elects its own HA master. If the isolation response is set to <strong>"Leave powered on"</strong>, isolated hosts keep their VMs running while the master in the other partition also restarts those VMs — resulting in the same VM running on two hosts. Both instances write to the same VMDK, corrupting the virtual disk. This is the <strong>split brain</strong> scenario — the most destructive HA failure mode.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Detect network partition and multiple masters</strong></p>
+                    <pre><code># Check FDM logs for partition events:
+cat /var/log/fdm.log | grep -i "partition\|split\|multiple master\|isolat" | tail -30
+
+# Check which host is HA master:
+# On each host:
+cat /var/log/fdm.log | grep "I am the master" | tail -5
+
+# If more than one host claims master → split brain active!</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check isolation address and network connectivity</strong></p>
+                    <pre><code># Verify isolation address configuration:
+vim-cmd hostsvc/advopt/view das.isolationAddress0
+vim-cmd hostsvc/advopt/view das.useDefaultIsolationAddress
+
+# Test isolation address reachability:
+vmkping -I vmk0 &lt;isolation-address-ip&gt;
+
+# Check management network NIC status:
+esxcli network nic list
+esxcli network vswitch standard list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore network connectivity immediately</strong></p>
+                    <pre><code># Priority 1: Restore the physical network
+# - Check switch ports, VLANs, uplinks for management network
+# - Verify trunk ports are passing management VLAN
+# - Check NIC teaming failover status on each host
+
+# From affected host — verify connectivity:
+vmkping -I vmk0 &lt;vcenter-ip&gt;
+vmkping -I vmk0 &lt;other-host-mgmt-ip&gt;
+
+# Restart networking if needed:
+esxcli network restart</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Resolve split-brain VMs and reconfigure HA</strong></p>
+                    <pre><code># If a VM is running on two hosts:
+# 1. Identify which instance has the latest state (check VM console)
+# 2. Power off the STALE instance via direct host connection
+#    (DCUI or direct ESXi vSphere Client)
+# 3. Verify VMDK lock is released:
+vmkfstools -D /vmfs/volumes/datastore/vm/vm.vmdk
+
+# After network is restored — reconfigure HA:
+# Cluster → Right-click → Reconfigure for vSphere HA
+
+# Verify single master:
+cat /var/log/fdm.log | grep "I am the master" | tail -5</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure isolation address and response to prevent recurrence</strong></p>
+                    <pre><code># Set proper isolation address (NOT the default gateway alone):
+# Cluster → Configure → vSphere Availability → Advanced Options
+# Add:
+#   das.isolationAddress0 = 10.0.0.1  (gateway)
+#   das.isolationAddress1 = 10.0.0.2  (secondary reliable IP)
+#   das.useDefaultIsolationAddress = false
+
+# Set isolation response to "Shut down and restart":
+# Cluster → Configure → vSphere Availability → Edit
+# Host Isolation Response: "Shut down and restart VMs"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Critical Warning:</strong> Never set isolation response to "Leave powered on" unless you have a specific reason and accept the split-brain risk. VMDK corruption from split brain is often unrecoverable. Always use "Shut down and restart VMs" or "Power off and restart VMs" to prevent dual-run scenarios.</span>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use redundant management network (NIC teaming with active/standby or LACP). Configure multiple isolation addresses. Set isolation response to "Shut down and restart VMs." Ensure heartbeat datastores are on separate storage paths from management network. Regularly test HA isolation response in non-production clusters.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #28: Proactive HA with DRS Integration     -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-28" data-type="fix" data-severity="medium" data-keywords="proactive ha drs integration hardware health ipmi ilo idrac evacuation degrading host provider">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">28</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Proactive HA with DRS Integration</div>
+            <div class="kb-entry-subtitle">Hardware health monitoring triggers automated VM evacuations before host failure — IPMI/iLO/iDRAC integration</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Proactive HA</span>
+                <span class="tag">DRS</span>
+                <span class="tag">Hardware Health</span>
+                <span class="tag">IPMI</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Objective:</strong> Configure Proactive HA to detect degrading hardware conditions (fan failures, power supply issues, memory errors) and automatically evacuate VMs via DRS before the host fails completely.</span>
+        </div>
+
+        <div class="section-label">Configuration Overview</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">How It Works</div>
+                <ul>
+                    <li>Hardware health providers (Dell iDRAC, HP iLO, vendor CIM) report component health</li>
+                    <li>vCenter receives health status: <strong>Green → Yellow → Red</strong></li>
+                    <li>When a host transitions to <strong>Yellow (degraded)</strong>, Proactive HA triggers</li>
+                    <li>DRS migrates VMs off the degrading host to healthy hosts</li>
+                    <li>Host enters <strong>quarantine</strong> or <strong>maintenance mode</strong> for repair</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">Supported Health Providers</div>
+                <ul>
+                    <li><strong>Dell:</strong> OpenManage Integration for VMware vCenter (OMIVV)</li>
+                    <li><strong>HPE:</strong> Agentless Management Service (AMS) + iLO Amplifier</li>
+                    <li><strong>Lenovo:</strong> XClarity Integrator for VMware vCenter</li>
+                    <li><strong>Cisco:</strong> UCS Plugin for vCenter</li>
+                    <li><strong>Generic:</strong> CIM-based hardware providers on ESXi</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Install health provider and enable Proactive HA</strong></p>
+                    <pre><code># 1. Install the vendor health provider plugin in vCenter:
+#    Administration → Solutions → vCenter Server Extensions
+#    Deploy Dell OMIVV / HPE Amplifier / Lenovo XClarity
+
+# 2. Enable Proactive HA:
+#    Cluster → Configure → Proactive HA → Edit
+#    Check "Proactive HA Enabled"
+#    Automation Level: "Automated" (recommended)
+#    Remediation: "Quarantine mode" or "Maintenance mode"
+
+# 3. Verify health provider registration:
+#    Cluster → Configure → Proactive HA → Providers
+#    Status should show "Registered" for your vendor</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure failure conditions and host monitoring</strong></p>
+                    <pre><code># Proactive HA failure conditions:
+# Cluster → Configure → Proactive HA → Failure Conditions
+# Map hardware component types to responses:
+#   - Fan failure → Quarantine mode (moderate)
+#   - Power supply failure → Maintenance mode (severe)
+#   - Memory error → Maintenance mode (severe)
+#   - Storage controller → Maintenance mode (severe)
+
+# Verify DRS is set to "Fully Automated" for evacuation:
+Get-Cluster "ClusterName" | Select DrsEnabled, DrsAutomationLevel
+# DrsAutomationLevel should be "FullyAutomated"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Test and validate Proactive HA response</strong></p>
+                    <pre><code># Simulate hardware degradation (vendor-specific):
+# Dell: OMIVV → Test Hardware Alert
+# HPE: iLO → simulate fan failure via RIBCL
+
+# Monitor response:
+# vCenter → Monitor → Tasks → look for DRS migration events
+# Host → Monitor → Hardware Status → check component health
+
+# Verify evacuation:
+Get-VMHost "affected-host" | Get-VM | Select Name, PowerState, VMHost
+# All VMs should have migrated to other hosts</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Proactive HA requires DRS in "Fully Automated" mode to evacuate VMs without manual approval. Use "Quarantine mode" for moderate failures (allows existing VMs to stay but prevents new placement) and "Maintenance mode" for severe failures (forces full evacuation). Ensure vendor health provider is compatible with your ESXi and vCenter version. Test hardware health alerts regularly.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #29: HA Isolation Response Policy           -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-29" data-type="fix" data-severity="high" data-keywords="ha isolation response policy power off shut down leave powered on isolation address gateway das network connectivity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">29</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HA Isolation Response Policy Configuration</div>
+            <div class="kb-entry-subtitle">Configure what happens when a host loses all network connectivity — power off, shut down, or leave powered on</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">HA</span>
+                <span class="tag">Isolation</span>
+                <span class="tag">Policy</span>
+                <span class="tag">Network</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Objective:</strong> Configure the HA isolation response policy to ensure VMs are properly handled when a host is network-isolated, balancing between data protection and availability.</span>
+        </div>
+
+        <div class="section-label">Isolation Response Options</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Available Policies</div>
+                <ul>
+                    <li><strong>Power off and restart VMs:</strong> Hard power off, then restart on other hosts (fastest, but ungraceful)</li>
+                    <li><strong>Shut down and restart VMs:</strong> Guest OS shutdown via VMware Tools, then restart (recommended)</li>
+                    <li><strong>Leave powered on:</strong> Do nothing — VMs stay running on isolated host (split-brain risk!)</li>
+                    <li><strong>Disabled:</strong> VM-level override to exempt specific VMs from cluster policy</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Isolation Detection</div>
+                <ul>
+                    <li><strong>Default:</strong> Ping the default gateway (management network gateway)</li>
+                    <li><strong>Custom:</strong> <code class="inline">das.isolationAddress0</code> through <code class="inline">das.isolationAddress9</code></li>
+                    <li><strong>Logic:</strong> If all isolation addresses are unreachable AND no management network heartbeats → host is isolated</li>
+                    <li><strong>Datastore heartbeats:</strong> Still checked before declaring full isolation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Set isolation response policy and custom addresses</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → Edit
+# Host Isolation Response: "Shut down and restart VMs" (recommended)
+
+# Configure custom isolation addresses:
+# Cluster → Configure → vSphere Availability → Advanced Options → Add:
+das.isolationAddress0 = 10.0.0.1     # Default gateway
+das.isolationAddress1 = 10.0.0.2     # Secondary switch/router
+das.isolationAddress2 = 10.0.0.254   # Out-of-band management IP
+das.useDefaultIsolationAddress = false  # Use custom only</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure per-VM isolation response overrides</strong></p>
+                    <pre><code># For VMs that should NOT be shut down during isolation:
+# Cluster → Configure → vSphere Availability → VM Overrides → Add
+# Select VM → Host Isolation Response: "Leave powered on" or "Disabled"
+
+# Use overrides for:
+# - VMs that handle their own clustering (e.g., Oracle RAC, WSFC)
+# - Infrastructure VMs that must stay running (DNS, AD)
+
+# PowerCLI — list current VM overrides:
+$cluster = Get-Cluster "ClusterName"
+(Get-View $cluster).ConfigurationEx.DasVmConfig |
+  Select @{N='VM';E={(Get-View $_.Key).Name}},
+    @{N='IsolationResponse';E={$_.DasSettings.IsolationResponse}} |
+  Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify isolation address reachability from all hosts</strong></p>
+                    <pre><code># SSH to each ESXi host and verify:
+vmkping -I vmk0 10.0.0.1     # Isolation address 0
+vmkping -I vmk0 10.0.0.2     # Isolation address 1
+vmkping -I vmk0 10.0.0.254   # Isolation address 2
+
+# Verify settings applied:
+vim-cmd hostsvc/advopt/view das.isolationAddress0
+vim-cmd hostsvc/advopt/view das.isolationAddress1
+vim-cmd hostsvc/advopt/view das.useDefaultIsolationAddress</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Warning:</strong> "Leave powered on" should only be used for specific VM overrides, never as the cluster default. This setting creates split-brain risk where the same VM runs on two hosts. Always prefer "Shut down and restart VMs" which gracefully shuts down via VMware Tools and restarts on a healthy host.</span>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Set cluster default to "Shut down and restart VMs" — this gives guest OS a chance to flush writes. Use at least 2 custom isolation addresses on different network paths. Ensure VMware Tools is installed and running on all VMs for graceful shutdown. Test isolation response in a maintenance window by disconnecting a host's management NIC. Override "Leave powered on" only for VMs with their own clustering mechanisms.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #30: HA Restart Priority & VM Override      -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-30" data-type="fix" data-severity="medium" data-keywords="ha restart priority vm override disabled low medium high highest vm monitoring application monitoring heartbeat orchestrated restart">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">30</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">HA Restart Priority &amp; VM Override</div>
+            <div class="kb-entry-subtitle">Control VM restart order after failure — priorities, overrides, and VM/application monitoring configuration</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">HA</span>
+                <span class="tag">Restart Priority</span>
+                <span class="tag">VM Monitoring</span>
+                <span class="tag">Override</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Objective:</strong> Configure HA restart priorities to ensure critical infrastructure VMs (domain controllers, database servers, DNS) start first after a host failure, with proper VM monitoring for ongoing health checks.</span>
+        </div>
+
+        <div class="section-label">Restart Priority Levels</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title green">Priority Levels</div>
+                <ul>
+                    <li><strong>Highest:</strong> Infrastructure VMs — AD/DNS, vCenter (restart first)</li>
+                    <li><strong>High:</strong> Critical business VMs — database servers, app servers</li>
+                    <li><strong>Medium:</strong> Standard workloads (default for all VMs)</li>
+                    <li><strong>Low:</strong> Development/test VMs, non-critical workloads</li>
+                    <li><strong>Disabled:</strong> VM will NOT be restarted by HA</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">VM Monitoring Options</div>
+                <ul>
+                    <li><strong>VM Monitoring:</strong> Checks VMware Tools heartbeat — restarts VM if heartbeat stops</li>
+                    <li><strong>Application Monitoring:</strong> Uses SDK inside guest to monitor app health</li>
+                    <li><strong>Sensitivity:</strong> Low (120s), Medium (60s), High (30s) — heartbeat failure window</li>
+                    <li><strong>Max resets:</strong> Number of resets in a time window before giving up</li>
+                    <li><strong>Restart condition:</strong> VM monitoring checks for "blue screen" or guest crash</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Configuration Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Set VM restart priorities via VM overrides</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → VM Overrides → Add
+# Select VM → VM Restart Priority:
+#   AD/DNS server → "Highest"
+#   Database server → "High"
+#   App servers → "Medium" (default)
+#   Dev/Test VMs → "Low"
+#   Template VMs → "Disabled"
+
+# PowerCLI — set restart priority:
+$cluster = Get-Cluster "ClusterName"
+$vm = Get-VM "DC01"
+$spec = New-Object VMware.Vim.ClusterConfigSpecEx
+$vmConfig = New-Object VMware.Vim.ClusterDasVmConfigSpec
+$vmConfig.Operation = "add"
+$vmConfig.Info = New-Object VMware.Vim.ClusterDasVmConfigInfo
+$vmConfig.Info.Key = $vm.ExtensionData.MoRef
+$vmConfig.Info.DasSettings = New-Object VMware.Vim.ClusterDasVmSettings
+$vmConfig.Info.DasSettings.RestartPriority = "highest"
+$spec.DasVmConfigSpec += $vmConfig
+$cluster.ExtensionData.ReconfigureComputeResource($spec, $true)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Enable VM Monitoring for guest-level health checks</strong></p>
+                    <pre><code># vSphere Client:
+# Cluster → Configure → vSphere Availability → Edit
+# VM Monitoring → "VM Monitoring Only" or "VM and Application Monitoring"
+# Monitoring sensitivity: "Medium" (60 second heartbeat window)
+
+# VM Monitoring settings:
+#   Failure interval: 30 seconds (time between heartbeat checks)
+#   Minimum uptime: 120 seconds (grace period after power on)
+#   Maximum per-VM resets: 3 (within the time window)
+#   Maximum resets time window: 1 hour
+
+# Verify VMware Tools heartbeat is working:
+Get-VM "CriticalVM" | Select Name,
+  @{N='ToolsStatus';E={$_.ExtensionData.Guest.ToolsStatus}},
+  @{N='Heartbeat';E={$_.ExtensionData.GuestHeartbeatStatus}}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure orchestrated restart with VM dependencies</strong></p>
+                    <pre><code># For VMs with startup dependencies (e.g., DB must start before app):
+# Cluster → Configure → VM/Host Rules → Add Rule
+
+# Example orchestrated restart order:
+#   1. "Highest" priority: DC01, DNS01 (start first)
+#   2. "High" priority: SQL01 (waits for Highest VMs to be running)
+#   3. "Medium" priority: AppServer01 (waits for High VMs)
+
+# Use VM-VM dependency rules:
+# Cluster → Configure → vSphere Availability → VM Overrides
+# Set "Orchestrated Restart" dependencies:
+#   AppServer01 depends on SQL01
+#   SQL01 depends on DC01
+
+# Verify restart order:
+# vCenter → Monitor → vSphere HA → Configuration Issues
+# Should show no warnings about restart order</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always set infrastructure VMs (AD, DNS, DHCP, vCenter) to "Highest" restart priority. Enable VM Monitoring with "Medium" sensitivity for production VMs — this catches guest OS crashes without false positives. Ensure VMware Tools is installed and up-to-date on all VMs for heartbeat monitoring. Use orchestrated restart for multi-tier applications where startup order matters. Review and update VM overrides quarterly as workloads change.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 3: HA &amp; Fault Tolerance</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase2.html">&larr; Phase 2</a> &nbsp;|&nbsp; <a href="phase4.html">Next: Phase 4 &rarr;</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-21)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 1: Top 10 Common Issues</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 1 — Top 10 Common Issues</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html" class="active">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search HA, DRS, vMotion, PSOD, vCenter, certificates, ESXi..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Total Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">7</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">3</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 1</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #1: vSphere HA Failover Not Triggering    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-1" data-type="break" data-severity="critical" data-keywords="ha failover fdm heartbeat isolation address restart priority admission control das">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">1</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSphere HA Failover Not Triggering</div>
+            <div class="kb-entry-subtitle">VMs not restarted after host failure — FDM agent, heartbeat datastores, and isolation address misconfiguration</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">HA</span>
+                <span class="tag">FDM</span>
+                <span class="tag">Failover</span>
+                <span class="tag">Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs remain powered off after a host failure. Production workloads experience unplanned downtime with no automatic recovery. SLA breach risk is immediate.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host fails but VMs are <strong>not restarted</strong> on surviving hosts</li>
+                    <li>vSphere Client shows HA status as <strong>"Misconfigured"</strong> or <strong>"Agent unreachable"</strong></li>
+                    <li>HA events in vCenter: <strong>"vSphere HA failover failed"</strong></li>
+                    <li>Heartbeat datastore count shows <strong>0 or 1</strong> (minimum 2 recommended)</li>
+                    <li>FDM log: <code class="inline">Isolated from all other nodes</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>FDM agent crashed or failed to start on the master host</li>
+                    <li>No heartbeat datastores configured (only network heartbeat used)</li>
+                    <li>Isolation address unreachable — host declares itself isolated</li>
+                    <li>Admission control blocks VM restart due to insufficient resources</li>
+                    <li>VM restart priority set to <strong>"Disabled"</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vSphere HA relies on the <strong>FDM (Fault Domain Manager)</strong> agent running on each host. A master host monitors slave hosts via network heartbeats and datastore heartbeats. When the master detects a host failure, it initiates VM restarts on surviving hosts. If the FDM agent is down, heartbeat datastores are missing, or admission control is too strict, the failover chain breaks and VMs remain offline.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check FDM agent status on each host</strong></p>
+                    <pre><code># SSH to each ESXi host:
+/etc/init.d/fdm status
+
+# Check FDM logs for errors:
+cat /var/log/fdm.log | grep -i "error\|fail\|isolat" | tail -30</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify HA advanced settings and isolation address</strong></p>
+                    <pre><code># Check HA isolation response and address:
+esxcli system settings advanced list -o /das/
+
+# Key settings to verify:
+# das.isolationAddress0 — should be a reliable gateway IP
+# das.useDefaultIsolationAddress — verify true/false</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check heartbeat datastore configuration</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Configure → vSphere Availability → Heartbeat Datastores
+# Verify at least 2 heartbeat datastores are listed
+
+# PowerCLI:
+Get-Cluster "ClusterName" | Get-HASetting | Select *heartbeat*</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart FDM agent on affected hosts</strong></p>
+                    <pre><code># SSH to the ESXi host:
+/etc/init.d/fdm restart
+
+# Verify agent is running:
+/etc/init.d/fdm status
+# Expected: "VMware Fault Domain Manager is running"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reconfigure HA on the cluster</strong></p>
+                    <pre><code># PowerCLI — force HA reconfiguration on all hosts:
+$cluster = Get-Cluster "ClusterName"
+$cluster | Get-VMHost | ForEach-Object {
+    $_ | Set-VMHost -State "Connected" -Confirm:$false
+}
+
+# Or from vSphere Client:
+# Right-click host → Reconfigure for vSphere HA</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure isolation address and admission control</strong></p>
+                    <pre><code># Set a reliable isolation address (e.g., default gateway):
+# Cluster → Configure → vSphere Availability → Advanced Options
+# Add: das.isolationAddress0 = 10.0.0.1
+
+# Adjust admission control:
+# Cluster → Configure → vSphere Availability → Admission Control
+# Set "Host failures cluster tolerates" = 1
+# Choose "Cluster resource percentage" or "Dedicated failover hosts"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always configure at least 2 heartbeat datastores. Set a custom isolation address that is highly available (e.g., your default gateway). Test HA failover in a maintenance window by shutting down a host gracefully. Verify VM restart priorities are set for critical VMs.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #2: DRS Not Balancing VMs Across Hosts    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-2" data-type="break" data-severity="high" data-keywords="drs load balance migration threshold affinity rules resource pool automation level imbalance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">2</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">DRS Not Balancing VMs Across Hosts</div>
+            <div class="kb-entry-subtitle">VMs remain concentrated on one host despite resource imbalance — DRS automation, affinity rules, or threshold issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">DRS</span>
+                <span class="tag">Load Balance</span>
+                <span class="tag">Resource Pool</span>
+                <span class="tag">Cluster</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Uneven resource utilization causes hot spots. Overloaded hosts experience CPU/memory contention, leading to VM performance degradation and potential HA admission control failures.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>One host at 85%+ CPU/memory while others sit at 20%</li>
+                    <li>DRS recommendations appear but are <strong>not applied</strong></li>
+                    <li>vCenter events: <strong>"DRS fault"</strong> or <strong>"Cannot move VM"</strong></li>
+                    <li>VMs pinned by <strong>affinity/anti-affinity rules</strong></li>
+                    <li>Resource pool limits preventing migration</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>DRS set to <strong>"Manual"</strong> or <strong>"Partially Automated"</strong></li>
+                    <li>Migration threshold too conservative (level 1–2)</li>
+                    <li>VM-Host affinity rules constraining placement</li>
+                    <li>vMotion network not configured or broken</li>
+                    <li>Resource pool limits/reservations blocking migration</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>DRS calculates load balance recommendations every 5 minutes based on CPU and memory demand. When the automation level is set to <strong>Manual</strong>, recommendations are generated but never executed. Affinity rules and resource pool reservations further constrain DRS from migrating VMs. A conservative migration threshold (level 1) means DRS only moves VMs under extreme imbalance, allowing moderate hot spots to persist.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check DRS configuration and recommendations</strong></p>
+                    <pre><code># PowerCLI — Check DRS settings:
+Get-Cluster "ClusterName" | Select Name, DrsEnabled, DrsAutomationLevel
+
+# Get pending DRS recommendations:
+Get-DrsRecommendation -Cluster "ClusterName" | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Review DRS faults in vCenter events</strong></p>
+                    <pre><code># PowerCLI — Check for DRS faults:
+Get-VIEvent -Entity (Get-Cluster "ClusterName") -MaxSamples 100 |
+  Where-Object { $_.FullFormattedMessage -match "DRS|migration" } |
+  Select CreatedTime, FullFormattedMessage | Format-Table -Wrap
+
+# vCenter UI: Cluster → Monitor → Events → Filter "DRS"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check affinity rules and resource pool limits</strong></p>
+                    <pre><code># PowerCLI — List all DRS rules:
+Get-DrsRule -Cluster "ClusterName" | Format-Table Name, Enabled, Type, VMIds
+
+# Check resource pool limits:
+Get-ResourcePool -Location (Get-Cluster "ClusterName") |
+  Select Name, CpuLimitMHz, MemLimitGB, CpuReservationMHz, MemReservationGB</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Set DRS to Fully Automated with appropriate threshold</strong></p>
+                    <pre><code># PowerCLI:
+Set-Cluster "ClusterName" -DrsAutomationLevel FullyAutomated -Confirm:$false
+
+# vCenter UI:
+# Cluster → Configure → vSphere DRS → Edit
+# Automation Level: Fully Automated
+# Migration Threshold: 3 (default, recommended for most environments)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Review and adjust affinity rules</strong></p>
+                    <pre><code># List conflicting rules:
+Get-DrsRule -Cluster "ClusterName" | Where { $_.Enabled } |
+  Format-Table Name, Type, @{N="VMs";E={($_.VMIds | ForEach { (Get-VM -Id $_).Name }) -join ", "}}
+
+# Disable overly restrictive rules:
+Get-DrsRule -Cluster "ClusterName" -Name "Rule-Name" |
+  Set-DrsRule -Enabled $false -Confirm:$false</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Remove resource pool limits blocking migration</strong></p>
+                    <pre><code># PowerCLI — Remove CPU/Memory limits from resource pools:
+Get-ResourcePool -Location (Get-Cluster "ClusterName") -Name "Problem-RP" |
+  Set-ResourcePool -CpuLimitMHz $null -MemLimitGB $null -Confirm:$false
+
+# Verify vMotion network is functional:
+# Test from ESXi: vmkping -I vmk1 &lt;destination_host_vmotion_ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use DRS migration threshold level 3 (default) for most clusters. Avoid creating VM-Host affinity rules unless absolutely required (e.g., licensing). Monitor DRS imbalance via vCenter performance charts. Use Predictive DRS with vRealize Operations for proactive balancing.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #3: vMotion Failure — Migration Timeout   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-3" data-type="break" data-severity="critical" data-keywords="vmotion migration timeout network vmkernel mtu evc cpu compatibility vmk firewall vlan">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">3</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vMotion Failure — Migration Timeout</div>
+            <div class="kb-entry-subtitle">VM migration fails with timeout or network error — VMkernel, MTU, firewall, and CPU compatibility issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">vMotion</span>
+                <span class="tag">Migration</span>
+                <span class="tag">Network</span>
+                <span class="tag">EVC</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> DRS cannot balance the cluster. Maintenance mode operations are blocked. HA failover capacity is reduced. Patch cycles stall because hosts cannot be evacuated.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vMotion fails at <strong>10%</strong> or <strong>90%</strong> with timeout</li>
+                    <li>Error: <strong>"A general system error occurred: Timed out waiting for migration data"</strong></li>
+                    <li>Error: <strong>"The source detected that the destination failed to resume"</strong></li>
+                    <li>vpxd.log: <code class="inline">Migration to host X failed with error VMotionInterfaceNotConfigured</code></li>
+                    <li>Migration starts but <strong>never completes</strong> — stalls at pre-copy phase</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>No vMotion VMkernel adapter configured on source or destination</li>
+                    <li>MTU mismatch between hosts (9000 vs 1500)</li>
+                    <li>vMotion VLAN not trunked on physical switch</li>
+                    <li>CPU incompatibility — EVC mode not enabled or mismatched</li>
+                    <li>ESXi firewall blocking vMotion ports (8000, 8200)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vMotion transfers a VM's live memory state from one host to another over a dedicated VMkernel adapter. The process uses an iterative pre-copy mechanism: it copies all memory pages, then re-copies only the changed (dirty) pages. If the network is too slow (MTU mismatch, wrong VLAN), the dirty page rate exceeds the transfer rate, and the migration times out. If there's no vMotion VMkernel at all, the operation fails immediately. CPU incompatibility prevents the VM from resuming on the destination host.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify vMotion VMkernel exists on both hosts</strong></p>
+                    <pre><code># On each ESXi host:
+esxcli network ip interface list
+# Look for a vmk with "VMotion" service enabled
+
+# Check which services are enabled:
+esxcli network ip interface tag get -i vmk1
+# Should show: VMotion</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Test vMotion connectivity and MTU</strong></p>
+                    <pre><code># Ping with jumbo frames from source to destination:
+vmkping -I vmk1 -d -s 8972 &lt;destination_vmotion_ip&gt;
+# -d = don't fragment  -s 8972 = test 9000 MTU
+
+# If this fails, check physical switch MTU and VLAN trunk:
+esxcfg-vmknic -l
+# Compare MTU values across all hosts</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check CPU compatibility and EVC mode</strong></p>
+                    <pre><code># PowerCLI — Check EVC mode:
+Get-Cluster "ClusterName" | Select Name, EVCMode
+
+# Check individual host CPU:
+Get-VMHost | Select Name, ProcessorType, MaxEVCMode
+
+# From vCenter UI:Cluster → Configure → VMware EVC
+# All hosts must support the configured EVC baseline</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Create or fix vMotion VMkernel adapter</strong></p>
+                    <pre><code># If vMotion vmk is missing, create one:
+esxcli network ip interface add -i vmk2 -p "vMotion"
+
+# Enable vMotion service on existing vmk:
+# vCenter UI: Host → Configure → Networking → VMkernel adapters
+# Edit vmk → Enable "vMotion" service
+
+# PowerCLI:
+New-VMHostNetworkAdapter -VMHost "esxi01" -PortGroup "vMotion-PG" `
+  -VirtualSwitch "vSwitch1" -IP "10.10.20.11" -SubnetMask "255.255.255.0" `
+  -VMotionEnabled $true</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Fix MTU mismatch across the path</strong></p>
+                    <pre><code># Set consistent MTU on all ESXi hosts:
+esxcli network ip interface set -i vmk1 -m 9000
+
+# Set on vSwitch or dvSwitch:
+esxcli network vswitch standard set -v vSwitch1 -m 9000
+
+# IMPORTANT: Also configure physical switches:
+# Cisco: interface GigabitEthernet1/0/1 → mtu 9216
+# Verify end-to-end with vmkping -d -s 8972</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Enable EVC mode for mixed-CPU clusters</strong></p>
+                    <pre><code># PowerCLI — Set EVC mode:
+Set-Cluster "ClusterName" -EVCMode "intel-broadwell" -Confirm:$false
+# Choose the baseline matching your OLDEST host CPU generation
+
+# Prerequisites:
+# - All VMs must be powered off or at a compatible CPU level
+# - DRS must be enabled on the cluster
+# - No VM can expose CPU features above the EVC baseline</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>EVC mode can only be raised to a higher baseline with VMs powered off. Plan a maintenance window if changing EVC on a production cluster.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use dedicated vMotion NICs with jumbo frames (MTU 9000) for best performance. Enable EVC at cluster creation time before adding hosts. Use multi-NIC vMotion for large VMs to reduce migration time. Test vMotion after any network change.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #4: ESXi Host Disconnected from vCenter   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-4" data-type="break" data-severity="high" data-keywords="esxi host disconnected not responding vpxa management network dns certificate port 443 902 agent">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">4</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Host Disconnected from vCenter</div>
+            <div class="kb-entry-subtitle">Host shows "Disconnected" or "Not Responding" — vpxa agent, management network, DNS, and certificate issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESXi</span>
+                <span class="tag">vCenter</span>
+                <span class="tag">vpxa</span>
+                <span class="tag">Network</span>
+                <span class="tag">Certificates</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vCenter cannot manage the host. DRS, HA monitoring, provisioning, and vMotion are unavailable for VMs on this host. Existing VMs continue running but cannot be managed remotely.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host shows <strong>"Disconnected"</strong> or <strong>"Not Responding"</strong> in vCenter inventory</li>
+                    <li>Cannot perform any operations on VMs via vCenter</li>
+                    <li>vpxa.log: <code class="inline">Failed to connect to vCenter</code></li>
+                    <li>Direct ESXi host UI (DCUI/SSH) works fine — host is operational</li>
+                    <li>vCenter alarm: <strong>"Host connection lost"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vpxa agent crashed or stopped on the ESXi host</li>
+                    <li>Management network (vmk0) IP conflict or link down</li>
+                    <li>DNS resolution failure — host cannot resolve vCenter FQDN</li>
+                    <li>Expired or mismatched SSL certificates</li>
+                    <li>Firewall blocking port 443 (HTTPS) or 902 (heartbeat)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>The <strong>vpxa</strong> agent on each ESXi host maintains a persistent connection to vCenter Server (vpxd). This connection uses port 443 for API communication and port 902 for heartbeats. When vpxa cannot reach vCenter — due to network issues, DNS failure, certificate problems, or agent crashes — vCenter marks the host as disconnected. The host is fully operational; it just can't be managed centrally.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vpxa agent status and restart if needed</strong></p>
+                    <pre><code># SSH to the ESXi host:
+/etc/init.d/vpxa status
+/etc/init.d/vpxa restart
+
+# Check vpxa logs:
+tail -50 /var/log/vpxa.log
+# Look for: "SSL handshake failed", "Connection refused", "DNS lookup failed"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify management network and DNS</strong></p>
+                    <pre><code># Check management VMkernel:
+esxcli network ip interface list
+# vmk0 should have correct IP and be Up
+
+# Test DNS resolution:
+nslookup vcenter.domain.com
+# Must resolve to the correct vCenter IP
+
+# Test connectivity to vCenter:
+nc -z vcenter.domain.com 443
+nc -z vcenter.domain.com 902</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check active network connections</strong></p>
+                    <pre><code># List all active connections:
+esxcli network ip connection list | grep -E "443|902"
+# Verify connections to vCenter IP exist
+
+# Check firewall rules:
+esxcli network firewall ruleset list | grep -i vpxa
+esxcli network firewall ruleset set -e true -r vpxHeartbeats</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Reconnect host from vCenter</strong></p>
+                    <pre><code># vCenter UI: Right-click the disconnected host → Connection → Connect
+# If prompted, re-enter root credentials
+
+# PowerCLI:
+Set-VMHost -VMHost "esxi-host01.domain.com" -State "Connected" -Confirm:$false</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Fix DNS and network connectivity</strong></p>
+                    <pre><code># Fix DNS on the ESXi host:
+esxcli network ip dns server add -s 10.0.0.10
+esxcli network ip dns server list
+
+# Fix management network if IP is wrong:
+esxcli network ip interface ipv4 set -i vmk0 -I 10.0.1.50 -N 255.255.255.0 -t static
+
+# Verify default gateway:
+esxcfg-route -l
+esxcfg-route 10.0.1.1</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Re-trust certificates if SSL handshake fails</strong></p>
+                    <pre><code># Remove and re-add the host to vCenter (last resort):
+# 1. Disconnect host in vCenter
+# 2. Remove host from inventory
+# 3. Re-add host with FQDN
+
+# Or reset vpxa certificate trust:
+/etc/init.d/vpxa stop
+rm /etc/vmware/vpxa/vpxa.cfg
+/etc/init.d/vpxa start
+# Then reconnect from vCenter (will re-push config)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Removing and re-adding a host will remove it from DRS/HA. VMs continue running but must be re-registered. Use this only as a last resort.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always add ESXi hosts to vCenter using FQDN (not IP). Ensure forward and reverse DNS works for all hosts and vCenter. Monitor vpxa agent health via vCenter alarms. Keep certificates up to date — use VMCA or a trusted CA.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #5: PSOD — Purple Screen of Death         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-5" data-type="break" data-severity="critical" data-keywords="psod purple screen death crash coredump vmkernel driver firmware hardware kernel panic backtrace stack">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">5</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">PSOD — Purple Screen of Death Recovery</div>
+            <div class="kb-entry-subtitle">Host crashes with purple diagnostic screen — coredump analysis, driver/firmware issues, and hardware failure</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">PSOD</span>
+                <span class="tag">ESXi</span>
+                <span class="tag">Crash</span>
+                <span class="tag">Hardware</span>
+                <span class="tag">Driver</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Complete host failure. ALL VMs on the host are instantly terminated. HA must restart VMs on other hosts. Potential data corruption if VMs had active I/O at crash time. Requires physical console access to view the PSOD screen.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Physical console displays a <strong>purple/pink diagnostic screen</strong></li>
+                    <li>All VMs on the host <strong>stop responding simultaneously</strong></li>
+                    <li>Host goes <strong>"Not Responding"</strong> in vCenter</li>
+                    <li>HA restarts VMs on other hosts (if HA is functioning)</li>
+                    <li>After reboot, <code class="inline">/var/core/</code> contains a core dump file</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NIC/HBA/GPU driver bug — most common PSOD cause</li>
+                    <li>Hardware failure: memory ECC errors, CPU microcode bug</li>
+                    <li>Firmware incompatibility with ESXi version</li>
+                    <li>Kernel assertion failure (VMkernel bug)</li>
+                    <li>Out-of-memory condition in VMkernel heap</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>A PSOD is the ESXi equivalent of a kernel panic. The VMkernel encounters an unrecoverable error — typically a driver passing bad data, a hardware fault, or an internal assertion failure. ESXi halts all execution, displays diagnostic information on the console (purple screen), writes a coredump to the configured dump partition or file, and waits for an administrator to reboot. The stack trace on the PSOD screen identifies the faulting module.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Collect and verify the coredump after reboot</strong></p>
+                    <pre><code># Check coredump configuration:
+esxcli system coredump file list
+esxcli system coredump partition list
+
+# List available core dumps:
+ls -la /var/core/
+# Look for vmkernel-zdump.* files
+
+# Copy coredump for analysis:
+vm-support
+# This generates a support bundle including the coredump</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Analyze the PSOD backtrace</strong></p>
+                    <pre><code># Extract the stack trace from the coredump:
+esxcli system coredump extract --corefile /var/core/vmkernel-zdump.1
+
+# Key information from the PSOD screen:
+# 1. "Module" line — identifies the faulting driver (e.g., nmlx5_core, ixgben)
+# 2. Backtrace — shows the call stack at crash time
+# 3. Build number — confirms ESXi version
+
+# Check driver version:
+esxcli software vib list | grep -i "nmlx5\|ixgbe\|qfle3\|lsi\|hpsa"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check hardware health after reboot</strong></p>
+                    <pre><code># Check for memory errors:
+esxcli hardware memory get
+# Look for "Uncorrectable ECC Errors"
+
+# Check system event log (IPMI/iLO/iDRAC):
+# Access BMC → System Event Log → Filter for "Memory", "CPU", "PCI"
+
+# Verify firmware versions:
+esxcli hardware platform get
+esxcli software vib list | grep -i firmware</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Update the faulting driver/firmware</strong></p>
+                    <pre><code># If the PSOD backtrace points to a driver (e.g., nmlx5_core):
+
+# Check VMware HCL for the correct driver version:
+# https://www.vmware.com/resources/compatibility/search.php
+
+# Update driver VIB:
+esxcli software vib install -d /tmp/driver-bundle.zip
+
+# Or use vLCM (vSphere Lifecycle Manager):
+# Cluster → Updates → Image → Edit → Add vendor addon/driver</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Apply ESXi patches if it's a known VMkernel bug</strong></p>
+                    <pre><code># Check VMware KB for your PSOD signature:
+# Search KB for the module name + "PSOD"
+
+# Apply the latest ESXi patch:
+esxcli software profile update -p ESXi-8.0U2b-XXXXX-standard \
+  -d https://hostupdate.vmware.com/software/VUM/PRODUCTION/main/vmw-depot-index.xml
+
+# Or via vLCM baseline:
+# Cluster → Updates → Baselines → Attach → Remediate</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Replace hardware if memory/CPU errors detected</strong></p>
+                    <pre><code># If BMC event log shows memory DIMM errors:
+# 1. Identify the failing DIMM slot from BMC logs
+# 2. Place host in maintenance mode (evacuate VMs)
+# 3. Power off and replace the DIMM
+# 4. Run vendor diagnostics before returning to production
+
+# Configure coredump persistence for future analysis:
+esxcli system coredump file add -d /vmfs/volumes/datastore1 -f coredump-esxi01
+esxcli system coredump file set -p /vmfs/volumes/datastore1/coredump-esxi01
+esxcli system coredump file set -e true</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always configure a coredump file or partition so PSOD data is preserved across reboots. Keep drivers and firmware at versions listed in the VMware HCL. Use vLCM to maintain consistent driver/firmware across all hosts. Submit PSOD coredumps to VMware GSS for root-cause analysis via SR.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #6: VM Power-On Failure                   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-6" data-type="break" data-severity="high" data-keywords="vm power on failure insufficient resources admission control reservation swap datastore space memory overhead">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">6</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VM Power-On Failure — Insufficient Resources</div>
+            <div class="kb-entry-subtitle">VM won't start with "Insufficient resources" — admission control, reservations, swap file, and capacity issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">VM</span>
+                <span class="tag">Power-On</span>
+                <span class="tag">Admission Control</span>
+                <span class="tag">Resources</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Critical VMs cannot be started. Disaster recovery and failover scenarios are blocked. Service restoration is delayed during incidents.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Error: <strong>"Insufficient resources to satisfy configured failover level for vSphere HA"</strong></li>
+                    <li>Error: <strong>"Unable to access file [datastore] vmname/vmname-flat.vmdk"</strong></li>
+                    <li>VM swap file cannot be created: <strong>"No space left on device"</strong></li>
+                    <li>vpxd.log: <code class="inline">AdmissionCheck failed</code></li>
+                    <li>Host has available CPU/RAM but power-on is still rejected</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>HA admission control reserves too much capacity for failover</li>
+                    <li>VM memory reservation creates a swap file equal to unreserved memory</li>
+                    <li>Datastore is full — no space for swap file (.vswp)</li>
+                    <li>Memory overhead calculation exceeds available resources</li>
+                    <li>Resource pool limit reached</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>When you power on a VM, ESXi must allocate physical resources: CPU slots, memory, and disk space for the VM's swap file. HA admission control may block the operation if it calculates that powering on this VM would leave insufficient resources for failover. Even if the host has physical capacity, a full datastore (no room for the .vswp file), resource pool limits, or memory overhead calculations can block the power-on.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Attempt power-on and capture the error</strong></p>
+                    <pre><code># CLI power-on with verbose output:
+vim-cmd vmsvc/power.on &lt;vmid&gt;
+
+# Get VM ID first:
+vim-cmd vmsvc/getallvms | grep "vm-name"
+
+# Check vpxd.log for admission control details:
+# On VCSA:
+grep -i "admission\|insufficient\|power.on" /var/log/vmware/vpxd/vpxd.log | tail -30</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check datastore free space and swap file requirements</strong></p>
+                    <pre><code># Check datastore space:
+esxcli storage filesystem list
+# Compare "Free" column — swap file needs (VM_Memory - Reservation) space
+
+# PowerCLI:
+Get-Datastore | Select Name,
+  @{N="FreeGB";E={[math]::Round($_.FreeSpaceGB,2)}},
+  @{N="CapacityGB";E={[math]::Round($_.CapacityGB,2)}},
+  @{N="PercentFree";E={[math]::Round(($_.FreeSpaceGB/$_.CapacityGB)*100,1)}}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check HA admission control policy</strong></p>
+                    <pre><code># PowerCLI:
+Get-Cluster "ClusterName" | Select Name, HAEnabled, HAAdmissionControlEnabled,
+  HAFailoverLevel, @{N="Policy";E={$_.ExtensionData.Configuration.DasConfig.AdmissionControlPolicy.GetType().Name}}
+
+# Check current cluster capacity vs reserved:
+Get-VMHost -Location (Get-Cluster "ClusterName") |
+  Select Name, @{N="CPU_Used%";E={[math]::Round($_.CpuUsageMhz/$_.CpuTotalMhz*100)}},
+  @{N="Mem_Used%";E={[math]::Round($_.MemoryUsageGB/$_.MemoryTotalGB*100)}}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Free datastore space or move VM to a datastore with space</strong></p>
+                    <pre><code># Find and remove orphaned VMDKs, old snapshots, ISO files:
+# vCenter → Datastore → Files → Sort by size
+
+# Storage vMotion the VM:
+# PowerCLI:
+Move-VM -VM "vm-name" -Datastore "datastore-with-space" -Confirm:$false
+
+# Or reclaim space by consolidating snapshots:
+vim-cmd vmsvc/snapshot.removeall &lt;vmid&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Adjust HA admission control</strong></p>
+                    <pre><code># Reduce the reserved capacity:
+# Cluster → Configure → vSphere Availability → Edit
+# Change from "Dedicated failover hosts" to "Cluster resource percentage"
+# Set CPU/Memory percentage to a reasonable value (e.g., 25%)
+
+# PowerCLI:
+$spec = New-Object VMware.Vim.ClusterConfigSpecEx
+$spec.DasConfig = New-Object VMware.Vim.ClusterDasConfigInfo
+$spec.DasConfig.AdmissionControlEnabled = $true
+# Adjust percentage-based policy as needed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Disabling admission control is <strong>not recommended</strong>. It removes the safety net that ensures HA can restart VMs after a host failure. Adjust the policy instead.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Add memory reservation to reduce swap file size</strong></p>
+                    <pre><code># Set 100% memory reservation (eliminates .vswp file):
+# VM → Edit Settings → Resources → Memory → Reservation = Max
+
+# PowerCLI:
+Get-VM "vm-name" | Get-VMResourceConfiguration |
+  Set-VMResourceConfiguration -MemReservationGB 16
+# Set to match the VM's configured memory</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Keep at least 20% free space on datastores for swap files and snapshots. Use admission control with percentage-based policy. Right-size VMs to avoid over-allocation. For critical VMs, set memory reservations to avoid swap-related power-on failures.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #7: vCenter Service Health — vpxd Crash   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-7" data-type="break" data-severity="critical" data-keywords="vcenter vpxd crash restart service health vcsa disk space database postgres certificate vmon">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">7</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Service Health — vpxd Crash / Restart Loop</div>
+            <div class="kb-entry-subtitle">vCenter unavailable, vpxd service crashing — disk space, database, and certificate health issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">vCenter</span>
+                <span class="tag">vpxd</span>
+                <span class="tag">VCSA</span>
+                <span class="tag">Database</span>
+                <span class="tag">Certificates</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Complete loss of centralized management. No DRS, no HA coordination, no provisioning, no VM management. All hosts and VMs continue running but are unmanageable. This is a P1 incident for any vSphere environment.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client returns <strong>"503 Service Unavailable"</strong></li>
+                    <li>VCSA VAMI (port 5480) shows vpxd as <strong>"Stopped"</strong></li>
+                    <li><code class="inline">service-control --status</code> shows vpxd stopped or restarting</li>
+                    <li>vpxd.log: <code class="inline">PANIC: Unexpected signal 11</code> or DB connection errors</li>
+                    <li>VCSA disk partitions at <strong>100%</strong> (especially /storage/log)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VCSA disk full — /storage/log or /storage/db at 100%</li>
+                    <li>PostgreSQL database corruption or connection pool exhaustion</li>
+                    <li>Expired VMCA or STS certificates</li>
+                    <li>Memory exhaustion — vpxd heap overflow</li>
+                    <li>Plugin or extension conflict causing vpxd crash</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>The <strong>vpxd</strong> service is the core of vCenter Server. It manages all host connections, VM operations, DRS scheduling, and HA coordination. When vpxd fails — due to disk space exhaustion (logs fill the partition), database issues (PostgreSQL crashes), or certificate expiration (STS token signing cert) — the entire vCenter management plane goes down. Hosts continue running VMs autonomously, but all centralized operations stop.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check VCSA service status and disk space</strong></p>
+                    <pre><code># SSH to VCSA (or use VAMI shell):
+service-control --status
+# Or list all services:
+vmon-cli --list
+
+# Check disk usage:
+df -h
+# Critical partitions: /storage/log, /storage/db, /storage/seat
+# If any are at 95%+, that's likely the cause</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Review vpxd crash logs</strong></p>
+                    <pre><code># Check vpxd log for errors:
+tail -100 /var/log/vmware/vpxd/vpxd.log
+# Look for: "PANIC", "signal 11", "Cannot connect to database", "Out of memory"
+
+# Check for certificate expiration:
+for store in MACHINE_SSL_CERT TRUSTED_ROOT_CRLS; do
+  /usr/lib/vmware-vmafd/bin/vecs-cli entry list --store "$store" --text | grep -A2 "Not After"
+done</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check PostgreSQL database health</strong></p>
+                    <pre><code># Check if PostgreSQL is running:
+service-control --status vmware-vpostgres
+
+# Check DB connections:
+/opt/vmware/vpostgres/current/bin/psql -U postgres -d VCDB \
+  -c "SELECT count(*) FROM pg_stat_activity;"
+
+# Check DB size:
+/opt/vmware/vpostgres/current/bin/psql -U postgres -d VCDB \
+  -c "SELECT pg_size_pretty(pg_database_size('VCDB'));"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Free disk space on VCSA</strong></p>
+                    <pre><code># Clear old log files:
+find /var/log/vmware/ -name "*.log" -mtime +7 -exec rm {} \;
+find /storage/log/ -name "*.gz" -mtime +14 -exec rm {} \;
+
+# Clear core dumps:
+rm -f /storage/core/*
+
+# Truncate large active logs (if disk is 100% full):
+> /var/log/vmware/vpxd/vpxd-1.log
+> /var/log/vmware/vpxd/vpxd-2.log
+
+# Verify space freed:
+df -h /storage/log</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Restart vCenter services</strong></p>
+                    <pre><code># Restart all services in correct order:
+service-control --stop --all
+service-control --start --all
+
+# Or restart only vpxd:
+service-control --stop vpxd
+service-control --start vpxd
+
+# Monitor startup:
+tail -f /var/log/vmware/vpxd/vpxd.log
+# Wait for: "Server is RUNNING"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Renew expired certificates (if STS cert expired)</strong></p>
+                    <pre><code># Check STS certificate expiration:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert list --login administrator@vsphere.local
+
+# Use the VMware certificate fix script:
+# Download and run fixsts.sh from VMware KB 79248
+python /usr/lib/vmware-vmdir/share/config/ls_update_certs.py \
+  --url https://vcenter.domain.com/lookupservice/sdk \
+  --fingerprint &lt;thumbprint&gt; \
+  --certfile /tmp/new-sts-cert.pem --admin administrator@vsphere.local</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Take a VCSA snapshot <strong>before</strong> performing any certificate operations. Certificate renewal procedures can be complex and a rollback path is essential.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Configure VCSA log rotation to prevent /storage/log from filling. Set up monitoring for VCSA disk partitions (alert at 80%). Schedule certificate renewal 6 months before expiry. Take regular VCSA file-based backups. Use vCenter HA for production environments.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #8: Snapshot Consolidation Failure         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-8" data-type="fix" data-severity="high" data-keywords="snapshot consolidation vmdk locked cid mismatch disk chain delta flatten commit">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">8</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Snapshot Consolidation Failure</div>
+            <div class="kb-entry-subtitle">"Virtual machine disks consolidation is needed" — locked files, insufficient space, and CID mismatch</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Snapshot</span>
+                <span class="tag">VMDK</span>
+                <span class="tag">Consolidation</span>
+                <span class="tag">Storage</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Snapshot delta disks grow continuously, consuming datastore space. Performance degrades as the snapshot chain lengthens. Risk of datastore full condition which can crash all VMs on that datastore. Backup solutions may fail.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vCenter warning: <strong>"Virtual machine disks consolidation is needed"</strong></li>
+                    <li>Snapshot manager shows <strong>"You are here"</strong> with no visible snapshots</li>
+                    <li>Delta VMDK files (<code class="inline">*-000001.vmdk</code>) growing on datastore</li>
+                    <li>Consolidation operation fails with <strong>"Unable to access file"</strong> or <strong>"File is locked"</strong></li>
+                    <li>VM performance degradation (high latency on writes)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Backup software failed mid-snapshot and left orphaned deltas</li>
+                    <li>VMDK file locked by another host or process</li>
+                    <li>CID (Content ID) mismatch in the snapshot chain</li>
+                    <li>Insufficient free space on datastore to complete consolidation</li>
+                    <li>VM has a running snapshot from a stale backup job</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify orphaned snapshot files</strong></p>
+                    <pre><code># SSH to the ESXi host running the VM:
+cd /vmfs/volumes/&lt;datastore&gt;/&lt;vm-folder&gt;/
+
+# List all VMDK files and their sizes:
+ls -lah *.vmdk
+# Delta files: vmname-000001.vmdk, vmname-000002.vmdk, etc.
+# These should not exist if snapshot manager shows no snapshots
+
+# Check the snapshot descriptor:
+cat vmname.vmsd
+# If empty but delta files exist → orphaned snapshots</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check for locked files and release locks</strong></p>
+                    <pre><code># Find which host holds the lock:
+vmkfstools -D /vmfs/volumes/&lt;datastore&gt;/&lt;vm-folder&gt;/vmname-000001-delta.vmdk
+# Look for "owner" UUID — maps to an ESXi host
+
+# If lock is held by a different host, check if a backup process is running
+# on that host. Kill the stale backup process first.
+
+# Find lock owners across all hosts:
+# grep the MAC address from the lock owner in:
+esxcfg-info | grep -i "mac address"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Consolidate disks</strong></p>
+                    <pre><code># Try consolidation from vCenter first:
+# Right-click VM → Snapshots → Consolidate
+
+# CLI alternative:
+vim-cmd vmsvc/snapshot.removeall &lt;vmid&gt;
+
+# If consolidation fails due to CID mismatch:
+# 1. Check CID chain:
+grep -i "CID\|parentCID" /vmfs/volumes/&lt;datastore&gt;/&lt;vm-folder&gt;/*.vmdk
+
+# 2. Fix CID chain — ensure each delta's parentCID matches parent's CID
+# Edit the .vmdk descriptor (NOT the -flat.vmdk data file)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Before manually editing VMDK descriptor files, <strong>take a backup</strong> of all .vmdk descriptor files. A wrong CID will make the entire disk chain unreadable.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Configure your backup solution to properly clean up snapshots after each job. Set up vCenter alarms for "VM disk consolidation needed". Limit snapshot age to 72 hours maximum. Never use snapshots as a long-term backup strategy — they degrade I/O performance and risk datastore exhaustion.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #9: ESXi Host Stuck in Maintenance Mode   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-9" data-type="fix" data-severity="high" data-keywords="maintenance mode stuck exit powered off vm drs ha reconfiguration pending evacuate">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">9</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Host Stuck in Maintenance Mode</div>
+            <div class="kb-entry-subtitle">Host won't exit maintenance mode — powered-off VMs, HA reconfiguration, and DRS migration issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">ESXi</span>
+                <span class="tag">Maintenance Mode</span>
+                <span class="tag">DRS</span>
+                <span class="tag">HA</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Host capacity is unavailable to the cluster. HA failover capacity is reduced. If multiple hosts are stuck in maintenance mode, the cluster may not have enough resources to run all VMs. Patch/upgrade operations are stalled.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host shows <strong>"Entering Maintenance Mode"</strong> indefinitely (progress stuck)</li>
+                    <li>Host is in maintenance mode but <strong>"Exit Maintenance Mode" fails</strong></li>
+                    <li>DRS cannot evacuate all VMs (affinity rules, no capacity on other hosts)</li>
+                    <li>VMs with <strong>local storage</strong> cannot be migrated</li>
+                    <li>vCenter task shows <strong>"Reconfigure for HA" pending</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Powered-off or suspended VMs registered on the host blocking entry</li>
+                    <li>Anti-affinity rules preventing VM placement on other hosts</li>
+                    <li>HA agent reconfiguration task stuck</li>
+                    <li>USB/PCI passthrough devices preventing vMotion</li>
+                    <li>vSAN data evacuation not completed (for vSAN hosts)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify what's blocking maintenance mode entry/exit</strong></p>
+                    <pre><code># Check for VMs still on the host:
+esxcli vm process list
+# All VMs must be migrated or powered off
+
+# Check recent tasks in vCenter:
+# Host → Monitor → Tasks &amp; Events
+# Look for stuck "Enter Maintenance Mode" or "Reconfigure for HA" tasks
+
+# PowerCLI — Find VMs on this host:
+Get-VMHost "esxi01" | Get-VM | Select Name, PowerState, VMHost</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Exit maintenance mode via CLI</strong></p>
+                    <pre><code># SSH to the ESXi host:
+esxcli system maintenanceMode set -e false
+
+# Alternative:
+vim-cmd hostsvc/maintenance_mode_exit
+
+# If the above fails, try from PowerCLI:
+Set-VMHost -VMHost "esxi01.domain.com" -State "Connected" -Confirm:$false
+
+# Force exit (use with caution):
+vim-cmd hostsvc/maintenance_mode_exit 0 1
+# Second parameter 1 = force</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve stuck HA reconfiguration</strong></p>
+                    <pre><code># If HA reconfiguration is pending:
+# 1. Disable HA on the cluster temporarily
+# 2. Exit maintenance mode
+# 3. Re-enable HA
+
+# PowerCLI:
+Set-Cluster "ClusterName" -HAEnabled:$false -Confirm:$false
+Set-VMHost "esxi01" -State Connected -Confirm:$false
+Set-Cluster "ClusterName" -HAEnabled:$true -Confirm:$false
+
+# Or restart FDM on the host:
+/etc/init.d/fdm restart</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Temporarily disabling HA removes failover protection for the entire cluster. Perform this during a maintenance window and re-enable HA immediately after.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Before entering maintenance mode, verify DRS can place all VMs on other hosts. Power off or unregister VMs with local storage or passthrough devices first. Check for anti-affinity rules that might prevent VM placement. Use "Move to another host" for VMs that DRS can't migrate automatically.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #10: vCenter Alarm Storm                  -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-10" data-type="fix" data-severity="medium" data-keywords="alarm storm false positive triage reset triggered disable non-critical alarm definition action notification flood">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">10</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Alarm Storm — False Positive Triage</div>
+            <div class="kb-entry-subtitle">Hundreds of alarms flooding vCenter — reset triggered alarms, disable non-critical alarms, and triage procedure</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Alarms</span>
+                <span class="tag">vCenter</span>
+                <span class="tag">Monitoring</span>
+                <span class="tag">Triage</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Impact:</strong> Alarm fatigue causes real issues to be missed. Email notification floods overwhelm operations teams. vCenter UI becomes slow due to excessive alarm processing. SNMP trap receivers may be overwhelmed.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Hundreds of <strong>yellow/red alarms</strong> in the vCenter Alarms panel</li>
+                    <li>Email inbox flooded with <strong>alarm notification emails</strong></li>
+                    <li>Same alarm <strong>triggers and resets repeatedly</strong> (flapping)</li>
+                    <li>vCenter UI sluggish due to alarm processing overhead</li>
+                    <li>Operations team ignoring alerts due to <strong>alarm fatigue</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Default alarm thresholds too aggressive for the environment</li>
+                    <li>Network monitoring alarms trigger during planned maintenance</li>
+                    <li>Storage latency alarms set at unrealistic thresholds</li>
+                    <li>Alarm actions (email, SNMP) not filtered or rate-limited</li>
+                    <li>Custom alarms duplicating built-in alarm functionality</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Reset all triggered alarms in bulk</strong></p>
+                    <pre><code># PowerCLI — Reset all triggered alarms to green:
+$alarmMgr = Get-View AlarmManager
+$rootFolder = Get-View (Get-View ServiceInstance).Content.RootFolder
+
+# Get all triggered alarms:
+$triggeredAlarms = $rootFolder.TriggeredAlarmState
+Write-Host "Found $($triggeredAlarms.Count) triggered alarms"
+
+# Reset each alarm:
+foreach ($alarm in $triggeredAlarms) {
+    $alarmMgr.AcknowledgeAlarm($alarm.Alarm, $alarm.Entity)
+}
+Write-Host "All alarms acknowledged"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Disable non-critical and noisy alarms</strong></p>
+                    <pre><code># PowerCLI — List all alarm definitions with their enabled state:
+Get-AlarmDefinition | Select Name, Enabled, Description |
+  Sort-Object Name | Format-Table -Wrap
+
+# Disable specific noisy alarms:
+Get-AlarmDefinition -Name "Virtual machine CPU usage" |
+  Set-AlarmDefinition -Enabled $false
+
+# Disable alarm actions (email/SNMP) without disabling the alarm:
+Get-AlarmDefinition -Name "Host memory usage" | Get-AlarmAction | Remove-AlarmAction -Confirm:$false
+
+# Batch disable all alarm actions during maintenance:
+Get-AlarmDefinition | Where { $_.Enabled } |
+  ForEach { Get-AlarmAction -AlarmDefinition $_ | Remove-AlarmAction -Confirm:$false }</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                    <div class="alert alert-warning">
+                        <span class="alert-icon">&#9888;</span>
+                        <span>Don't disable all alarms permanently. Instead, tune thresholds and disable only truly non-critical alarms. Re-enable alarm actions after maintenance windows.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Tune alarm thresholds for your environment</strong></p>
+                    <pre><code># PowerCLI — Adjust alarm threshold example:
+# Change "Datastore usage on disk" alarm from 75%/85% to 85%/95%:
+$alarm = Get-AlarmDefinition -Name "Datastore usage on disk"
+# Edit via vCenter UI: Alarm → Edit → Conditions
+# Set Warning threshold: 85%
+# Set Critical threshold: 95%
+
+# Review alarm action configuration:
+Get-AlarmDefinition | Where { $_.Enabled } |
+  ForEach {
+    $actions = Get-AlarmAction -AlarmDefinition $_
+    if ($actions) {
+      [PSCustomObject]@{
+        Alarm = $_.Name
+        ActionCount = $actions.Count
+        ActionTypes = ($actions | Select -Expand ActionType) -join ", "
+      }
+    }
+  } | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Customize default alarm thresholds to match your environment's baseline. Use alarm action repeat intervals (e.g., notify once per hour, not every 5 minutes). Create a "Maintenance Mode" alarm action profile that suppresses notifications during planned work. Integrate vCenter alarms with your ITSM tool for proper incident routing rather than relying on email floods.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 1: Top 10 Common Issues</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase2.html">Next: Phase 2 &rarr;</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-7)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

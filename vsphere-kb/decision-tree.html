@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive vSphere cluster troubleshooting decision tree — diagnose HA, DRS, vMotion, vCenter, storage, and networking issues across 70 KB entries.">
+    <title>VMware vSphere KB — Interactive Troubleshooting Decision Tree</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-card: #1c2128; --bg-card-hover: #262c34;
+            --accent: #58a6ff; --accent-light: #79c0ff;
+            --danger: #f85149; --danger-light: #ff7b72;
+            --success: #3fb950; --success-light: #56d364;
+            --warning: #d29922; --warning-light: #e3b341;
+            --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+            --border: #30363d; --code-bg: #0d1117; --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; }
+        .header { background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%); border-bottom: 1px solid var(--border); padding: 2rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .header-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
+        .header h1 span { font-weight: 400; color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.85rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2px; }
+        .badge-tree { background: rgba(210,153,34,0.12); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.25); }
+        .badge-phase { background: rgba(88,166,255,0.12); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.25); }
+        .phase-nav { max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .phase-nav a { padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); text-decoration: none; font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s; }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .search-bar { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 0; }
+        .search-bar input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem; outline: none; transition: border-color 0.2s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236e7681' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 1rem center; }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .search-results-info { max-width: 1100px; margin: 0 auto; padding: 0.5rem 2rem 0; font-size: 0.78rem; color: var(--text-muted); display: none; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 2rem 4rem; }
+        .hero { text-align: center; padding: 1.5rem 0 2rem; }
+        .hero h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-primary); }
+        .hero p { color: var(--text-secondary); font-size: 0.92rem; max-width: 560px; margin: 0 auto; }
+        .breadcrumb { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; font-size: 0.82rem; min-height: 44px; }
+        .breadcrumb-item { color: var(--text-muted); cursor: pointer; transition: color .15s; }
+        .breadcrumb-item:hover { color: var(--accent-light); }
+        .breadcrumb-item.current { color: var(--accent-light); font-weight: 600; cursor: default; }
+        .breadcrumb-sep { color: var(--text-muted); font-size: 0.7rem; }
+        .breadcrumb-home { color: var(--text-secondary); cursor: pointer; transition: color .15s; display: flex; align-items: center; gap: 0.35rem; }
+        .breadcrumb-home:hover { color: var(--accent-light); }
+        .step-question { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.6rem; }
+        .step-question .step-icon { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.25); color: var(--accent-light); }
+        .choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+        .choice-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.15rem 1.35rem; cursor: pointer; transition: border-color .2s; position: relative; overflow: hidden; }
+        .choice-card:hover { border-color: rgba(88,166,255,0.35); }
+        .choice-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .choice-card .choice-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+        .choice-card .choice-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .choice-card .choice-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+        .choice-card .choice-count { position: absolute; top: 0.85rem; right: 0.85rem; font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(88,166,255,0.08); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.18); font-weight: 500; }
+        .choice-card.hidden { display: none; }
+        .result-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.75rem; margin-bottom: 1.25rem; border-left: 3px solid var(--success); }
+        .result-card.break-result { border-left-color: var(--danger); }
+        .result-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .result-kb-num { font-size: 1.25rem; font-weight: 800; color: var(--accent-light); }
+        .result-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .result-type { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .result-type.break { background: rgba(248,81,73,0.12); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.25); }
+        .result-type.fix { background: rgba(63,185,80,0.12); color: var(--success-light); border: 1px solid rgba(63,185,80,0.25); }
+        .result-summary { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.65; }
+        .result-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.25rem; border-radius: 8px; background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); color: var(--accent-light); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: border-color .15s, background .15s; }
+        .result-link:hover { background: rgba(88,166,255,0.15); border-color: var(--accent); }
+        .result-link svg { width: 15px; height: 15px; }
+        .restart-bar { text-align: center; padding: 2rem 0; }
+        .restart-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; border-radius: 8px; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: border-color .15s, color .15s; font-family: inherit; }
+        .restart-btn:hover { border-color: rgba(210,153,34,0.35); color: var(--warning-light); }
+        .go-back-link { color: var(--text-muted); font-size: 0.8rem; cursor: pointer; transition: color .15s; text-decoration: none; display: inline-block; margin-top: 0.5rem; }
+        .go-back-link:hover { color: var(--text-secondary); }
+        .fade-in { animation: fadeSlide 0.3s ease forwards; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .quick-paths { margin-top: 2rem; padding: 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; }
+        .quick-paths h3 { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .quick-path-list { display: flex; flex-direction: column; gap: 0.35rem; }
+        .quick-path-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.9rem; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; transition: border-color .15s; font-size: 0.8rem; }
+        .quick-path-item:hover { border-color: rgba(88,166,255,0.35); }
+        .quick-path-item .qp-icon { font-size: 0.9rem; flex-shrink: 0; }
+        .quick-path-item .qp-label { color: var(--text-primary); font-weight: 500; flex: 1; }
+        .quick-path-item .qp-desc { color: var(--text-muted); font-size: 0.72rem; margin-left: auto; white-space: nowrap; }
+        .no-results { text-align: center; padding: 3rem 1rem; color: var(--text-muted); display: none; }
+        .no-results .nr-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.5; }
+        .no-results p { font-size: 0.88rem; }
+        .footer { border-top: 1px solid var(--border); margin-top: 3rem; padding: 2rem; color: var(--text-muted); font-size: 0.78rem; text-align: center; }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; animation-duration: .01ms !important; } }
+        @media (max-width: 600px) { .header-inner { flex-direction: column; align-items: flex-start; } .header h1 { font-size: 1.3rem; } .container, .search-bar, .phase-nav { padding-left: 1rem; padding-right: 1rem; } .choices { grid-template-columns: 1fr; } .hero h2 { font-size: 1.2rem; } .search-results-info { padding-left: 1rem; padding-right: 1rem; } }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>vSphere Troubleshooting <span>Decision Tree</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-tree">Interactive Diagnosis</span>
+            <span class="badge badge-phase">70 KB Entries</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="active">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="treeSearch" placeholder="Search symptoms — HA, DRS, vMotion, PSOD, certificates, VMFS, NFS..." oninput="searchTree()">
+</div>
+<div class="search-results-info" id="searchInfo"></div>
+
+<div class="container">
+    <div class="hero" id="heroSection">
+        <h2>What symptom are you experiencing?</h2>
+        <p>Select the category that best describes your vSphere issue. The tree will guide you to the right KB entry.</p>
+    </div>
+
+    <div class="breadcrumb" id="breadcrumb" role="navigation" aria-label="Decision tree breadcrumb">
+        <span class="breadcrumb-home" onclick="goHome()" role="button" tabindex="0">&#8962; Start</span>
+    </div>
+
+    <div id="treeContent" class="fade-in" role="main"></div>
+
+    <div class="no-results" id="noResults">
+        <div class="nr-icon">&#128269;</div>
+        <p>No matching symptoms found. Try different keywords.</p>
+    </div>
+
+    <div class="quick-paths" id="quickPaths">
+        <h3>Common Scenarios — Jump Directly</h3>
+        <div class="quick-path-list">
+            <div class="quick-path-item" onclick="jumpTo(['root','ha_ft','ha_no_failover'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">HA failover not triggering</span>
+                <span class="qp-desc">KB #1</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','vmotion','vmotion_fail'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">vMotion migration failure</span>
+                <span class="qp-desc">KB #3</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','esxi_host','psod'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Purple Screen of Death (PSOD)</span>
+                <span class="qp-desc">KB #5</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','vcenter','vpxd_crash'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">vCenter vpxd crash</span>
+                <span class="qp-desc">KB #7</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','vcenter','cert_expiry'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Certificate / STS expiry</span>
+                <span class="qp-desc">KB #11</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','vcenter','vcsa_disk'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">VCSA disk space full</span>
+                <span class="qp-desc">KB #41</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','storage','apd_pdl'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">APD / PDL on VMFS datastore</span>
+                <span class="qp-desc">KB #52</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','networking','vds_disconnect'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">vDS misconfiguration — host disconnect</span>
+                <span class="qp-desc">KB #61</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base — Interactive Troubleshooting Decision Tree</p>
+    <p><a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io" target="_blank" rel="noopener">Portal</a></p>
+    <p>&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<script>
+const tree = {
+    root: {
+        question: "What area is affected?",
+        stepNum: 1,
+        choices: [
+            { id: "ha_ft",         icon: "&#128737;", title: "HA / Fault Tolerance",       desc: "HA failover, FDM, admission control, isolation, FT",            count: 12 },
+            { id: "drs_resource",  icon: "&#9889;",   title: "DRS / Resource Management",  desc: "DRS balancing, affinity rules, EVC, resource pools, NUMA",      count: 11 },
+            { id: "vmotion",       icon: "&#128640;",  title: "vMotion / Migration",        desc: "vMotion failures, Storage vMotion, EVC, network issues",         count: 6  },
+            { id: "vcenter",       icon: "&#127970;", title: "vCenter / Services",         desc: "vpxd, SSO, certificates, database, plugins, Lookup Service",    count: 12 },
+            { id: "storage",       icon: "&#128190;", title: "Storage / Datastores",       desc: "VMFS, NFS, multipathing, APD/PDL, iSCSI, VAAI",                count: 10 },
+            { id: "networking",    icon: "&#127760;", title: "Networking / vDS",           desc: "Distributed switches, port groups, VLAN, MTU, NIOC, teaming",   count: 10 },
+            { id: "esxi_host",     icon: "&#128421;", title: "ESXi Host",                  desc: "PSOD, maintenance mode, SSH, NTP, patching, profiles",          count: 7  },
+            { id: "monitoring",    icon: "&#128202;", title: "Monitoring / Operations",    desc: "esxtop, alarms, logging, backup, performance",                  count: 6  }
+        ]
+    },
+
+    ha_ft: {
+        question: "What HA / Fault Tolerance symptom?",
+        stepNum: 2,
+        choices: [
+            { id: "ha_no_failover",  icon: "&#128308;", title: "HA failover not triggering",         desc: "Host failed but VMs not restarted on other hosts",        result: true },
+            { id: "ha_admission",    icon: "&#128308;", title: "Admission control blocking power-on", desc: "Insufficient resources to satisfy HA failover level",     result: true },
+            { id: "ha_master",       icon: "&#128308;", title: "HA master election failure",          desc: "No HA master elected, cluster unprotected",               result: true },
+            { id: "ha_heartbeat",    icon: "&#128308;", title: "Heartbeat datastore issues",          desc: "Missing or insufficient heartbeat datastores",            result: true },
+            { id: "fdm_crash",       icon: "&#128308;", title: "FDM agent crash / restart loop",      desc: "FDM agent failing, HA shows agent unreachable",           result: true },
+            { id: "vmcp",            icon: "&#128993;", title: "VM Component Protection (VMCP)",      desc: "Configure APD/PDL response for HA VMs",                   result: true },
+            { id: "fault_tolerance", icon: "&#128993;", title: "vSphere Fault Tolerance config",      desc: "FT setup, requirements, and troubleshooting",             result: true },
+            { id: "ha_split_brain",  icon: "&#128308;", title: "HA network partition / split brain",   desc: "Management network split, multiple masters elected",      result: true },
+            { id: "proactive_ha",    icon: "&#128993;", title: "Proactive HA with DRS",               desc: "Hardware health triggers automated evacuations",           result: true },
+            { id: "isolation_resp",  icon: "&#128993;", title: "Host isolation response policy",       desc: "Configure VM behavior when host is isolated",             result: true },
+            { id: "restart_priority",icon: "&#128993;", title: "VM restart priority & overrides",      desc: "Control which VMs restart first after failure",           result: true },
+            { id: "vm_power_on",     icon: "&#128308;", title: "VM power-on failure",                  desc: "Insufficient resources preventing VM start",              result: true }
+        ]
+    },
+
+    drs_resource: {
+        question: "What DRS / resource management issue?",
+        stepNum: 2,
+        choices: [
+            { id: "drs_imbalance",     icon: "&#128308;", title: "DRS not balancing VMs",             desc: "VMs stuck on same host despite resource imbalance",       result: true },
+            { id: "affinity_conflict", icon: "&#128308;", title: "Affinity / anti-affinity conflicts", desc: "Conflicting rules preventing DRS migrations",            result: true },
+            { id: "resource_pool",     icon: "&#128308;", title: "Resource pool misconfiguration",     desc: "Nested pools, trapped resources, VMs starved",            result: true },
+            { id: "drs_threshold",     icon: "&#128993;", title: "DRS migration threshold tuning",     desc: "Balance between aggressive and conservative DRS",         result: true },
+            { id: "evc_mismatch",      icon: "&#128308;", title: "EVC mode CPU mismatch",              desc: "CPU incompatible with cluster EVC baseline",              result: true },
+            { id: "vm_host_rules",     icon: "&#128993;", title: "VM-host affinity rules",             desc: "Pin VMs to specific hosts for licensing/compliance",      result: true },
+            { id: "numa",              icon: "&#128993;", title: "NUMA optimization & CPU scheduling",  desc: "VM performance degrades spanning NUMA nodes",             result: true },
+            { id: "ballooning",        icon: "&#128308;", title: "Memory overcommitment & ballooning",  desc: "VMs ballooning/swapping due to memory pressure",          result: true },
+            { id: "storage_drs",       icon: "&#128993;", title: "Storage DRS & datastore clusters",    desc: "Automated storage load balancing issues",                 result: true },
+            { id: "drs_faults",        icon: "&#128308;", title: "DRS faults — not applying",           desc: "DRS generates faults instead of recommendations",         result: true },
+            { id: "latency_sens",      icon: "&#128993;", title: "Latency sensitivity tuning",          desc: "Low-latency configuration for real-time workloads",       result: true }
+        ]
+    },
+
+    vmotion: {
+        question: "What vMotion / migration issue?",
+        stepNum: 2,
+        choices: [
+            { id: "vmotion_fail",    icon: "&#128308;", title: "vMotion migration timeout/failure",   desc: "VM migration fails with timeout or network error",        result: true },
+            { id: "vmotion_net",     icon: "&#128308;", title: "vMotion VMkernel network issues",     desc: "vMotion vmk misconfigured, wrong VLAN, no connectivity",  result: true },
+            { id: "storage_vmotion", icon: "&#128308;", title: "Storage vMotion failure",             desc: "VM disk migration fails mid-transfer",                    result: true },
+            { id: "evc_block",       icon: "&#128308;", title: "EVC mode blocking vMotion",           desc: "CPU feature mismatch prevents migration",                 result: true },
+            { id: "mtu_vmotion",     icon: "&#128308;", title: "MTU mismatch causing vMotion failure", desc: "Jumbo frames not configured end-to-end",                 result: true },
+            { id: "sriov_limit",     icon: "&#128993;", title: "SR-IOV / DirectPath I/O limitations",  desc: "DirectPath prevents vMotion and snapshots",              result: true }
+        ]
+    },
+
+    vcenter: {
+        question: "What vCenter / services problem?",
+        stepNum: 2,
+        choices: [
+            { id: "vpxd_crash",    icon: "&#128308;", title: "vpxd service crash / restart",         desc: "vCenter unavailable, vpxd service crashing",              result: true },
+            { id: "vcsa_disk",     icon: "&#128308;", title: "VCSA disk space full",                 desc: "Partitions full, services stopped",                       result: true },
+            { id: "cert_expiry",   icon: "&#128308;", title: "Certificate / STS expiry",             desc: "Expired certs block all vCenter operations",              result: true },
+            { id: "sso_issues",    icon: "&#128308;", title: "SSO / identity source problems",       desc: "LDAP/AD not authenticating, bind password expired",       result: true },
+            { id: "db_postgres",   icon: "&#128308;", title: "vCenter database (PostgreSQL)",        desc: "High connections, bloat, locks, slow UI",                 result: true },
+            { id: "content_lib",   icon: "&#128993;", title: "Content Library sync failure",          desc: "Subscribed library not syncing from publisher",           result: true },
+            { id: "psc_converge",  icon: "&#128993;", title: "PSC convergence (external→embedded)",   desc: "Migrate from deprecated external PSC topology",           result: true },
+            { id: "vami_backup",   icon: "&#128993;", title: "VAMI backup & restore",                desc: "Configure automated VCSA backups and restore",            result: true },
+            { id: "plugin_issues", icon: "&#128993;", title: "Plugin / UI extension problems",        desc: "Plugins causing slow UI, errors, or blank pages",         result: true },
+            { id: "lookup_svc",    icon: "&#128308;", title: "Lookup Service registration",           desc: "Services fail to register, stale endpoints",             result: true },
+            { id: "vc_sizing",     icon: "&#128993;", title: "vCenter sizing & performance",          desc: "VCSA sizing guidelines and performance tuning",           result: true },
+            { id: "alarm_storm",   icon: "&#128993;", title: "Alarm storm / false positives",         desc: "Hundreds of alarms flooding vCenter",                     result: true }
+        ]
+    },
+
+    storage: {
+        question: "What storage / datastore symptom?",
+        stepNum: 2,
+        choices: [
+            { id: "vmfs_unmount",     icon: "&#128308;", title: "VMFS unmount / detach issues",       desc: "Can't unmount datastore, active I/O or HA heartbeat",    result: true },
+            { id: "apd_pdl",          icon: "&#128308;", title: "APD / PDL on VMFS datastores",       desc: "All Paths Down or Permanent Device Loss",                result: true },
+            { id: "multipath",        icon: "&#128993;", title: "Multipathing (PSP) configuration",    desc: "Path selection policy setup and troubleshooting",         result: true },
+            { id: "nfs_issues",       icon: "&#128308;", title: "NFS connectivity & performance",      desc: "NFS datastore inaccessible or slow",                     result: true },
+            { id: "vmfs_heap",        icon: "&#128308;", title: "VMFS heap exhaustion",                desc: "Cannot open disk, failed to lock file errors",           result: true },
+            { id: "storage_vmotion2", icon: "&#128308;", title: "Storage vMotion failure",             desc: "VM disk migration fails, locked files, space",           result: true },
+            { id: "thin_prov",        icon: "&#128993;", title: "Thin provisioning & UNMAP",           desc: "Thin disks grow but don't shrink without UNMAP",         result: true },
+            { id: "iscsi_fc",         icon: "&#128993;", title: "iSCSI / FC HBA troubleshooting",      desc: "Software iSCSI, FC HBA, CHAP, zoning issues",           result: true },
+            { id: "vaai",             icon: "&#128993;", title: "VAAI offload & acceleration",          desc: "Storage acceleration primitives configuration",           result: true },
+            { id: "snapshot_consol",  icon: "&#128993;", title: "Snapshot consolidation failure",       desc: "Disks need consolidation, locked files",                 result: true }
+        ]
+    },
+
+    networking: {
+        question: "What networking / vDS issue?",
+        stepNum: 2,
+        choices: [
+            { id: "vds_disconnect",  icon: "&#128308;", title: "vDS misconfiguration — host disconnect", desc: "Host lost management after vDS change",               result: true },
+            { id: "mtu_mismatch",    icon: "&#128308;", title: "MTU / jumbo frames mismatch",            desc: "Packets dropped, vMotion fails at 32%",               result: true },
+            { id: "nic_teaming",     icon: "&#128993;", title: "NIC teaming & failover policy",          desc: "Load balancing and failover configuration",           result: true },
+            { id: "vlan_config",     icon: "&#128308;", title: "Port group VLAN issues",                 desc: "VMs can't communicate, wrong VLAN or trunking",       result: true },
+            { id: "vss_to_vds",      icon: "&#128993;", title: "vSS to vDS migration",                   desc: "Standard to Distributed Switch migration",            result: true },
+            { id: "nioc",            icon: "&#128993;", title: "Network I/O Control (NIOC)",              desc: "Traffic shaping and prioritization",                   result: true },
+            { id: "tcpip_stack",     icon: "&#128993;", title: "TCP/IP stack & VMkernel routing",         desc: "Custom stacks, multi-homing, routing tables",         result: true },
+            { id: "firewall_ports",  icon: "&#128993;", title: "ESXi firewall & port requirements",       desc: "Firewall rules blocking services",                    result: true },
+            { id: "sriov_dp",        icon: "&#128993;", title: "SR-IOV & DirectPath I/O",                 desc: "Bypass virtual switch for maximum performance",       result: true },
+            { id: "host_disconn",    icon: "&#128308;", title: "ESXi host disconnected from vCenter",     desc: "Host shows Disconnected or Not Responding",           result: true }
+        ]
+    },
+
+    esxi_host: {
+        question: "What ESXi host issue?",
+        stepNum: 2,
+        choices: [
+            { id: "psod",           icon: "&#128308;", title: "PSOD — Purple Screen of Death",     desc: "Host crashed with purple diagnostic screen",              result: true },
+            { id: "maint_mode",     icon: "&#128993;", title: "Host stuck in maintenance mode",     desc: "Can't enter or exit maintenance mode",                    result: true },
+            { id: "ssh_hardening",  icon: "&#128993;", title: "Shell / SSH hardening",              desc: "Enable/disable SSH securely, set timeouts",              result: true },
+            { id: "ntp_drift",      icon: "&#128308;", title: "NTP configuration & time drift",     desc: "Time desync causes cert and auth failures",              result: true },
+            { id: "vlcm_patch",     icon: "&#128993;", title: "ESXi patch / upgrade (vLCM)",        desc: "Lifecycle Manager patching workflow",                     result: true },
+            { id: "host_profile",   icon: "&#128993;", title: "Host profile compliance",            desc: "Profile drift detection and remediation",                result: true },
+            { id: "host_disconn2",  icon: "&#128308;", title: "Host disconnected from vCenter",     desc: "vpxa agent down or management network issue",            result: true }
+        ]
+    },
+
+    monitoring: {
+        question: "What monitoring / operations need?",
+        stepNum: 2,
+        choices: [
+            { id: "esxtop_perf",     icon: "&#128993;", title: "Performance monitoring (esxtop)",     desc: "Real-time CPU, memory, network, disk counters",          result: true },
+            { id: "log_bundle",      icon: "&#128993;", title: "Log bundle collection & analysis",     desc: "Collect ESXi and vCenter diagnostic logs",               result: true },
+            { id: "syslog",          icon: "&#128993;", title: "Syslog & log forwarding",              desc: "Forward logs to remote syslog server",                   result: true },
+            { id: "backup_restore",  icon: "&#128993;", title: "vCenter backup & restore",             desc: "File-based backup via VAMI",                             result: true },
+            { id: "alarm_triage",    icon: "&#128993;", title: "Alarm storm triage",                   desc: "Manage alarm floods and false positives",                result: true },
+            { id: "vc_perf",         icon: "&#128993;", title: "vCenter performance & sizing",          desc: "VCSA sizing and performance optimization",               result: true }
+        ]
+    }
+};
+
+const results = {
+    ha_no_failover:   { kbs: [{ n:1,  t:"vSphere HA Failover Not Triggering",              ty:"break", f:"phase1.html", sum:"VM not restarted after host failure. Check FDM agent status, heartbeat datastores, isolation address, and HA enabled state. Restart FDM: /etc/init.d/fdm restart." }] },
+    ha_admission:     { kbs: [{ n:21, t:"HA Admission Control Blocking VM Power-On",       ty:"break", f:"phase3.html", sum:"Insufficient resources to satisfy HA failover level. Adjust admission control policy or temporarily disable. Check resource reservations." }] },
+    ha_master:        { kbs: [{ n:22, t:"HA Master Election Failure",                      ty:"break", f:"phase3.html", sum:"No HA master elected — cluster unprotected. Check fdm.log, management network connectivity. Restart management agents on all hosts." }] },
+    ha_heartbeat:     { kbs: [{ n:23, t:"HA Heartbeat Datastore Issues",                   ty:"break", f:"phase3.html", sum:"Need minimum 2 heartbeat datastores. Add shared datastores, manually select heartbeat datastores in HA advanced settings." }] },
+    fdm_crash:        { kbs: [{ n:24, t:"FDM Agent Crash / Restart Loop",                  ty:"break", f:"phase3.html", sum:"FDM agent failing on host. Check /var/log/fdm.log, restart with /etc/init.d/fdm restart. Reconfigure HA on cluster if persistent." }] },
+    vmcp:             { kbs: [{ n:25, t:"VM Component Protection (VMCP)",                  ty:"fix",   f:"phase3.html", sum:"Protect VMs from APD/PDL storage failures. Configure VMCP in cluster HA settings — APD response and PDL response policies." }] },
+    fault_tolerance:  { kbs: [{ n:26, t:"vSphere Fault Tolerance Setup & Troubleshooting", ty:"fix",   f:"phase3.html", sum:"FT provides zero-downtime via shadow VM. Requirements: FT logging network, compatible CPUs, no snapshots. Up to 8 vCPUs." }] },
+    ha_split_brain:   { kbs: [{ n:27, t:"HA Network Partition — Split Brain",              ty:"break", f:"phase3.html", sum:"Management network partition causes multiple HA masters. VMs may run on both partitions. Restore network, verify isolation response." }] },
+    proactive_ha:     { kbs: [{ n:28, t:"Proactive HA with DRS Integration",               ty:"fix",   f:"phase3.html", sum:"Hardware health monitoring triggers DRS evacuations before failure. Uses IPMI/iLO/iDRAC providers. Tune sensitivity." }] },
+    isolation_resp:   { kbs: [{ n:29, t:"HA Isolation Response Policy",                    ty:"fix",   f:"phase3.html", sum:"Configure VM behavior on host isolation: Power off, Shut down, Leave powered on. Set das.isolationAddress for custom ping targets." }] },
+    restart_priority: { kbs: [{ n:30, t:"HA Restart Priority & VM Override",               ty:"fix",   f:"phase3.html", sum:"Control restart order: Highest, High, Medium, Low, Disabled. Use VM overrides for critical VMs like DCs and database servers." }] },
+    vm_power_on:      { kbs: [{ n:6,  t:"VM Power-On Failure — Insufficient Resources",    ty:"break", f:"phase1.html", sum:"Check HA admission control, resource reservations, swap file space, datastore capacity. Verify memory overhead calculation." }] },
+
+    drs_imbalance:    { kbs: [{ n:2,  t:"DRS Not Balancing VMs Across Hosts",              ty:"break", f:"phase1.html", sum:"Check DRS automation level, migration threshold, affinity rules, VM-level overrides. Review DRS faults in Monitor tab." }] },
+    affinity_conflict:{ kbs: [{ n:31, t:"DRS Affinity / Anti-Affinity Rule Conflicts",     ty:"break", f:"phase4.html", sum:"Conflicting must-rules create deadlocks. Must-rules override should-rules. Review all rules and resolve conflicts." }] },
+    resource_pool:    { kbs: [{ n:32, t:"Resource Pool Misconfiguration — Nested Pools",   ty:"break", f:"phase4.html", sum:"Resources trapped in nested pools. Flatten hierarchy, use shares instead of fixed reservations. Check expandable reservation." }] },
+    drs_threshold:    { kbs: [{ n:33, t:"DRS Migration Threshold Tuning",                  ty:"fix",   f:"phase4.html", sum:"Level 1 (aggressive) to 5 (conservative). Default 3. Aggressive = more vMotion, better balance. Level 3 recommended for most." }] },
+    evc_mismatch:     { kbs: [{ n:34, t:"EVC Mode Mismatch — CPU Compatibility",           ty:"break", f:"phase4.html", sum:"Host CPU doesn't match cluster EVC baseline. Set EVC to lowest common CPU, or remove incompatible host." }] },
+    evc_block:        { kbs: [{ n:34, t:"EVC Mode Mismatch — CPU Compatibility",           ty:"break", f:"phase4.html", sum:"EVC mode prevents vMotion between hosts with different CPU feature sets. Verify EVC mode matches all hosts." }] },
+    vm_host_rules:    { kbs: [{ n:35, t:"VM-Host Affinity Rules & Licensing",              ty:"fix",   f:"phase4.html", sum:"Pin VMs to specific hosts. Must-rules can prevent HA failover. Create VM group + Host group + rule." }] },
+    numa:             { kbs: [{ n:36, t:"NUMA Optimization & CPU Scheduling",              ty:"fix",   f:"phase4.html", sum:"VM vCPU count should not exceed cores per NUMA node. Check esxtop for NUMA remote memory access." }] },
+    ballooning:       { kbs: [{ n:37, t:"Memory Overcommitment & Ballooning Crisis",       ty:"break", f:"phase4.html", sum:"VMs ballooning/swapping due to memory pressure. Check esxtop: MCTLSZ, SWCUR. Add memory or reduce VM count." }] },
+    storage_drs:      { kbs: [{ n:38, t:"Storage DRS & Datastore Clusters",                ty:"fix",   f:"phase4.html", sum:"Automated storage load balancing. Configure I/O latency and space thresholds. Check affinity rules blocking SDRS." }] },
+    drs_faults:       { kbs: [{ n:39, t:"DRS Faults & Recommendations Not Applied",       ty:"break", f:"phase4.html", sum:"DRS generates faults instead of recommendations. Check VM overrides, resource constraints, vMotion failures." }] },
+    latency_sens:     { kbs: [{ n:40, t:"Latency Sensitivity & Performance Tuning",        ty:"fix",   f:"phase4.html", sum:"Set VM latency sensitivity to High for trading/VoIP. Disables ballooning, requires full memory reservation." }] },
+
+    vmotion_fail:     { kbs: [{ n:3,  t:"vMotion Failure — Migration Timeout",             ty:"break", f:"phase1.html", sum:"Check vMotion VMkernel, MTU, firewall, CPU compatibility (EVC). Test with vmkping -I vmkN. Common: wrong VLAN, no vMotion tag." }] },
+    vmotion_net:      { kbs: [{ n:62, t:"vMotion VMkernel Network Troubleshooting",        ty:"break", f:"phase7.html", sum:"Verify vMotion tag on VMkernel, test connectivity with vmkping -d -s 8972. Check VLAN, MTU, firewall rules." }] },
+    storage_vmotion:  { kbs: [{ n:56, t:"Storage vMotion Failure",                         ty:"break", f:"phase6.html", sum:"VM disk migration fails. Consolidate snapshots first, ensure 2x VMDK free space on target, check for locked files." }] },
+    storage_vmotion2: { kbs: [{ n:56, t:"Storage vMotion Failure",                         ty:"break", f:"phase6.html", sum:"VM disk migration fails mid-transfer. Check vpxd.log for relocate errors. Verify datastore connectivity." }] },
+    mtu_vmotion:      { kbs: [{ n:63, t:"MTU / Jumbo Frames Mismatch",                    ty:"break", f:"phase7.html", sum:"End-to-end MTU must match. Test with vmkping -d -s 8972. Set MTU 9000 on vmk, vDS, and physical switch." }] },
+    sriov_limit:      { kbs: [{ n:70, t:"SR-IOV & DirectPath I/O Configuration",           ty:"fix",   f:"phase7.html", sum:"Bypass virtual switch for max performance. Limitations: no vMotion, no snapshots, no FT with DirectPath." }] },
+
+    vpxd_crash:       { kbs: [{ n:7,  t:"vCenter Service Health — vpxd Crash/Restart",     ty:"break", f:"phase1.html", sum:"Check VCSA disk space, DB connections, certificates. service-control --status, review vpxd.log." },
+                               { n:42, t:"vpxd Service Crash & Recovery",                   ty:"break", f:"phase5.html", sum:"Deep dive: DB connection pool exhausted, plugin conflicts, certificate chain issues. Check vpxd-profiler.log." }] },
+    vcsa_disk:        { kbs: [{ n:41, t:"VCSA Disk Space Full — Partition Cleanup",         ty:"break", f:"phase5.html", sum:"Partitions full: /storage/log, /storage/db. Clean with df -h, du -sh. Expand disk in VAMI." }] },
+    cert_expiry:      { kbs: [{ n:11, t:"Certificate Expiry / STS Token Failure",           ty:"break", f:"phase2.html", sum:"STS cert expires → all SSO login fails. Renew via certificate-manager utility or fixsts.sh script." },
+                               { n:44, t:"SSO / STS Certificate Expiry & Renewal",          ty:"break", f:"phase5.html", sum:"Deep dive into STS signing cert renewal process. Check expiry with dir-cli trustedcert list." }] },
+    sso_issues:       { kbs: [{ n:16, t:"vCenter SSO / Identity Source Issues",             ty:"break", f:"phase2.html", sum:"LDAP/AD auth failing. Check bind password, AD DC reachability, DNS resolution, certificate trust." }] },
+    db_postgres:      { kbs: [{ n:43, t:"vCenter Database (PostgreSQL) Troubleshooting",    ty:"break", f:"phase5.html", sum:"Check connections, vacuum, analyze. Signs: slow UI, vpxd timeouts. Access via psql -U postgres VCDB." }] },
+    content_lib:      { kbs: [{ n:45, t:"Content Library Sync Failures",                    ty:"fix",   f:"phase5.html", sum:"Check HTTPS connectivity, proxy settings, certificate trust. Resync library, verify SSL thumbprint." }] },
+    psc_converge:     { kbs: [{ n:46, t:"vCenter Convergence — External PSC to Embedded",   ty:"fix",   f:"phase5.html", sum:"Migrate from deprecated external PSC. Use converge-topology tool. Pre-check: all services healthy." }] },
+    vami_backup:      { kbs: [{ n:47, t:"VAMI Backup Schedule & Automated Recovery",        ty:"fix",   f:"phase5.html", sum:"Configure via VAMI (port 5480). Protocols: FTP/SCP/SMB. Daily with 5-day retention. Test restore quarterly." }] },
+    plugin_issues:    { kbs: [{ n:48, t:"vCenter Plugin & UI Extension Issues",              ty:"fix",   f:"phase5.html", sum:"Plugins causing slow UI. Unregister broken plugins via MOB (https://vcsa/mob). Check vsphere-ui logs." }] },
+    lookup_svc:       { kbs: [{ n:49, t:"Lookup Service & Component Registration",          ty:"break", f:"phase5.html", sum:"Services fail to register. Check lstool.py list. Re-register solution users, restart services." }] },
+    vc_sizing:        { kbs: [{ n:50, t:"vCenter Performance & Sizing Guidelines",          ty:"fix",   f:"phase5.html", sum:"VCSA sizes: Tiny (10 hosts), Small (100), Medium (400), Large (2000). Monitor vpxd task count." }] },
+    alarm_storm:      { kbs: [{ n:10, t:"vCenter Alarm Storm — False Positive Triage",      ty:"fix",   f:"phase1.html", sum:"Reset triggered alarms, disable non-critical alarms. Review alarm definitions and actions." }] },
+    alarm_triage:     { kbs: [{ n:10, t:"vCenter Alarm Storm — False Positive Triage",      ty:"fix",   f:"phase1.html", sum:"Hundreds of alarms flooding. Reset, disable non-critical, review triggers and notification actions." }] },
+
+    vmfs_unmount:     { kbs: [{ n:51, t:"VMFS Datastore Unmount / Detach Issues",           ty:"break", f:"phase6.html", sum:"Must evacuate all VMs, remove HA heartbeat. esxcli storage filesystem unmount. Disconnect from all hosts." }] },
+    apd_pdl:          { kbs: [{ n:52, t:"APD / PDL on VMFS Datastores",                     ty:"break", f:"phase6.html", sum:"APD = temporary (140s retry), PDL = permanent (immediate). Configure HA VMCP response policies." }] },
+    multipath:        { kbs: [{ n:53, t:"Multipathing (PSP) Configuration",                 ty:"fix",   f:"phase6.html", sum:"PSPs: Fixed, MRU, Round Robin. RR for active-active, Fixed for active-passive. Tune IOPS for RR." }] },
+    nfs_issues:       { kbs: [{ n:54, t:"NFS Connectivity & Performance Issues",            ty:"break", f:"phase6.html", sum:"Check esxcli storage nfs list, vmkping. Verify VMkernel NFS tag, server exports, permissions. Max 256 volumes." }] },
+    vmfs_heap:        { kbs: [{ n:55, t:"VMFS Heap Exhaustion",                             ty:"break", f:"phase6.html", sum:"Cannot open disk errors. Increase MaxHeapSizeMB (limited), consolidate datastores, reduce open VMDKs." }] },
+    thin_prov:        { kbs: [{ n:57, t:"Thin Provisioning & Space Reclamation (UNMAP)",    ty:"fix",   f:"phase6.html", sum:"Enable UNMAP: esxcli storage vmfs unmap. Automated UNMAP on vSphere 6.5+. Needs VAAI UNMAP support." }] },
+    iscsi_fc:         { kbs: [{ n:58, t:"iSCSI / FC HBA Troubleshooting",                   ty:"fix",   f:"phase6.html", sum:"Software iSCSI: esxcli iscsi adapter list. FC: esxcli storage san fc list. Rescan: --all. Check CHAP, zoning." }] },
+    vaai:             { kbs: [{ n:59, t:"VAAI Offload & Storage Acceleration",               ty:"fix",   f:"phase6.html", sum:"VAAI primitives: ATS, Clone Blocks, Zero Blocks, UNMAP. Check vaai status per device. Offloads to array." }] },
+    snapshot_consol:  { kbs: [{ n:8,  t:"Snapshot Consolidation Failure",                    ty:"fix",   f:"phase1.html", sum:"Locked files, insufficient space, CID mismatch. Use vim-cmd vmsvc/snapshot.removeall. Verify CID chain." }] },
+    sdrs:             { kbs: [{ n:60, t:"Datastore Cluster & SDRS Troubleshooting",          ty:"fix",   f:"phase6.html", sum:"SDRS recommendations not applying. Check affinity rules, I/O threshold, automation level, space." }] },
+
+    vds_disconnect:   { kbs: [{ n:61, t:"vDS Misconfiguration — Host Network Disconnect",   ty:"break", f:"phase7.html", sum:"Management on vDS → host unreachable. Recovery: direct console → restore vSS with esxcli network vswitch." }] },
+    mtu_mismatch:     { kbs: [{ n:63, t:"MTU / Jumbo Frames Mismatch",                      ty:"break", f:"phase7.html", sum:"End-to-end MTU must match: ESXi vmk → switch → target. Test with vmkping -d -s 8972." }] },
+    nic_teaming:      { kbs: [{ n:64, t:"NIC Teaming & Failover Policy",                    ty:"fix",   f:"phase7.html", sum:"IP hash requires LACP/LAG on switch. Route by physical NIC recommended for most. Set failover order." }] },
+    vlan_config:      { kbs: [{ n:65, t:"Port Group VLAN Configuration Issues",              ty:"break", f:"phase7.html", sum:"VLAN types: None (0), specific (1-4094), trunking (4095). Match with physical switch access/trunk config." }] },
+    vss_to_vds:       { kbs: [{ n:66, t:"vSS to vDS Migration Procedure",                   ty:"fix",   f:"phase7.html", sum:"Migrate one NIC at a time. Keep one on vSS until verified. Map vSS port groups → vDS port groups." }] },
+    nioc:             { kbs: [{ n:67, t:"Network I/O Control (NIOC) — Traffic Shaping",      ty:"fix",   f:"phase7.html", sum:"Prioritize traffic types: vMotion, management, VM, NFS. Configure shares and reservations per type." }] },
+    tcpip_stack:      { kbs: [{ n:68, t:"TCP/IP Stack & VMkernel Routing",                   ty:"fix",   f:"phase7.html", sum:"Custom TCP/IP stacks for vMotion, Provisioning. esxcli network ip netstack list. Separate routing tables." }] },
+    firewall_ports:   { kbs: [{ n:69, t:"ESXi Firewall & Port Requirements",                ty:"fix",   f:"phase7.html", sum:"Key ports: 443 (vCenter), 902 (console), 8000 (vMotion), 2049 (NFS). esxcli network firewall ruleset list." }] },
+    sriov_dp:         { kbs: [{ n:70, t:"SR-IOV & DirectPath I/O Configuration",             ty:"fix",   f:"phase7.html", sum:"Virtual Functions assigned to VMs. Needs VT-d/AMD-Vi. No vMotion, no snapshots, no FT with DirectPath." }] },
+    host_disconn:     { kbs: [{ n:4,  t:"ESXi Host Disconnected from vCenter",               ty:"break", f:"phase1.html", sum:"Check vpxa agent: /etc/init.d/vpxa restart. Verify management network, DNS, certificates, port 443/902." }] },
+
+    psod:             { kbs: [{ n:5,  t:"PSOD — Purple Screen of Death Recovery",            ty:"break", f:"phase1.html", sum:"Collect coredump, analyze stack trace. Check driver/firmware, VMware KB for known backtrace matches. vm-support." }] },
+    maint_mode:       { kbs: [{ n:9,  t:"ESXi Host Stuck in Maintenance Mode",              ty:"fix",   f:"phase1.html", sum:"Check for powered-off VMs, HA reconfiguration pending. esxcli system maintenanceMode set -e false." }] },
+    ssh_hardening:    { kbs: [{ n:15, t:"ESXi Shell / SSH Hardening",                       ty:"fix",   f:"phase2.html", sum:"Set idle timeouts, suppress shell warning. /Security/AccountLockFailures, /UserVars/ESXiShellTimeOut." }] },
+    ntp_drift:        { kbs: [{ n:17, t:"NTP Configuration & Time Drift",                   ty:"break", f:"phase2.html", sum:"Time desync causes cert validation failures, HA issues. Kerberos fails at >5 min drift. esxcli system ntp." }] },
+    vlcm_patch:       { kbs: [{ n:12, t:"ESXi Patch / Upgrade with vLCM",                   ty:"fix",   f:"phase2.html", sum:"Image-based patching: create image, baseline, remediate. Watch for incompatible VIBs, boot device space." }] },
+    host_profile:     { kbs: [{ n:19, t:"Host Profile Compliance Remediation",              ty:"fix",   f:"phase2.html", sum:"Extract from reference host, attach to cluster, check compliance, remediate. Handle answer file prompts." }] },
+    host_disconn2:    { kbs: [{ n:4,  t:"ESXi Host Disconnected from vCenter",               ty:"break", f:"phase1.html", sum:"Host shows Disconnected. Restart vpxa: /etc/init.d/vpxa restart. Check management network and DNS." }] },
+
+    esxtop_perf:      { kbs: [{ n:20, t:"Performance Monitoring (esxtop & vscsiStats)",     ty:"fix",   f:"phase2.html", sum:"esxtop: c (CPU), m (memory), n (network), d (disk). Key: %RDY, %CSTP, KAVG, GAVG. Batch: esxtop -b -d 5." }] },
+    log_bundle:       { kbs: [{ n:14, t:"Log Bundle Collection & Analysis",                 ty:"fix",   f:"phase2.html", sum:"ESXi: vm-support. vCenter: /var/log/vmware/. Key logs: vpxd.log, hostd.log, vmkernel.log, fdm.log." }] },
+    syslog:           { kbs: [{ n:18, t:"Syslog & Log Forwarding Setup",                    ty:"fix",   f:"phase2.html", sum:"esxcli system syslog config set --loghost=udp://syslog:514. Configure VCSA forwarding in VAMI." }] },
+    backup_restore:   { kbs: [{ n:13, t:"vCenter Backup & Restore (VAMI)",                  ty:"fix",   f:"phase2.html", sum:"File-based backup via VAMI port 5480. Schedule daily. Restore: deploy new VCSA, select Restore in installer." }] },
+    vc_perf:          { kbs: [{ n:50, t:"vCenter Performance & Sizing Guidelines",          ty:"fix",   f:"phase5.html", sum:"VCSA sizing by inventory size. Tune vpxd.cfg parameters. Monitor task count and concurrent connections." }] }
+};
+
+let path = [];
+let labels = [];
+let searchTimeout = null;
+
+function goHome() {
+    path = []; labels = [];
+    document.getElementById('treeSearch').value = '';
+    document.getElementById('searchInfo').style.display = 'none';
+    document.getElementById('noResults').style.display = 'none';
+    render();
+}
+
+function navigate(nodeId, label) {
+    path.push(nodeId); labels.push(label);
+    document.getElementById('treeSearch').value = '';
+    document.getElementById('searchInfo').style.display = 'none';
+    document.getElementById('noResults').style.display = 'none';
+    render();
+    document.getElementById('breadcrumb').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function goToStep(index) { path = path.slice(0, index); labels = labels.slice(0, index); render(); }
+
+function jumpTo(fullPath) {
+    path = []; labels = [];
+    for (var i = 0; i < fullPath.length; i++) {
+        path.push(fullPath[i]);
+        if (fullPath[i] === 'root') { labels.push('Start'); }
+        else {
+            var parentNode = tree[fullPath[i - 1]] || tree.root;
+            if (parentNode && parentNode.choices) {
+                var match = parentNode.choices.find(function(c) { return c.id === fullPath[i]; });
+                labels.push(match ? match.title : fullPath[i]);
+            } else { labels.push(fullPath[i]); }
+        }
+    }
+    render();
+}
+
+function searchTree() { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 200); }
+
+function doSearch() {
+    var query = document.getElementById('treeSearch').value.trim().toLowerCase();
+    var info = document.getElementById('searchInfo');
+    var noRes = document.getElementById('noResults');
+    var cards = document.querySelectorAll('.choice-card');
+    var qpItems = document.querySelectorAll('.quick-path-item');
+    if (!query || query.length < 2) {
+        cards.forEach(function(c) { c.classList.remove('hidden'); });
+        qpItems.forEach(function(q) { q.style.display = ''; });
+        info.style.display = 'none'; noRes.style.display = 'none'; return;
+    }
+    var visibleCount = 0;
+    cards.forEach(function(card) {
+        var text = card.textContent.toLowerCase();
+        if (text.includes(query)) { card.classList.remove('hidden'); visibleCount++; }
+        else { card.classList.add('hidden'); }
+    });
+    qpItems.forEach(function(q) { q.style.display = q.textContent.toLowerCase().includes(query) ? '' : 'none'; });
+    if (cards.length > 0) {
+        info.textContent = 'Showing ' + visibleCount + ' of ' + cards.length + ' options';
+        info.style.display = 'block';
+        noRes.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+}
+
+function render() {
+    var content = document.getElementById('treeContent');
+    var quickPaths = document.getElementById('quickPaths');
+    var hero = document.getElementById('heroSection');
+    var bc = document.getElementById('breadcrumb');
+    var bcHtml = '<span class="breadcrumb-home" onclick="goHome()" role="button" tabindex="0">&#8962; Start</span>';
+    for (var i = 1; i < labels.length; i++) {
+        bcHtml += ' <span class="breadcrumb-sep">&#9654;</span> ';
+        if (i < labels.length - 1) bcHtml += '<span class="breadcrumb-item" onclick="goToStep(' + (i + 1) + ')" role="button" tabindex="0">' + labels[i] + '</span>';
+        else bcHtml += '<span class="breadcrumb-item current">' + labels[i] + '</span>';
+    }
+    bc.innerHTML = bcHtml;
+    if (path.length === 0) { hero.style.display = 'block'; quickPaths.style.display = 'block'; renderChoices(content, tree.root, 'root'); return; }
+    hero.style.display = 'none'; quickPaths.style.display = 'none';
+    var currentId = path[path.length - 1];
+    if (results[currentId]) { renderResult(content, results[currentId]); return; }
+    if (tree[currentId]) { renderChoices(content, tree[currentId], currentId); }
+}
+
+function renderChoices(container, node, parentId) {
+    var html = '<div class="fade-in"><div class="step-question"><span class="step-icon">' + (node.stepNum || '?') + '</span> ' + node.question + '</div><div class="choices">';
+    node.choices.forEach(function(c) {
+        html += '<div class="choice-card" onclick="navigate(\'' + c.id + '\', \'' + c.title.replace(/'/g, "\\'") + '\')" role="button" tabindex="0">';
+        if (c.count) html += '<div class="choice-count">' + c.count + ' KBs</div>';
+        html += '<div class="choice-icon">' + c.icon + '</div><div class="choice-title">' + c.title + '</div><div class="choice-desc">' + c.desc + '</div></div>';
+    });
+    html += '</div></div>';
+    container.innerHTML = html;
+    container.querySelectorAll('.choice-card').forEach(function(card) {
+        card.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); } });
+    });
+}
+
+function renderResult(container, data) {
+    var html = '<div class="fade-in">';
+    data.kbs.forEach(function(kb) {
+        var isBreak = kb.ty === 'break';
+        html += '<div class="result-card ' + (isBreak ? 'break-result' : '') + '"><div class="result-header"><span class="result-kb-num">KB #' + kb.n + '</span><span class="result-type ' + kb.ty + '">' + kb.ty.toUpperCase() + '</span></div>';
+        html += '<div class="result-title">' + kb.t + '</div><div class="result-summary">' + kb.sum + '</div>';
+        html += '<a href="' + kb.f + '#kb-' + kb.n + '" class="result-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Open Full KB Entry</a></div>';
+    });
+    html += '<div class="restart-bar"><button class="restart-btn" onclick="goHome()">&#8634; Start Over</button><br><span class="go-back-link" onclick="goToStep(path.length - 1)">&larr; Go back</span></div></div>';
+    container.innerHTML = html;
+}
+
+render();
+</script>
+</body>
+</html>

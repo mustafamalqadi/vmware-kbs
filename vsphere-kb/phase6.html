@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 6: Storage — VMFS, NFS &amp; Multipathing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 6 — Storage &amp; Datastores</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html" class="active">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search VMFS, NFS, multipathing, APD, PDL, iSCSI, VAAI, datastore..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Storage Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">5</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 6</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #51: VMFS Datastore Unmount / Detach      -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-51" data-type="break" data-severity="high" data-keywords="vmfs unmount detach datastore active io ha heartbeat evacuate registered vms filesystem">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">51</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VMFS Datastore Unmount / Detach Issues</div>
+            <div class="kb-entry-subtitle">Can't unmount datastore — VMs registered, active I/O, or HA heartbeat still bound to the volume</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">VMFS</span>
+                <span class="tag">Unmount</span>
+                <span class="tag">Detach</span>
+                <span class="tag">Datastore</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Unable to decommission or migrate storage LUNs. Datastore remains locked across all cluster hosts, preventing storage array maintenance and capacity reclamation.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Unmount operation fails with <strong>"The resource is in use"</strong></li>
+                    <li>vSphere Client shows <strong>"Cannot unmount datastore"</strong> error</li>
+                    <li>Datastore appears greyed out but cannot be removed</li>
+                    <li>Storage array reports LUN still actively accessed</li>
+                    <li>HA heartbeat datastore icon persists on the volume</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>VMs still registered (even powered off) on the datastore</li>
+                    <li>Active I/O from snapshots, swap files, or ISO images mounted</li>
+                    <li>vSphere HA using the datastore as a heartbeat volume</li>
+                    <li>Datastore not disconnected from <strong>all</strong> hosts in the cluster</li>
+                    <li>Stale VMFS lock held by a disconnected or crashed host</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>VMFS datastores use on-disk locking (ATS/SCSI reservations) to prevent concurrent access conflicts. When you attempt to unmount, ESXi checks for any active consumers — registered VMs, open VMDKs, swap files, ISO images, HA heartbeats, and SIOC configurations. If <strong>any</strong> of these exist on <strong>any</strong> host in the cluster, the unmount is blocked. A common scenario is forgetting to Storage vMotion a powered-off VM's config files or removing HA heartbeat assignment before decommissioning.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check for active VMs and open files on the datastore</strong></p>
+                    <pre><code># List all files open on the datastore:
+esxcli storage filesystem list | grep -i datastore1
+
+# Check for registered VMs on this datastore:
+vim-cmd vmsvc/getallvms | grep "datastore1"
+
+# Check for active VMDK locks:
+vmkfstools -D /vmfs/volumes/datastore1/vm/vm.vmdk</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify HA heartbeat and SIOC status</strong></p>
+                    <pre><code># Check if datastore is an HA heartbeat volume:
+# vSphere Client → Cluster → Configure → vSphere Availability
+# → Heartbeat Datastores — remove the target datastore
+
+# Check Storage I/O Control:
+esxcli storage filesystem list
+# Look for "Mounted: true" and usage indicators</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Unmount and detach from all hosts</strong></p>
+                    <pre><code># Step 1: Unmount the VMFS filesystem:
+esxcli storage filesystem unmount -l datastore1
+
+# Step 2: Detach the underlying device (LUN):
+esxcli storage core device set --state=off -d naa.xxxxxxxxxxxx
+
+# Verify unmount succeeded:
+esxcli storage filesystem list | grep datastore1
+# Should return empty or show "Mounted: false"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Before unmounting, evacuate all VMs (including powered-off), remove ISO mounts, delete swap file references, and remove the datastore from HA heartbeat selection. Unmount from every host in the cluster before detaching the LUN. Never detach a LUN without unmounting the filesystem first — this can cause metadata corruption.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #52: APD / PDL on VMFS Datastores         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-52" data-type="break" data-severity="critical" data-keywords="apd pdl all paths down permanent device loss vmfs datastore io error stunned vmcp ha storage connectivity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">52</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">APD / PDL on VMFS Datastores</div>
+            <div class="kb-entry-subtitle">All Paths Down (APD) or Permanent Device Loss (PDL) — VMs stunned or receiving I/O errors on storage failure</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">APD</span>
+                <span class="tag">PDL</span>
+                <span class="tag">VMFS</span>
+                <span class="tag">Storage Failure</span>
+                <span class="tag">VMCP</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> CRITICAL — VMs are stunned (frozen) during APD or receive fatal I/O errors during PDL. Applications crash, databases corrupt, and production workloads halt. APD default timeout is 140 seconds of total VM freeze.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs become <strong>unresponsive / stunned</strong> — no ping, no console</li>
+                    <li>vSphere Client shows datastore with <strong>red exclamation</strong></li>
+                    <li>ESXi logs: <code class="inline">ScsiDeviceIO: ... APD Timeout</code></li>
+                    <li>ESXi logs: <code class="inline">Permanent device loss ... sense key 0x5</code></li>
+                    <li>HA events: <strong>"VMCP has detected APD/PDL on datastore"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li><strong>APD:</strong> All storage paths down — fabric switch failure, cable pull, array controller reboot</li>
+                    <li><strong>PDL:</strong> LUN destroyed, removed from array, or permanently inaccessible</li>
+                    <li>Zoning changes removing ESXi host from SAN fabric</li>
+                    <li>Storage array firmware upgrade causing temporary path loss</li>
+                    <li>iSCSI network partition or NFS server crash</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p><strong>APD (All Paths Down)</strong> is a temporary condition — ESXi loses all paths to a storage device but the device has not reported permanent loss. ESXi retries I/O for <strong>140 seconds</strong> (APD timeout), during which VMs are <strong>stunned</strong> (completely frozen). If paths recover within 140s, VMs resume. If not, VMs may be killed or restarted by HA VMCP.</p>
+        <p><strong>PDL (Permanent Device Loss)</strong> is an immediate, non-recoverable condition — the storage array explicitly reports the LUN is gone (SCSI sense code). VMs receive I/O errors immediately and will crash. There is no retry period for PDL.</p>
+
+        <div class="section-label">Diagnostic &amp; Response Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify APD / PDL state on the device</strong></p>
+                    <pre><code># Check device path state:
+esxcli storage core device list | grep -A 5 "naa.xxxx"
+# Look for: "Status: dead" (PDL) or "Status: dead-timeout" (APD)
+
+# Check path status for all devices:
+esxcli storage core path list | grep -i "state\|device"
+
+# Review vmkernel log for APD/PDL events:
+grep -i "APD\|PDL\|permanent device loss\|all paths down" /var/log/vmkernel.log | tail -30</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check and configure APD timeout and VMCP</strong></p>
+                    <pre><code># Check current APD timeout (default 140 seconds):
+esxcli system settings advanced list -o /Misc/APDTimeout
+
+# Configure HA VMCP (VM Component Protection):
+# vSphere Client → Cluster → Configure → vSphere Availability
+# → Failure Conditions → Datastore with APD:
+#   Response: "Power off and restart VMs" (aggressive) or "Issue events" (conservative)
+# → Datastore with PDL:
+#   Response: "Power off and restart VMs" (recommended)
+
+# Verify VMCP is enabled:
+esxcli system settings advanced list -o /das/ | grep -i vmcp</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Recover VMs after APD/PDL event</strong></p>
+                    <pre><code># If storage has recovered, rescan all HBAs:
+esxcli storage core adapter rescan --all
+
+# Verify device is back online:
+esxcli storage core device list -d naa.xxxx | grep Status
+# Should show: "Status: on"
+
+# If VMs are still stunned, answer the VM question:
+# vSphere Client → VM → Monitor → Questions
+# Or power cycle the VM:
+vim-cmd vmsvc/power.off &lt;vmid&gt;
+vim-cmd vmsvc/power.on &lt;vmid&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Best Practice:</strong> Always enable HA VMCP for both APD and PDL responses. For PDL, set response to "Power off and restart VMs" — the LUN is gone, so restarting VMs on surviving datastores is the only option. For APD, consider a conservative 180s delay before restart to allow transient storage issues to self-heal. Test VMCP responses in a non-production cluster first.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #53: Multipathing (PSP) Configuration     -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-53" data-type="fix" data-severity="high" data-keywords="multipathing psp path selection policy round robin fixed mru nmp satp active active passive iops latency">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">53</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Multipathing (PSP) Configuration &amp; Troubleshooting</div>
+            <div class="kb-entry-subtitle">Path Selection Policy tuning — Fixed, MRU, Round Robin for optimal storage performance and failover</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Multipathing</span>
+                <span class="tag">PSP</span>
+                <span class="tag">Round Robin</span>
+                <span class="tag">NMP</span>
+                <span class="tag">SATP</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Wrong PSP can cause suboptimal I/O distribution, path thrashing on active-passive arrays, or single-path bottlenecks. Round Robin misconfiguration can trigger path failovers on ALUA arrays.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Storage latency higher than expected despite multiple paths</li>
+                    <li>Only <strong>one path active</strong>, others show standby</li>
+                    <li>Path failover events in <code class="inline">vmkernel.log</code> during normal operation</li>
+                    <li>esxtop shows I/O concentrated on a single HBA/path</li>
+                    <li>Array reports <strong>path thrashing</strong> between controllers</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Set <strong>Round Robin</strong> for active-active arrays (ALUA preferred)</li>
+                    <li>Set <strong>Fixed</strong> for active-passive arrays (single active controller)</li>
+                    <li>Use <strong>MRU</strong> when path persistence matters after failover</li>
+                    <li>Tune Round Robin IOPS parameter per workload type</li>
+                    <li>Verify SATP claim rules match your storage vendor</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current multipathing configuration per device</strong></p>
+                    <pre><code># List all devices with their current PSP and SATP:
+esxcli storage nmp device list
+
+# Check a specific device:
+esxcli storage nmp device list -d naa.xxxxxxxxxxxx
+# Look for:
+#   Path Selection Policy: VMW_PSP_RR (Round Robin)
+#   Storage Array Type Plugin: VMW_SATP_ALUA
+
+# View all paths for a device:
+esxcli storage nmp path list -d naa.xxxxxxxxxxxx</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Change PSP to Round Robin for active-active arrays</strong></p>
+                    <pre><code># Set Round Robin on a specific device:
+esxcli storage nmp device set -d naa.xxxxxxxxxxxx --psp=VMW_PSP_RR
+
+# Set Round Robin IOPS (switch path after N I/Os):
+esxcli storage nmp psp roundrobin deviceconfig set \
+  -d naa.xxxxxxxxxxxx --iops=1 --type=iops
+# IOPS=1:  best for latency-sensitive workloads (databases)
+# IOPS=1000: best for throughput-heavy workloads (backup, bulk I/O)
+
+# Create a SATP claim rule to auto-apply RR for your array vendor:
+esxcli storage nmp satp rule add -s VMW_SATP_ALUA \
+  -P VMW_PSP_RR -V "VENDOR" -M "MODEL" \
+  -O "iops=1" -e "Custom RR rule for VENDOR array"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify path distribution and performance</strong></p>
+                    <pre><code># Verify Round Robin is active and paths are distributing:
+esxcli storage nmp path list -d naa.xxxxxxxxxxxx
+# All paths should show "State: active"
+
+# Use esxtop to verify I/O distribution across paths:
+# esxtop → press 'u' for device view
+# Check CMDS/s per path — should be roughly equal with RR
+
+# Rescan to apply changes:
+esxcli storage core adapter rescan --all</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always check your storage vendor's VMware compatibility guide for the recommended PSP and SATP. Create SATP claim rules so new LUNs automatically get the correct PSP. For ALUA arrays, Round Robin with IOPS=1 is the most common recommendation. After changing PSP on one host, replicate the SATP claim rule across all hosts using Host Profiles or PowerCLI.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #54: NFS Connectivity & Performance        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-54" data-type="break" data-severity="high" data-keywords="nfs datastore connectivity performance timeout vmkernel mount inaccessible slow latency export permissions max volumes">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">54</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NFS Connectivity &amp; Performance Issues</div>
+            <div class="kb-entry-subtitle">NFS datastore inaccessible, slow performance, or intermittent disconnects affecting VM availability</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">NFS</span>
+                <span class="tag">Datastore</span>
+                <span class="tag">Network</span>
+                <span class="tag">Performance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs on NFS datastores become unresponsive or experience severe I/O latency. NFS disconnects trigger APD-like behavior, stunning VMs until the NFS server recovers. VMs may crash if the disconnect exceeds the NFS timeout.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>NFS datastore shows <strong>"Inactive"</strong> or <strong>"Not accessible"</strong> in vSphere Client</li>
+                    <li>VMs become stunned; console shows <strong>frozen screen</strong></li>
+                    <li>vmkernel.log: <code class="inline">NFS: ... server not responding</code></li>
+                    <li>Slow VM disk I/O — DAVG/cmd &gt; 20ms in esxtop</li>
+                    <li>Mount fails: <strong>"Unable to connect to NFS server"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NFS server overloaded or unresponsive</li>
+                    <li>Network misconfiguration — wrong VLAN, missing VMkernel NFS tag</li>
+                    <li>Firewall blocking NFS ports (TCP 2049, 111)</li>
+                    <li>NFS export permissions deny ESXi host IP</li>
+                    <li>Exceeding NFS max volumes limit (<strong>256 per host</strong>)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>ESXi connects to NFS datastores over standard TCP/IP networking. Unlike block storage (FC/iSCSI), NFS has no multipathing built into the protocol — it depends entirely on the network layer. When the NFS server becomes unreachable (network partition, server crash, firewall change), ESXi enters a retry loop. VMs are stunned for the duration of the retry. If the VMkernel port used for NFS traffic is misconfigured (wrong VLAN, no IP, or missing NFS traffic type tag), the mount silently fails or operates over a suboptimal path.</p>
+
+        <div class="section-label">Diagnostic &amp; Fix Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify NFS mount status and network connectivity</strong></p>
+                    <pre><code># List all NFS datastores and their status:
+esxcli storage nfs list
+# Check: Share, Host (NFS server IP), Accessible (true/false)
+
+# Test network connectivity to NFS server:
+vmkping -I vmk1 192.168.10.50
+# Use the VMkernel interface tagged for NFS traffic
+
+# Check for NFS errors in vmkernel log:
+grep -i "NFS\|nfs" /var/log/vmkernel.log | tail -30</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify VMkernel NFS traffic tag and NFS server exports</strong></p>
+                    <pre><code># Check VMkernel adapter services (ensure NFS traffic is tagged):
+esxcli network ip interface tag get -i vmk1
+# Should include "NFS" in enabled services
+
+# On the NFS server, verify exports allow ESXi host:
+# Linux NFS: cat /etc/exports
+# Example: /nfs_datastore  192.168.10.0/24(rw,no_root_squash,sync)
+
+# Check current NFS mount count vs. limit:
+esxcli storage nfs list | wc -l
+# Max NFS mounts per ESXi host: 256 (NFS 3) / 256 (NFS 4.1)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Remount NFS datastore and tune timeouts</strong></p>
+                    <pre><code># Remount an inaccessible NFS datastore:
+esxcli storage nfs remove -v NFS_Datastore1
+esxcli storage nfs add -H 192.168.10.50 -s /nfs_datastore -v NFS_Datastore1
+
+# Tune NFS heartbeat and timeout settings:
+esxcli system settings advanced list -o /NFS/HeartbeatFrequency
+# Default: 12 seconds — increase for unstable networks
+
+esxcli system settings advanced set -o /NFS/HeartbeatTimeout -i 5
+esxcli system settings advanced set -o /NFS/HeartbeatMaxFailures -i 10</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Dedicate a VMkernel port group with NFS traffic type for storage. Use jumbo frames (MTU 9000) end-to-end for NFS performance. Consider NFS 4.1 for multipathing (session trunking) and Kerberos authentication. Monitor NFS server CPU and network utilization — NFS is CPU-intensive on the server side. Set NFS heartbeat failures to 10+ to tolerate brief network blips without unmounting.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #55: VMFS Heap Exhaustion                  -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-55" data-type="break" data-severity="critical" data-keywords="vmfs heap exhaustion cannot open disk failed lock file maxheapsizemb open vmdks files memory datastore">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">55</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VMFS Heap Exhaustion</div>
+            <div class="kb-entry-subtitle">"Cannot open the disk" or "Failed to lock file" errors due to VMFS heap memory depletion</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">VMFS</span>
+                <span class="tag">Heap</span>
+                <span class="tag">Memory</span>
+                <span class="tag">VMDK</span>
+                <span class="tag">Lock</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> CRITICAL — VMs fail to power on, snapshots cannot be created or deleted, and running VMs may lose disk access. The VMFS heap is a finite kernel memory region; once exhausted, all VMFS operations on the host fail.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs fail to power on: <strong>"Cannot open the disk"</strong></li>
+                    <li>Snapshot operations fail: <strong>"Failed to lock the file"</strong></li>
+                    <li>vmkernel.log: <code class="inline">Heap vmfs3 already at its maximum size</code></li>
+                    <li>New VMDKs cannot be created on the datastore</li>
+                    <li>Running VMs suddenly lose access to virtual disks</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Too many open files (VMDKs, snapshots, descriptor files) on VMFS volumes</li>
+                    <li>Large number of small VMs on a single VMFS datastore</li>
+                    <li>Snapshot chains consuming heap for each delta disk</li>
+                    <li>VMFS heap max size insufficient for workload density</li>
+                    <li>Orphaned .lck files consuming heap resources</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>ESXi allocates a fixed kernel memory region (the <strong>VMFS heap</strong>) to track all open files, locks, and metadata on VMFS datastores. Each open VMDK, snapshot delta, descriptor file, and lock file consumes heap memory. When you pack many VMs (especially with snapshots) onto VMFS datastores, the heap can be exhausted. Once the heap is full, ESXi cannot open any new files on any VMFS datastore — VMs fail to power on, snapshots fail, and even running VMs may lose disk connectivity.</p>
+
+        <div class="section-label">Diagnostic &amp; Fix Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check VMFS heap usage and configuration</strong></p>
+                    <pre><code># Check current VMFS heap size and maximum:
+esxcli system settings advanced list -o /VMFS3/MaxHeapSizeMB
+# Default: 640 MB (ESXi 7.x), 256 MB (ESXi 6.x)
+
+# Check heap usage via vsish (advanced):
+vsish -e get /system/heaps/vmfs3-*/stats
+# Look for: "Current heap size" vs "Max heap size"
+
+# Count open files per datastore:
+find /vmfs/volumes/datastore1/ -name "*.vmdk" | wc -l
+find /vmfs/volumes/datastore1/ -name "*.lck" -type d | wc -l</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Reduce heap consumption — consolidate and clean up</strong></p>
+                    <pre><code># Consolidate all VM snapshots (reduces delta disk count):
+# vSphere Client → VM → Snapshots → Delete All
+
+# PowerCLI — find VMs with snapshots on the host:
+Get-VM -Location (Get-VMHost esxi01.local) |
+  Get-Snapshot | Select VM, Name, SizeMB, Created |
+  Sort-Object SizeMB -Descending | Format-Table -AutoSize
+
+# Remove orphaned lock files (ONLY if VM is confirmed off):
+# find /vmfs/volumes/datastore1/vmname/ -name "*.lck" -type d
+# rm -rf /vmfs/volumes/datastore1/vmname/*.lck  # CAUTION!</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Increase VMFS heap (temporary) and redistribute VMs</strong></p>
+                    <pre><code># Increase VMFS heap max (requires reboot):
+esxcli system settings advanced set -o /VMFS3/MaxHeapSizeMB -i 768
+
+# Long-term: redistribute VMs across more datastores
+# Use Storage vMotion to spread VMs:
+# PowerCLI:
+Get-VM "vm-name" | Move-VM -Datastore "datastore2"
+
+# Monitor heap after changes:
+esxcli system settings advanced list -o /VMFS3/MaxHeapSizeMB</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Best Practice:</strong> Avoid packing more than 30-40 VMs per VMFS datastore. Consolidate snapshots regularly — each snapshot delta disk consumes heap. Use vSphere 7.x which has a larger default heap (640 MB). Monitor heap usage proactively with vRealize Operations or custom scripts. If you're hitting heap limits, consider migrating to vSAN or NFS which don't have this limitation.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #56: Storage vMotion Failure               -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-56" data-type="break" data-severity="high" data-keywords="storage vmotion svmotion failure relocate disk migration insufficient space locked files cbt snapshots vmdk">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">56</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Storage vMotion Failure</div>
+            <div class="kb-entry-subtitle">VM disk migration fails mid-transfer — insufficient space, locked files, snapshot conflicts, or CBT errors</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Storage vMotion</span>
+                <span class="tag">Migration</span>
+                <span class="tag">VMDK</span>
+                <span class="tag">Snapshot</span>
+                <span class="tag">CBT</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VM disk migration fails mid-transfer, leaving partial VMDK copies on the target datastore. The VM remains on the source but may have inconsistent CBT state, causing backup failures. Wasted storage capacity from orphaned partial copies.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Storage vMotion task fails at <strong>xx%</strong> with timeout or I/O error</li>
+                    <li>vpxd.log: <code class="inline">relocate disk ... failed</code> or <code class="inline">No space left on device</code></li>
+                    <li>Orphaned VMDK files on the target datastore</li>
+                    <li>VM backup fails after aborted Storage vMotion (CBT corruption)</li>
+                    <li>vSphere Client: <strong>"A general system error occurred"</strong> during migration</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Insufficient free space on target datastore (need 2x VMDK for swap)</li>
+                    <li>Active snapshots creating delta disks that grow during migration</li>
+                    <li>CBT (Changed Block Tracking) inconsistency blocking disk copy</li>
+                    <li>File lock held by backup software or another process</li>
+                    <li>Network or storage I/O timeout during long migration</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>Storage vMotion copies VMDK data from source to target datastore while the VM is running. It uses a <strong>mirror driver</strong> that writes to both source and target simultaneously, then switches. If the target datastore runs out of space (thin-to-thick conversion, snapshot growth), the mirror fails. If CBT is corrupted, the incremental copy logic fails. Snapshots add complexity because each delta disk must also be migrated, and active snapshots continue growing during the copy, creating a race condition.</p>
+
+        <div class="section-label">Diagnostic &amp; Fix Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Pre-flight checks before Storage vMotion</strong></p>
+                    <pre><code># Check target datastore free space:
+esxcli storage filesystem list | grep target_datastore
+# Ensure free space > 2x the VMDK size (for thin provisioned)
+
+# Check VM snapshot state — consolidate first:
+vim-cmd vmsvc/snapshot.get &lt;vmid&gt;
+
+# If snapshots exist, consolidate before migrating:
+vim-cmd vmsvc/snapshot.removeall &lt;vmid&gt;
+
+# Check for file locks on VMDK:
+vmkfstools -D /vmfs/volumes/source_ds/vm/vm-flat.vmdk</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Fix CBT issues and clean up orphaned files</strong></p>
+                    <pre><code># Reset CBT on the VM (requires stun — brief pause):
+# PowerCLI:
+$vm = Get-VM "vm-name"
+$spec = New-Object VMware.Vim.VirtualMachineConfigSpec
+$spec.ChangeTrackingEnabled = $false
+$vm.ExtensionData.ReconfigVM($spec)
+# Power cycle or create+delete snapshot to apply
+$spec.ChangeTrackingEnabled = $true
+$vm.ExtensionData.ReconfigVM($spec)
+
+# Clean up orphaned VMDKs on target (verify not in use first):
+# ls -la /vmfs/volumes/target_ds/vm-name/
+# Remove only files confirmed as orphaned partial copies</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Retry Storage vMotion with best practices</strong></p>
+                    <pre><code># Use PowerCLI for more control over migration:
+Get-VM "vm-name" | Move-VM -Datastore "target_ds" `
+  -DiskStorageFormat Thin -VMotionPriority High
+
+# For large VMs, consider migrating disks individually:
+$vm = Get-VM "vm-name"
+$disk = Get-HardDisk -VM $vm -Name "Hard disk 1"
+Move-HardDisk -HardDisk $disk -Datastore "target_ds" `
+  -StorageFormat Thin
+
+# Monitor migration progress:
+Get-Task | Where { $_.Name -eq "RelocateVM_Task" } |
+  Select Name, PercentComplete, State</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always consolidate snapshots before Storage vMotion. Ensure target datastore has at least 2x the VMDK size in free space. Disable backup jobs during migration to avoid CBT conflicts. For very large VMs (>2 TB), schedule migrations during low I/O periods. After failed migrations, always check for and clean up orphaned VMDKs on the target datastore.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #57: Thin Provisioning & UNMAP             -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-57" data-type="fix" data-severity="medium" data-keywords="thin provisioning unmap space reclamation vaai dead space trim vmfs datastore reclaim grow shrink">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">57</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Thin Provisioning &amp; Space Reclamation (UNMAP)</div>
+            <div class="kb-entry-subtitle">Thin-provisioned disks grow but never shrink — enabling UNMAP for automatic space reclamation on storage arrays</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Thin Provisioning</span>
+                <span class="tag">UNMAP</span>
+                <span class="tag">Space Reclamation</span>
+                <span class="tag">VAAI</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Storage arrays report datastores as full even after VMs are deleted or data is removed inside guest OS. Without UNMAP, deleted blocks are never returned to the storage array, wasting physical capacity and increasing storage costs.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Storage array shows LUN utilization <strong>much higher</strong> than vSphere reports</li>
+                    <li>Thin-provisioned VMDKs <strong>never shrink</strong> after data deletion in guest</li>
+                    <li>Datastore free space doesn't increase after VM deletion</li>
+                    <li>Array thin pool approaching <strong>capacity alarm</strong> despite logical space available</li>
+                    <li>Manual UNMAP command shows <strong>"VAAI not supported"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Enable automated UNMAP on VMFS 6 datastores (default since vSphere 6.5)</li>
+                    <li>Run manual UNMAP for VMFS 5 datastores</li>
+                    <li>Verify storage array supports VAAI UNMAP primitive</li>
+                    <li>Set UNMAP priority (low/medium/high) based on I/O impact tolerance</li>
+                    <li>For guest-level reclamation, use <code class="inline">fstrim</code> (Linux) or Optimize-Volume (Windows)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check UNMAP support and current status</strong></p>
+                    <pre><code># Check if VMFS datastore supports UNMAP:
+esxcli storage vmfs unmap get -l datastore1
+# Look for: "Reclaim Priority" and "Reclaim Granularity"
+
+# Verify VAAI UNMAP support on the device:
+esxcli storage core device vaai status get -d naa.xxxxxxxxxxxx
+# "Delete Status: supported" = UNMAP is supported
+
+# Check VMFS version (UNMAP auto only on VMFS 6):
+esxcli storage filesystem list | grep datastore1
+# VMFS 6.x = automated UNMAP supported</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Enable and configure automated UNMAP (VMFS 6)</strong></p>
+                    <pre><code># Set automated UNMAP priority on VMFS 6 datastore:
+esxcli storage vmfs unmap set -l datastore1 -n low
+# Options: none, low (default), medium, high
+# "low" = minimal I/O impact, reclaims slowly
+# "high" = faster reclaim but more I/O overhead
+
+# Run manual UNMAP on VMFS 5 or for immediate reclaim:
+esxcli storage vmfs unmap -l datastore1
+# This scans all free blocks and sends UNMAP to the array
+
+# For VMFS 5, use the legacy reclaim command:
+esxcli storage vmfs unmap --volume-label=datastore1 \
+  --reclaim-unit=200</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Guest-level space reclamation and verification</strong></p>
+                    <pre><code># Linux guest — trim deleted blocks (passes UNMAP to VMDK):
+sudo fstrim -av
+
+# Windows guest — optimize and trim:
+Optimize-Volume -DriveLetter C -ReTrim -Verbose
+
+# Verify space was reclaimed on the array:
+# Check storage array management console for LUN utilization
+# vSphere: Datastore → Monitor → Capacity
+# Array-side thin pool utilization should decrease
+
+# Enable automatic guest TRIM passthrough (VM setting):
+# VM → Edit Settings → VM Options → Advanced → Configuration Parameters
+# disk.EnableUUID = TRUE (for consistent device naming)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use VMFS 6 for all new datastores — automated UNMAP is built-in. Set priority to "low" for production datastores to minimize I/O impact. Schedule manual UNMAP during maintenance windows for VMFS 5. Ensure the full stack supports thin provisioning: guest OS → VMDK (thin) → VMFS → array thin LUN. Monitor array-side thin pool utilization, not just vSphere datastore capacity.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #58: iSCSI / FC HBA Troubleshooting        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-58" data-type="fix" data-severity="high" data-keywords="iscsi fc hba fibre channel software iscsi adapter discovery static target chap authentication vlan zoning rescan link speed">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">58</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">iSCSI / FC HBA Troubleshooting</div>
+            <div class="kb-entry-subtitle">Software iSCSI adapter, FC HBA link issues, CHAP authentication, discovery targets, and zoning errors</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">iSCSI</span>
+                <span class="tag">FC</span>
+                <span class="tag">HBA</span>
+                <span class="tag">Zoning</span>
+                <span class="tag">CHAP</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> ESXi cannot discover or connect to storage LUNs. New datastores cannot be created, and existing LUNs may become inaccessible after fabric or network changes. VMs on affected datastores will experience APD.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>No LUNs visible after rescan — <strong>"No devices found"</strong></li>
+                    <li>iSCSI login fails: <code class="inline">CHAP authentication failed</code></li>
+                    <li>FC HBA shows <strong>"Link Down"</strong> or <strong>"Speed: Unknown"</strong></li>
+                    <li>Partial LUN visibility — some hosts see LUNs, others don't</li>
+                    <li>Storage adapter shows <strong>"Offline"</strong> in vSphere Client</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Verify iSCSI discovery/static targets and CHAP credentials</li>
+                    <li>Check FC HBA link status, speed negotiation, and zoning</li>
+                    <li>Validate VLAN configuration for iSCSI network</li>
+                    <li>Rescan adapters after storage configuration changes</li>
+                    <li>Verify LUN masking/mapping on the storage array</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Diagnose iSCSI adapter and connectivity</strong></p>
+                    <pre><code># List iSCSI adapters:
+esxcli iscsi adapter list
+# Should show vmhba6x (software iSCSI) as "Online"
+
+# Check discovery targets:
+esxcli iscsi adapter discovery sendtarget list -A vmhba65
+# Verify target IP and port (default: 3260)
+
+# Add a discovery target:
+esxcli iscsi adapter discovery sendtarget add \
+  -A vmhba65 -a 192.168.20.100:3260
+
+# Add a static target:
+esxcli iscsi adapter target portal add \
+  -A vmhba65 -a 192.168.20.100 -n iqn.2024.com.storage:lun01
+
+# Verify CHAP authentication settings:
+esxcli iscsi adapter auth chap get -A vmhba65</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Diagnose FC HBA link status and zoning</strong></p>
+                    <pre><code># List FC HBAs and their status:
+esxcli storage san fc list
+# Check: PortState (Online), Speed (16/32 Gbps), NodeWWN, PortWWN
+
+# If link is down, check physical connections:
+# - SFP seated properly
+# - Fiber cable connected to correct switch port
+# - Switch port enabled and in correct VSAN/zone
+
+# Verify FC targets visible to the HBA:
+esxcli storage san fc list -A vmhba2
+# Target list should show storage array controller WWPNs
+
+# Check zoning on the FC switch:
+# Brocade: zoneshow
+# Cisco MDS: show zone active</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Rescan and verify LUN visibility</strong></p>
+                    <pre><code># Rescan all storage adapters:
+esxcli storage core adapter rescan --all
+
+# Rescan a specific adapter:
+esxcli storage core adapter rescan -A vmhba65
+
+# Verify LUNs are now visible:
+esxcli storage core device list | grep -c "naa\."
+# Compare count across all cluster hosts — should be equal
+
+# Check VMFS volumes discovered:
+esxcli storage filesystem list
+
+# PowerCLI — rescan all hosts in cluster:
+Get-Cluster "ClusterName" | Get-VMHost |
+  Get-VMHostStorage -RescanAllHba -RescanVmfs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use separate VLANs for iSCSI traffic with jumbo frames (MTU 9000). Configure port binding for software iSCSI to use dedicated VMkernel ports. For FC, always use redundant fabrics (Fabric A + Fabric B) with separate zones. After any SAN fabric change (zoning, LUN masking), rescan all ESXi hosts in the cluster. Document WWPN-to-host mapping for troubleshooting.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #59: VAAI Offload & Storage Acceleration   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-59" data-type="fix" data-severity="medium" data-keywords="vaai offload storage acceleration atomic test set clone blocks zero blocks unmap xcopy ats hardware acceleration primitives">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">59</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VAAI Offload &amp; Storage Acceleration</div>
+            <div class="kb-entry-subtitle">Enabling and verifying VAAI primitives — Atomic Test &amp; Set, Clone Blocks, Zero Blocks, and UNMAP offload</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">VAAI</span>
+                <span class="tag">Offload</span>
+                <span class="tag">ATS</span>
+                <span class="tag">XCOPY</span>
+                <span class="tag">Hardware Acceleration</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Benefit:</strong> VAAI offloads storage-intensive operations (cloning, zeroing, locking) from ESXi CPU to the storage array firmware. This dramatically reduces VM provisioning time, ESXi CPU usage during storage operations, and network/SAN bandwidth consumption.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms (VAAI Not Working)</div>
+                <ul>
+                    <li>VM cloning takes <strong>extremely long</strong> (copying block-by-block)</li>
+                    <li>Thick Eager Zeroed disk creation is <strong>very slow</strong></li>
+                    <li>VMFS locking issues — <code class="inline">SCSI reservation conflicts</code></li>
+                    <li>esxtop shows high <strong>KAVG/cmd</strong> during clone/zero operations</li>
+                    <li>Device VAAI status shows <strong>"unsupported"</strong> for primitives</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">VAAI Primitives</div>
+                <ul>
+                    <li><strong>ATS (Atomic Test &amp; Set):</strong> Hardware-assisted VMFS locking — replaces SCSI reservations</li>
+                    <li><strong>Clone Blocks (XCOPY):</strong> Array-side full copy — no data traverses ESXi</li>
+                    <li><strong>Zero Blocks (Write Same):</strong> Array-side block zeroing for thick eager provisioning</li>
+                    <li><strong>UNMAP (Delete/Trim):</strong> Reclaim deleted blocks on thin-provisioned LUNs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check VAAI support status per device</strong></p>
+                    <pre><code># Check VAAI status for a specific device:
+esxcli storage core device vaai status get -d naa.xxxxxxxxxxxx
+# Expected output:
+#   ATS Status: supported
+#   Clone Status: supported
+#   Zero Status: supported
+#   Delete Status: supported
+
+# Check all devices at once:
+esxcli storage core device vaai status get
+# Any "unsupported" = that primitive is not offloaded
+
+# Verify VAAI is enabled globally:
+esxcli system settings advanced list -o /VMFS3/HardwareAcceleratedLocking
+esxcli system settings advanced list -o /DataMover/HardwareAcceleratedMove
+esxcli system settings advanced list -o /DataMover/HardwareAcceleratedInit</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Enable VAAI primitives if disabled</strong></p>
+                    <pre><code># Enable Hardware Accelerated Locking (ATS):
+esxcli system settings advanced set \
+  -o /VMFS3/HardwareAcceleratedLocking -i 1
+
+# Enable Hardware Accelerated Move (XCOPY/Clone):
+esxcli system settings advanced set \
+  -o /DataMover/HardwareAcceleratedMove -i 1
+
+# Enable Hardware Accelerated Init (Zero/Write Same):
+esxcli system settings advanced set \
+  -o /DataMover/HardwareAcceleratedInit -i 1
+
+# These are enabled by default (value=1)
+# If set to 0, VAAI was explicitly disabled — investigate why</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify VAAI is being used during operations</strong></p>
+                    <pre><code># Clone a VM and monitor VAAI usage in vmkernel log:
+grep -i "vaai\|xcopy\|ATS\|WriteSame" /var/log/vmkernel.log | tail -20
+
+# During clone, check esxtop for offload indicators:
+# esxtop → press 'u' for device view
+# APTS/s (ATS operations/sec) > 0 = ATS working
+# MBWR/s should be low if XCOPY is offloading the copy
+
+# Test VAAI with a quick thick eager zero disk create:
+vmkfstools -c 10G -d eagerzeroedthick \
+  /vmfs/volumes/datastore1/test/test.vmdk
+# With VAAI: completes in seconds
+# Without VAAI: takes minutes (block-by-block zeroing)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Verify VAAI support before purchasing storage arrays — check the VMware HCL for VAAI primitive support. ATS is the most impactful primitive — it eliminates SCSI reservation storms on VMFS volumes with many VMs. If XCOPY is not supported, cloning will fall back to ESXi-side copy (slow). Some arrays require firmware updates to support all VAAI primitives. NFS VAAI requires the array vendor's NAS plugin (vSphere APIs for Storage Awareness).</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #60: Datastore Cluster & SDRS              -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-60" data-type="fix" data-severity="medium" data-keywords="datastore cluster sdrs storage drs recommendations affinity anti-affinity io latency threshold automation level space utilization">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">60</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Datastore Cluster &amp; SDRS Troubleshooting</div>
+            <div class="kb-entry-subtitle">Storage DRS recommendations not applying — affinity rules, I/O latency thresholds, and SDRS automation issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">SDRS</span>
+                <span class="tag">Datastore Cluster</span>
+                <span class="tag">Storage DRS</span>
+                <span class="tag">Affinity</span>
+                <span class="tag">Automation</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Storage imbalance across datastores in a cluster — some datastores overfull while others have ample space. I/O hotspots develop, causing latency for VMs on overloaded datastores. Manual intervention required for VM placement.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>SDRS recommendations <strong>generated but not applied</strong></li>
+                    <li>Datastores in cluster show <strong>highly uneven utilization</strong></li>
+                    <li>VM placement fails: <strong>"No compatible datastore found"</strong></li>
+                    <li>SDRS faults in Datastore Cluster → Monitor → Recommendations</li>
+                    <li>Storage vMotion <strong>never triggered</strong> despite imbalance</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Set SDRS automation level to <strong>Fully Automated</strong></li>
+                    <li>Adjust space utilization threshold (default 80%)</li>
+                    <li>Configure I/O latency threshold (default 15ms)</li>
+                    <li>Review VM anti-affinity rules blocking migrations</li>
+                    <li>Enable I/O metric for SDRS if using I/O-based balancing</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check SDRS configuration and automation level</strong></p>
+                    <pre><code># vSphere Client → Datastore Cluster → Configure → SDRS
+# Verify:
+#   SDRS Automation: "Fully Automated" (not "Manual" or "No automation")
+#   Space Utilization Threshold: 80% (default)
+#   I/O Latency Threshold: 15ms (default)
+#   I/O Metric: Enabled (required for I/O-based balancing)
+
+# PowerCLI — check SDRS settings:
+Get-DatastoreCluster | Select Name,
+  @{N='SDRSAutomation';E={$_.SdrsAutomationLevel}},
+  @{N='IOLatencyThreshold';E={$_.IOLatencyThresholdMillisecond}},
+  @{N='SpaceThreshold';E={$_.SpaceUtilizationThresholdPercent}},
+  @{N='IOMetric';E={$_.IOLoadBalanceEnabled}} |
+  Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check affinity rules and SDRS faults</strong></p>
+                    <pre><code># Check SDRS VM anti-affinity rules:
+# Datastore Cluster → Configure → Rules
+# Rules keeping VM disks together or apart may block migrations
+
+# PowerCLI — list SDRS rules:
+Get-DatastoreCluster "DS-Cluster-01" |
+  Get-SdrsRule | Select Name, Enabled, RuleType, VM |
+  Format-Table -AutoSize
+
+# Check SDRS recommendations and faults:
+# Datastore Cluster → Monitor → SDRS → Recommendations
+# Look for faulted recommendations — hover for details
+
+# Check SDRS history:
+# Datastore Cluster → Monitor → SDRS → History
+# Verify migrations are happening (or why they're blocked)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Tune SDRS thresholds and enable full automation</strong></p>
+                    <pre><code># PowerCLI — set SDRS to fully automated:
+Set-DatastoreCluster "DS-Cluster-01" `
+  -SdrsAutomationLevel FullyAutomated
+
+# Adjust space threshold (trigger migration at 75%):
+Set-DatastoreCluster "DS-Cluster-01" `
+  -SpaceUtilizationThresholdPercent 75
+
+# Enable I/O load balancing:
+Set-DatastoreCluster "DS-Cluster-01" `
+  -IOLoadBalanceEnabled $true `
+  -IOLatencyThresholdMillisecond 10
+
+# Set SDRS invocation schedule (default: every 8 hours):
+# Datastore Cluster → Configure → SDRS → Runtime Settings
+# Reduce to 4 hours for more responsive balancing</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use datastore clusters with SDRS for any environment with 4+ datastores. Set automation to "Fully Automated" to avoid manual recommendation approval. Keep VMDK affinity rules (keep VM disks together) unless you have a specific reason to split. Enable I/O metrics for balanced performance, not just capacity. Monitor SDRS recommendations weekly — frequent "faulted" recommendations indicate configuration issues. Don't mix NFS and VMFS datastores in the same datastore cluster.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 6: Storage — VMFS, NFS &amp; Multipathing</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase5.html">&larr; Phase 5</a> &nbsp;|&nbsp; <a href="phase7.html">Next: Phase 7 &rarr;</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-51)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

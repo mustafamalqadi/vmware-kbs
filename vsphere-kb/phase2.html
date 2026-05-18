@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 2: Day-2 Operations &amp; Maintenance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 2 — Day-2 Operations</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html" class="active">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search certificates, patching, backup, SSO, NTP, logging, profiles..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Day-2 Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">3</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">7</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 2</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #11: Certificate Expiry / STS Token Failure -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-11" data-type="break" data-severity="critical" data-keywords="certificate expiry sts token sso login machine ssl vmca certificate-manager trustedcert vecs psc">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">11</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Certificate Expiry / STS Token Failure</div>
+            <div class="kb-entry-subtitle">vCenter services fail due to expired certificates — STS signing cert expiry blocks SSO login and all API operations</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Certificate</span>
+                <span class="tag">STS</span>
+                <span class="tag">SSO</span>
+                <span class="tag">VMCA</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> All vCenter operations blocked when STS certificate expires. vSphere Client login fails, API calls rejected, and no management plane access. Immediate outage of centralized management.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client shows <strong>"503 Service Unavailable"</strong> or SSO login fails</li>
+                    <li>vpxd service fails to start with certificate errors</li>
+                    <li>Logs show: <code class="inline">STS token expired</code> or <code class="inline">certificate not valid</code></li>
+                    <li>PowerCLI / API connections fail with <strong>authentication errors</strong></li>
+                    <li>VECS store shows expired certificates in <code class="inline">MACHINE_SSL_CERT</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>STS signing certificate expired (default 2-year validity)</li>
+                    <li>Machine SSL certificate expired (VMCA-issued, 2-year default)</li>
+                    <li>Solution user certificates not renewed after VCSA upgrade</li>
+                    <li>No certificate monitoring or alerting configured</li>
+                    <li>Time drift caused premature certificate invalidation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vCenter uses multiple certificates for internal service communication: <strong>Machine SSL</strong>, <strong>STS signing</strong>, and <strong>solution user</strong> certificates. The STS signing certificate, used by the Security Token Service for SSO authentication, has a default 2-year validity. When it expires, no user or service can authenticate, effectively locking out all vCenter management. Unlike external CA certs, VMCA-issued certs are often forgotten because they were auto-provisioned during installation.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check all certificate expiry dates</strong></p>
+                    <pre><code># SSH to VCSA, list all trusted certs:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert list --login administrator@vsphere.local
+
+# Check Machine SSL cert expiry:
+/usr/lib/vmware-vmafd/bin/vecs-cli entry getcert \
+  --store MACHINE_SSL_CERT --alias __MACHINE_CERT | \
+  openssl x509 -noout -dates
+
+# Check STS signing cert:
+/usr/lib/vmware-vmafd/bin/vecs-cli entry getcert \
+  --store STS_INTERNAL_SSL --alias __MACHINE_CERT | \
+  openssl x509 -noout -dates</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check vCenter service health and logs</strong></p>
+                    <pre><code># List all vCenter services and status:
+service-control --status
+
+# Check vpxd log for certificate errors:
+grep -i "certificate\|expired\|STS" /var/log/vmware/vpxd/vpxd.log | tail -30
+
+# Check SSO log:
+grep -i "token\|expired\|cert" /var/log/vmware/sso/ssoAdminServer.log | tail -20</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Renew STS signing certificate</strong></p>
+                    <pre><code># SSH to VCSA as root, run the STS cert renewal script:
+# (VMware KB 76719 — fixsts script for vCenter 7.x/8.x)
+cd /tmp
+python /usr/lib/vmware-vmdir/share/config/fixsts.py
+
+# Restart all services after renewal:
+service-control --stop --all
+service-control --start --all</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Renew Machine SSL and solution user certs via certificate-manager</strong></p>
+                    <pre><code># Launch interactive certificate manager:
+/usr/lib/vmware-vmca/bin/certificate-manager
+
+# Option 3: Replace Machine SSL cert with VMCA certificate
+# Option 6: Replace solution user certs with VMCA certificates
+# Follow prompts — provide administrator@vsphere.local credentials
+
+# Verify renewed certs:
+/usr/lib/vmware-vmafd/bin/vecs-cli entry getcert \
+  --store MACHINE_SSL_CERT --alias __MACHINE_CERT | \
+  openssl x509 -noout -dates -subject</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify services are healthy post-renewal</strong></p>
+                    <pre><code># Check all services are running:
+service-control --status
+
+# Test SSO login via CLI:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert list \
+  --login administrator@vsphere.local --password 'YourPassword'
+
+# Verify vSphere Client login works in browser:
+# Navigate to https://vcsa.domain.local/ui</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Set up certificate expiry monitoring at least 90 days before expiry. Create a vCenter alarm or external check using <code class="inline">openssl x509 -checkend</code>. Document all certificate types and their validity periods. Schedule proactive renewal during maintenance windows well before expiry.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #12: ESXi Patch / Upgrade with vLCM       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-12" data-type="fix" data-severity="high" data-keywords="patch upgrade vlcm lifecycle manager image baseline remediate esxcli vib depot update esxi version">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">12</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Patch / Upgrade with vLCM</div>
+            <div class="kb-entry-subtitle">Lifecycle Manager image-based patching workflow — depot management, baseline compliance, and cluster remediation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vLCM</span>
+                <span class="tag">Patching</span>
+                <span class="tag">ESXi</span>
+                <span class="tag">Upgrade</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Unpatched ESXi hosts are vulnerable to known CVEs and may lack critical bug fixes. Failed patching can leave hosts in maintenance mode, impacting cluster capacity and HA compliance.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vLCM compliance check shows hosts as <strong>"Non-Compliant"</strong></li>
+                    <li>Remediation fails with <strong>"incompatible VIB"</strong> errors</li>
+                    <li>Host stuck in <strong>maintenance mode</strong> after failed remediation</li>
+                    <li>Boot device runs out of space during update</li>
+                    <li>Depot sync fails — <strong>"Cannot download patch metadata"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Import correct depot/image into vLCM</li>
+                    <li>Remove incompatible third-party VIBs before remediation</li>
+                    <li>Ensure boot device has sufficient free space (>4 GB recommended)</li>
+                    <li>Verify network access to VMware depot or local repository</li>
+                    <li>Use single-image management for consistent host state</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Patching Workflow</div>
+        <p>vSphere Lifecycle Manager (vLCM) provides image-based management for ESXi hosts. You define a <strong>desired image</strong> (ESXi version + vendor addon + components), then vLCM checks compliance and remediates non-compliant hosts by placing them in maintenance mode, applying the image, and rebooting. This replaces the legacy Update Manager baseline approach with a declarative, single-image model.</p>
+
+        <div class="section-label">Procedure Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current ESXi version and manage depot</strong></p>
+                    <pre><code># SSH to ESXi host — check current version:
+esxcli system version get
+esxcli software profile get
+
+# List installed VIBs:
+esxcli software vib list | head -20
+
+# Check boot device free space:
+df -h /bootbank
+vdf -h</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure vLCM image and check compliance</strong></p>
+                    <pre><code># In vSphere Client:
+# Cluster → Updates → Image → Setup Image
+# Select ESXi version, vendor addon (e.g., Dell OpenManage, HPE)
+# Add any required components
+
+# Check compliance:
+# Cluster → Updates → Check Compliance
+# Review non-compliant hosts and missing components
+
+# PowerCLI — check compliance:
+Get-Cluster "ClusterName" | Test-Compliance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Remediate non-compliant hosts</strong></p>
+                    <pre><code># From vSphere Client:
+# Cluster → Updates → Remediate (pre-check runs automatically)
+# Review pre-check results — resolve any blockers
+# Confirm remediation — hosts enter maintenance mode sequentially
+
+# Manual ESXi update via CLI (alternative):
+esxcli software profile update -p ESXi-8.0U2-profile \
+  -d https://depot.vmware.com/vsphere-8.0/
+
+# Remove incompatible VIBs if needed:
+esxcli software vib remove -n incompatible-vib-name
+
+# Reboot after manual update:
+reboot</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always take a snapshot or backup of the host configuration before patching. Use vLCM single-image management for consistency across all hosts in a cluster. Test patches in a non-production cluster first. Schedule remediation during maintenance windows and verify DRS can evacuate VMs from each host.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #13: vCenter Backup & Restore (VAMI)       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-13" data-type="fix" data-severity="high" data-keywords="backup restore vami vcsa file-based ftp scp smb schedule automated disaster recovery vcenter appliance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">13</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Backup &amp; Restore (VAMI)</div>
+            <div class="kb-entry-subtitle">File-based backup via VAMI — schedule automated backups and restore VCSA from backup in disaster recovery scenarios</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Backup</span>
+                <span class="tag">Restore</span>
+                <span class="tag">VAMI</span>
+                <span class="tag">VCSA</span>
+                <span class="tag">DR</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Without a tested backup, a vCenter failure (disk corruption, failed upgrade, ransomware) means complete loss of inventory, permissions, statistics, and configuration. Rebuild from scratch can take days.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>No backups configured — <strong>VAMI shows "No backup schedule"</strong></li>
+                    <li>Backup job fails with <strong>FTP/SCP connection errors</strong></li>
+                    <li>Backup location runs out of disk space</li>
+                    <li>Restore needed but backup integrity never verified</li>
+                    <li>Backup doesn't include <strong>historical/events data</strong> (stats DB)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Configure scheduled file-based backup in VAMI</li>
+                    <li>Use FTP/FTPS/SCP/HTTP(S)/SMB as backup target</li>
+                    <li>Include stats, events, and tasks in backup scope</li>
+                    <li>Test restore procedure quarterly in isolated environment</li>
+                    <li>Monitor backup job completion via VAMI or API</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Backup &amp; Restore Procedure</div>
+        <p>VCSA file-based backup captures the vCenter configuration database, inventory, roles, permissions, and optionally historical stats/events/tasks. The backup is performed via the <strong>VAMI (vCenter Appliance Management Interface)</strong> at port 5480. For disaster recovery, you deploy a fresh VCSA and select "Restore from backup" during the Stage 2 installer wizard.</p>
+
+        <div class="section-label">Procedure Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure scheduled backup in VAMI</strong></p>
+                    <pre><code># Access VAMI:
+# https://vcsa.domain.local:5480 → Backup → Configure
+
+# Backup settings:
+# Protocol: SCP (recommended) or FTPS
+# Server: backup-server.domain.local
+# Path: /vcsa-backups/
+# Username / Password for target server
+# Encryption password (store securely — required for restore!)
+
+# Schedule: Daily at 02:00, retain 7 backups
+# Data to back up: Select "Stats, Events, and Tasks" for full backup
+
+# Or via API (automated):
+curl -k -X POST https://vcsa.domain.local:443/api/appliance/recovery/backup/schedules \
+  -H "vmware-api-session-id: $SESSION" \
+  -H "Content-Type: application/json" \
+  -d '{"schedule_id":"daily","recurrence_info":{"hour":2,"minute":0}}'</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Trigger manual backup and verify</strong></p>
+                    <pre><code># Trigger on-demand backup from VAMI:
+# VAMI → Backup → Backup Now
+
+# Verify backup files on target server:
+ls -lah /vcsa-backups/
+# Expected: timestamped directory with .json manifest and .gz data files
+
+# Check backup log on VCSA:
+cat /var/log/vmware/applmgmt/backup.log | tail -20
+
+# Validate backup integrity (check manifest):
+cat /vcsa-backups/latest/backup-metadata.json</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Restore vCenter from backup</strong></p>
+                    <pre><code># Deploy new VCSA from ISO:
+# 1. Mount VCSA installer ISO
+# 2. Run installer → Stage 1: Deploy new appliance
+# 3. Stage 2: Select "Restore from backup" instead of "Set up"
+# 4. Provide backup location (SCP/FTP path) and encryption password
+# 5. Select backup to restore from
+# 6. Wait for restore to complete and services to start
+
+# Post-restore verification:
+service-control --status
+# Verify inventory, permissions, and host connectivity in UI</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always include stats, events, and tasks in your backup for complete recoverability. Store the encryption password in a secure vault — without it, backup is useless. Test restore in an isolated network quarterly. Monitor backup job results and alert on failures. Keep at least 7 days of backup retention.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #14: Log Bundle Collection & Analysis      -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-14" data-type="fix" data-severity="medium" data-keywords="log bundle support bundle vm-support vpxd hostd vmkernel fdm syslog export troubleshoot diagnostics">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">14</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Log Bundle Collection &amp; Analysis</div>
+            <div class="kb-entry-subtitle">Collect ESXi and vCenter support bundles — key log files, diagnostic hierarchy, and export procedures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Logs</span>
+                <span class="tag">Support Bundle</span>
+                <span class="tag">Diagnostics</span>
+                <span class="tag">Troubleshooting</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> Log bundles are essential for VMware GSS support cases and internal root cause analysis. Knowing which logs to check first saves hours of troubleshooting time.</span>
+        </div>
+
+        <div class="section-label">Key Log Files Reference</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">ESXi Host Logs</div>
+                <ul>
+                    <li><strong>/var/log/vmkernel.log</strong> — kernel messages, storage, network</li>
+                    <li><strong>/var/log/hostd.log</strong> — host agent, VM operations</li>
+                    <li><strong>/var/log/fdm.log</strong> — HA Fault Domain Manager</li>
+                    <li><strong>/var/log/vobd.log</strong> — VMware Observation daemon (events)</li>
+                    <li><strong>/var/log/esxupdate.log</strong> — patch/update operations</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">vCenter Logs</div>
+                <ul>
+                    <li><strong>/var/log/vmware/vpxd/vpxd.log</strong> — vCenter Server daemon</li>
+                    <li><strong>/var/log/vmware/sso/</strong> — SSO authentication</li>
+                    <li><strong>/var/log/vmware/vsan-health/</strong> — vSAN health service</li>
+                    <li><strong>/var/log/vmware/content-library/</strong> — Content Library</li>
+                    <li><strong>/var/log/vmware/eam/</strong> — ESX Agent Manager</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Collection Procedures</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Collect ESXi host support bundle</strong></p>
+                    <pre><code># SSH to ESXi host — generate support bundle:
+vm-support
+
+# Output saved to: /var/tmp/esx-hostname-YYYY-MM-DD--HH.MM.tgz
+# Download via SCP or datastore browser
+
+# Alternative — collect specific logs:
+esxcli system syslog config get
+cat /var/log/vmkernel.log | grep -i "error\|warn\|scsi\|nmp" | tail -50
+cat /var/log/hostd.log | grep -i "error\|fail" | tail -30</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Collect vCenter support bundle</strong></p>
+                    <pre><code># Via vSphere Client UI:
+# Menu → Administration → Support → Export System Logs
+# Select vCenter + relevant hosts → Generate bundle
+
+# Via VCSA CLI:
+vc-support.sh
+
+# Via VAMI:
+# https://vcsa:5480 → Actions → Create Support Bundle
+
+# Output: /storage/log/vmware/support/vc-support-bundle-*.tgz</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Quick log analysis — find errors fast</strong></p>
+                    <pre><code># Search across all vCenter logs for errors in last hour:
+find /var/log/vmware/ -name "*.log" -mmin -60 -exec \
+  grep -l "ERROR\|CRITICAL\|Exception" {} \;
+
+# vpxd.log — check for task failures:
+grep "Task\|error\|warn" /var/log/vmware/vpxd/vpxd.log | tail -50
+
+# Timeline correlation — find events around a specific time:
+grep "2026-05-17T0[2-3]:" /var/log/vmware/vpxd/vpxd.log | head -50</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Collect log bundles immediately after an incident — logs rotate and evidence is lost quickly. Note the exact timestamp of the issue before collecting. For GSS support cases, always include both vCenter and affected ESXi host bundles. Configure persistent syslog forwarding so logs survive host reboots.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #15: ESXi Shell / SSH Hardening            -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-15" data-type="fix" data-severity="medium" data-keywords="ssh shell esxi hardening security lockdown timeout account lock idle dcui firewall access policy">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">15</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Shell / SSH Hardening</div>
+            <div class="kb-entry-subtitle">Enable/disable SSH securely — idle timeouts, shell warnings, account lockout, and lockdown mode configuration</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">SSH</span>
+                <span class="tag">Security</span>
+                <span class="tag">Hardening</span>
+                <span class="tag">ESXi Shell</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> ESXi Shell and SSH are disabled by default for security. When enabled for troubleshooting, they should be hardened with timeouts, account lockout policies, and disabled again after use.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vCenter shows <strong>"SSH is enabled"</strong> warning on hosts</li>
+                    <li>Shell/SSH left enabled indefinitely after troubleshooting</li>
+                    <li>No idle timeout — abandoned sessions remain open</li>
+                    <li>No account lockout — brute force attacks possible</li>
+                    <li>Compliance scans flag SSH-related CIS benchmark failures</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Set idle timeout for ESXi Shell and SSH sessions</li>
+                    <li>Configure account lockout after failed login attempts</li>
+                    <li>Suppress or handle shell warning appropriately</li>
+                    <li>Disable SSH when not actively needed</li>
+                    <li>Consider lockdown mode for production hosts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Hardening Procedures</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable/disable SSH and configure timeouts</strong></p>
+                    <pre><code># Enable SSH (temporary for troubleshooting):
+vim-cmd hostsvc/enable_ssh
+
+# Disable SSH when done:
+vim-cmd hostsvc/disable_ssh
+
+# Set ESXi Shell idle timeout (900 seconds = 15 min):
+esxcli system settings advanced set -o /UserVars/ESXiShellTimeOut -i 900
+
+# Set SSH interactive timeout:
+esxcli system settings advanced set -o /UserVars/ESXiShellInteractiveTimeOut -i 900
+
+# Suppress shell warning (optional — not recommended for production):
+esxcli system settings advanced set -o /UserVars/SuppressShellWarning -i 1</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure account lockout and password policies</strong></p>
+                    <pre><code># Set account lockout after 5 failed attempts:
+esxcli system settings advanced set -o /Security/AccountLockFailures -i 5
+
+# Set lockout duration (900 seconds = 15 min):
+esxcli system settings advanced set -o /Security/AccountUnlockTime -i 900
+
+# Set password complexity requirements:
+esxcli system settings advanced set -o /Security/PasswordQualityControl \
+  -s "retry=3 min=disabled,disabled,disabled,7,7"
+
+# Verify current settings:
+esxcli system settings advanced list -o /Security/AccountLockFailures
+esxcli system settings advanced list -o /UserVars/ESXiShellTimeOut</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Enable lockdown mode (production environments)</strong></p>
+                    <pre><code># Enable lockdown mode via DCUI or vSphere Client:
+# Host → Configure → System → Security Profile → Lockdown Mode
+# Options: Normal (API access via vCenter only) or Strict (no DCUI)
+
+# PowerCLI — enable normal lockdown:
+(Get-VMHost "esxi01.domain.local").ExtensionData.EnterLockdownMode()
+
+# Add exception users (for monitoring/backup agents):
+# Host → Configure → System → Security Profile → Lockdown Mode → Exception Users
+# Add: svc-monitoring@domain.local
+
+# Verify lockdown status:
+(Get-VMHost "esxi01.domain.local").ExtensionData.Config.LockdownMode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Keep SSH disabled by default. Use lockdown mode (Normal) in production. Set idle timeouts to 15 minutes max. Configure account lockout to prevent brute force. Always add exception users for legitimate service accounts before enabling strict lockdown. Document when and why SSH was enabled.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #16: vCenter SSO / Identity Source Issues   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-16" data-type="break" data-severity="high" data-keywords="sso identity source ldap ldaps active directory ad authentication bind password dns domain controller vmafd">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">16</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter SSO / Identity Source Issues</div>
+            <div class="kb-entry-subtitle">LDAP/AD identity source not authenticating — expired bind passwords, unreachable DCs, and certificate trust failures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">SSO</span>
+                <span class="tag">LDAP</span>
+                <span class="tag">Active Directory</span>
+                <span class="tag">Identity Source</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> AD/LDAP users cannot log in to vCenter. Only vsphere.local accounts work. Teams that rely on domain credentials lose all vCenter access, blocking day-to-day operations and change management.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>AD users get <strong>"Unable to authenticate"</strong> in vSphere Client</li>
+                    <li>administrator@vsphere.local works but <strong>domain\\user fails</strong></li>
+                    <li>SSO logs show: <code class="inline">LDAP bind failed</code> or <code class="inline">connection refused</code></li>
+                    <li>Identity source shows as <strong>"Disconnected"</strong> in SSO configuration</li>
+                    <li>Intermittent failures — works sometimes, fails others</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>LDAP bind account password <strong>expired or changed</strong> in AD</li>
+                    <li>Domain Controller IP/FQDN unreachable from VCSA (DNS/firewall)</li>
+                    <li>LDAPS certificate not trusted by VCSA (expired or wrong CA)</li>
+                    <li>Base DN or user search path incorrect</li>
+                    <li>AD site awareness — VCSA connecting to remote DC with high latency</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vCenter SSO authenticates AD/LDAP users by binding to a domain controller using a service account. When that bind password expires (common with 90-day AD password policies), or when the DC becomes unreachable due to DNS or firewall changes, all domain users are locked out. Only the local <strong>administrator@vsphere.local</strong> account remains functional. LDAPS configurations are also fragile — if the DC's SSL certificate changes or expires, the trust chain breaks.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check SSO identity source configuration and connectivity</strong></p>
+                    <pre><code># SSH to VCSA — check LookupService location:
+/usr/lib/vmware-vmafd/bin/vmafd-cli get-ls-location --server-name localhost
+
+# Test LDAP connectivity from VCSA:
+ldapsearch -H ldap://dc01.domain.local:389 \
+  -D "CN=svc-vcenter,OU=Service Accounts,DC=domain,DC=local" \
+  -w 'BindPassword' -b "DC=domain,DC=local" "(sAMAccountName=testuser)"
+
+# Test LDAPS connectivity:
+openssl s_client -connect dc01.domain.local:636 -showcerts </dev/null 2>&1 | \
+  openssl x509 -noout -dates -subject
+
+# Check DNS resolution for AD domain:
+nslookup domain.local
+nslookup dc01.domain.local</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Review SSO logs for authentication errors</strong></p>
+                    <pre><code># Check SSO admin server log:
+grep -i "ldap\|bind\|identity\|error\|fail" \
+  /var/log/vmware/sso/ssoAdminServer.log | tail -30
+
+# Check VMware Directory Service:
+grep -i "error\|ldap" /var/log/vmware/vmdir/vmdird-syslog.log | tail -20
+
+# Check VMAFD service:
+/usr/lib/vmware-vmafd/bin/vmafd-cli get-status --server-name localhost</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Update identity source bind password</strong></p>
+                    <pre><code># Log in as administrator@vsphere.local:
+# vSphere Client → Administration → Single Sign-On → Configuration
+# → Identity Sources tab → Select the AD/LDAP source → Edit
+
+# Update the bind account password
+# Click "Test Connection" to verify
+# Save changes
+
+# If UI is inaccessible, use sso-config CLI:
+/opt/vmware/bin/sso-config.sh -set_identity_source \
+  -type adOverLdap \
+  -domain domain.local \
+  -alias DOMAIN \
+  -servicePrincipalName "svc-vcenter@domain.local" \
+  -servicePassword "NewPassword" \
+  -primaryUrl "ldaps://dc01.domain.local:636"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Update LDAPS certificate trust (if certificate changed)</strong></p>
+                    <pre><code># Export DC certificate:
+openssl s_client -connect dc01.domain.local:636 </dev/null 2>&1 | \
+  sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /tmp/dc-cert.pem
+
+# Add to VCSA trusted certs:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert publish \
+  --cert /tmp/dc-cert.pem \
+  --login administrator@vsphere.local
+
+# Restart SSO-related services:
+service-control --stop vmware-stsd vmware-sts-idmd
+service-control --start vmware-stsd vmware-sts-idmd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use a service account with "Password never expires" or set a long expiry with calendar reminders. Configure at least 2 domain controllers for redundancy. Use LDAPS (port 636) with proper certificate trust. Ensure VCSA has DNS resolution for the AD domain. Keep administrator@vsphere.local password documented securely as a break-glass account.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #17: NTP Configuration & Time Drift        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-17" data-type="break" data-severity="high" data-keywords="ntp time drift chrony timedatectl clock sync kerberos vmotion certificate validation time skew esxi vcsa">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">17</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NTP Configuration &amp; Time Drift</div>
+            <div class="kb-entry-subtitle">Time desynchronization causes certificate validation failures, Kerberos auth issues, HA split-brain, and vMotion failures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">NTP</span>
+                <span class="tag">Time Sync</span>
+                <span class="tag">Kerberos</span>
+                <span class="tag">Clock</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Time drift >5 minutes breaks Kerberos authentication (AD login fails), certificate validation (SSO errors), and can cause vMotion failures. HA may experience split-brain scenarios with inconsistent timestamps across hosts.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>AD/Kerberos authentication <strong>intermittently fails</strong></li>
+                    <li>Certificate errors despite valid certificates (time-based validation)</li>
+                    <li>vMotion fails with <strong>"operation timed out"</strong> or timestamp mismatches</li>
+                    <li>Event log timestamps don't correlate across hosts</li>
+                    <li>HA reports <strong>false host failures</strong> due to heartbeat timing</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NTP not configured or NTP server unreachable</li>
+                    <li>ESXi using <strong>host hardware clock</strong> which drifts over time</li>
+                    <li>VCSA configured with different NTP source than ESXi hosts</li>
+                    <li>Firewall blocking UDP 123 (NTP) traffic</li>
+                    <li>VM Tools time sync conflicting with guest OS NTP</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>All vSphere components rely on accurate, synchronized time. ESXi hosts, VCSA, and VMs must agree on the current time within a tight tolerance. <strong>Kerberos authentication</strong> fails with >5 minutes of drift. Certificate validation uses timestamps for validity checks — a clock set 2 years ahead can invalidate certificates. HA heartbeats rely on time correlation — significant drift causes false isolation events. The problem compounds because time drift is gradual and often unnoticed until it causes cascading failures.</p>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check time and NTP status on ESXi and VCSA</strong></p>
+                    <pre><code># ESXi — check current time and NTP config:
+date
+esxcli system ntp get
+esxcli system ntp config get
+
+# Check NTP service status:
+/etc/init.d/ntpd status
+
+# VCSA — check time and chrony status:
+# SSH to VCSA:
+timedatectl
+chronyc tracking
+chronyc sources -v</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Compare time across all hosts</strong></p>
+                    <pre><code># PowerCLI — check time on all hosts in cluster:
+Get-Cluster "ClusterName" | Get-VMHost | ForEach-Object {
+    $hostTime = (Get-View $_.ExtensionData.ConfigManager.DateTimeSystem).QueryDateTime()
+    [PSCustomObject]@{
+        Host = $_.Name
+        HostTime = $hostTime
+        Drift = ($hostTime - (Get-Date)).TotalSeconds
+    }
+} | Format-Table -AutoSize
+
+# Check NTP config on all hosts:
+Get-Cluster "ClusterName" | Get-VMHost | ForEach-Object {
+    $ntp = Get-VMHostNtpServer -VMHost $_
+    [PSCustomObject]@{ Host = $_.Name; NTPServers = ($ntp -join ", ") }
+} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure NTP on ESXi hosts</strong></p>
+                    <pre><code># Set NTP servers:
+esxcli system ntp set --server=ntp1.domain.local --server=ntp2.domain.local
+
+# Enable and start NTP:
+esxcli system ntp set --enabled=true
+/etc/init.d/ntpd restart
+
+# Verify NTP is syncing:
+esxcli system ntp get
+# Expected: "Running: true" and servers showing sync status
+
+# PowerCLI — configure NTP on all hosts in cluster:
+Get-Cluster "ClusterName" | Get-VMHost | ForEach-Object {
+    Add-VMHostNtpServer -VMHost $_ -NtpServer "ntp1.domain.local","ntp2.domain.local"
+    Get-VMHostService -VMHost $_ | Where { $_.Key -eq "ntpd" } | Start-VMHostService -Confirm:$false
+    Get-VMHostService -VMHost $_ | Where { $_.Key -eq "ntpd" } | Set-VMHostService -Policy "on"
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure NTP on VCSA</strong></p>
+                    <pre><code># VCSA — configure NTP via VAMI:
+# https://vcsa:5480 → Time → Edit → Time Synchronization Mode: NTP
+# NTP Servers: ntp1.domain.local, ntp2.domain.local
+
+# Or via CLI:
+/opt/vmware/bin/timesync.sh ntp ntp1.domain.local ntp2.domain.local
+
+# Verify chrony status:
+chronyc tracking
+# Check "System time" offset — should be < 1 second
+
+# Force immediate sync if drift is large:
+chronyc makestep</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use the same NTP source hierarchy for all vSphere components (ESXi hosts, VCSA, AD domain controllers). Configure at least 2 NTP servers for redundancy. Set NTP service policy to "Start and stop with host" on ESXi. For VMs, choose either VM Tools time sync OR guest NTP — never both simultaneously. Monitor time drift as part of your health checks.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #18: Syslog & Log Forwarding Setup         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-18" data-type="fix" data-severity="medium" data-keywords="syslog log forwarding remote esxi vcsa udp tcp ssl loghost rsyslog loginsight splunk siem">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">18</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Syslog &amp; Log Forwarding Setup</div>
+            <div class="kb-entry-subtitle">Forward ESXi and vCenter logs to remote syslog — persistent logging, compliance, and centralized analysis</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Syslog</span>
+                <span class="tag">Log Forwarding</span>
+                <span class="tag">SIEM</span>
+                <span class="tag">Compliance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> ESXi stores logs on a local scratch partition that can fill up or be lost on reboot (diskless/stateless hosts). Forwarding logs to a remote syslog server ensures persistence, enables centralized analysis, and satisfies compliance requirements (PCI DSS, SOX, HIPAA).</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Logs lost after ESXi host reboot (no persistent scratch partition)</li>
+                    <li>No centralized visibility into host-level events</li>
+                    <li>Compliance audit fails — <strong>"No log forwarding configured"</strong></li>
+                    <li>Syslog configured but <strong>no data reaching remote server</strong></li>
+                    <li>Local log partition fills up, causing service instability</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Configure remote syslog target on each ESXi host</li>
+                    <li>Use TCP or SSL for reliable transport (not just UDP)</li>
+                    <li>Configure VCSA syslog forwarding in VAMI</li>
+                    <li>Verify log delivery with test messages</li>
+                    <li>Set up persistent scratch partition for local logs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configuration Procedures</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure remote syslog on ESXi hosts</strong></p>
+                    <pre><code># Set remote syslog target (UDP):
+esxcli system syslog config set --loghost=udp://syslog.domain.local:514
+
+# For reliable delivery, use TCP:
+esxcli system syslog config set --loghost=tcp://syslog.domain.local:514
+
+# For encrypted transport, use SSL:
+esxcli system syslog config set --loghost=ssl://syslog.domain.local:6514
+
+# Multiple targets (comma-separated):
+esxcli system syslog config set \
+  --loghost=tcp://syslog.domain.local:514,tcp://siem.domain.local:514
+
+# Reload syslog daemon:
+esxcli system syslog reload</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify syslog configuration and test delivery</strong></p>
+                    <pre><code># Verify current syslog config:
+esxcli system syslog config get
+
+# Open firewall for syslog:
+esxcli network firewall ruleset set -r syslog -e true
+
+# Send test syslog message:
+esxcli system syslog mark --message="Test syslog from $(hostname)"
+
+# Verify on remote syslog server:
+# grep "Test syslog" /var/log/remote/esxi*.log
+
+# PowerCLI — configure syslog on all hosts:
+Get-Cluster "ClusterName" | Get-VMHost | ForEach-Object {
+    Set-VMHostSysLogServer -VMHost $_ -SysLogServer "tcp://syslog.domain.local:514"
+    $_ | Get-VMHostFirewallException | Where { $_.Name -eq "syslog" } | Set-VMHostFirewallException -Enabled $true
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure VCSA syslog forwarding</strong></p>
+                    <pre><code># Via VAMI:
+# https://vcsa:5480 → Syslog → Configure
+# Protocol: TCP or TLS
+# Server: syslog.domain.local
+# Port: 514 (TCP) or 6514 (TLS)
+
+# Via CLI on VCSA:
+# Edit rsyslog config:
+cat >> /etc/rsyslog.d/vmware-services.conf << 'EOF'
+*.* @@syslog.domain.local:514
+EOF
+systemctl restart rsyslog
+
+# Verify forwarding:
+logger -t vcsa-test "Syslog forwarding test from VCSA"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use TCP or TLS for syslog transport — UDP silently drops messages under load. Configure syslog on ESXi hosts via Host Profiles for consistency across the cluster. Set log rotation on the syslog server to prevent disk exhaustion. For compliance (PCI DSS, HIPAA), ensure log integrity and retention for at least 1 year.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #19: Host Profile Compliance Remediation   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-19" data-type="fix" data-severity="high" data-keywords="host profile compliance remediation reference host answer file configuration drift baseline attach extract cluster">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">19</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Host Profile Compliance Remediation</div>
+            <div class="kb-entry-subtitle">Extract, attach, and enforce host profiles — compliance checking, answer file management, and drift remediation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Host Profile</span>
+                <span class="tag">Compliance</span>
+                <span class="tag">Remediation</span>
+                <span class="tag">Config Drift</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Configuration drift across hosts leads to inconsistent behavior, security gaps, and unpredictable failures. Host profiles enforce a known-good configuration baseline across all hosts in a cluster.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host profile compliance check shows <strong>"Non-Compliant"</strong></li>
+                    <li>Remediation prompts for <strong>answer file</strong> values repeatedly</li>
+                    <li>Hosts have different NTP, DNS, syslog, or network configurations</li>
+                    <li>New hosts added to cluster don't match existing configuration</li>
+                    <li>Remediation fails with <strong>"Profile does not apply"</strong> errors</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Path</div>
+                <ul>
+                    <li>Extract profile from a properly configured reference host</li>
+                    <li>Attach profile to cluster or individual hosts</li>
+                    <li>Pre-populate answer files for host-specific values</li>
+                    <li>Check compliance, then remediate in maintenance mode</li>
+                    <li>Update profile when reference host config changes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Host Profile Workflow</div>
+        <p>Host Profiles capture the configuration of a <strong>reference host</strong> (NTP, networking, storage, security, services) and enforce that configuration across all hosts in a cluster. When a host deviates from the profile (drift), a compliance check flags it as non-compliant. Remediation puts the host in maintenance mode and applies the profile. <strong>Answer files</strong> provide host-specific values (IP addresses, hostnames) that differ per host.</p>
+
+        <div class="section-label">Procedure Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Extract host profile from reference host</strong></p>
+                    <pre><code># vSphere Client:
+# Menu → Policies and Profiles → Host Profiles
+# → Extract Profile from a Host
+# Select reference host → Name the profile → Finish
+
+# PowerCLI — extract host profile:
+$refHost = Get-VMHost "esxi-ref01.domain.local"
+New-VMHostProfile -Name "Production-Cluster-Profile" \
+  -ReferenceHost $refHost -Description "Extracted $(Get-Date -Format yyyy-MM-dd)"
+
+# Review profile settings:
+$profile = Get-VMHostProfile -Name "Production-Cluster-Profile"
+$profile | Get-VMHostProfileRequiredInput</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Attach profile and check compliance</strong></p>
+                    <pre><code># Attach profile to cluster:
+# Host Profiles → Select profile → Attach/Detach Hosts and Clusters
+# Select target cluster → Attach
+
+# PowerCLI — attach and check compliance:
+$cluster = Get-Cluster "Production-Cluster"
+$profile = Get-VMHostProfile "Production-Cluster-Profile"
+Apply-VMHostProfile -Profile $profile -Entity $cluster -AssociateOnly -Confirm:$false
+
+# Check compliance:
+Test-VMHostProfileCompliance -VMHost (Get-Cluster "Production-Cluster" | Get-VMHost) |
+  Select VMHost, ComplianceStatus, IncomplianceElementList |
+  Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure answer files and remediate</strong></p>
+                    <pre><code># Pre-populate answer files (host-specific values):
+# Host Profiles → Select profile → Edit Host Customizations
+# Set per-host values: management IP, hostname, etc.
+
+# Remediate non-compliant hosts:
+# Right-click non-compliant host → Host Profiles → Remediate
+# Host enters maintenance mode → profile applied → host reboots
+
+# PowerCLI — remediate host:
+$vmhost = Get-VMHost "esxi02.domain.local"
+Set-VMHost -VMHost $vmhost -State "Maintenance" -Confirm:$false
+Apply-VMHostProfile -Profile $profile -Entity $vmhost -Confirm:$false
+Set-VMHost -VMHost $vmhost -State "Connected" -Confirm:$false
+
+# Verify compliance after remediation:
+Test-VMHostProfileCompliance -VMHost $vmhost | Select ComplianceStatus</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Keep your reference host well-documented and treat it as a golden image. Update the host profile whenever you make intentional configuration changes. Pre-populate answer files to avoid interactive prompts during remediation. Schedule compliance checks weekly. Use host profiles with vLCM for a complete desired-state management approach.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #20: Performance Monitoring (esxtop & vscsiStats) -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-20" data-type="fix" data-severity="medium" data-keywords="esxtop vscsistats performance monitoring cpu memory network disk latency ready cstp kavg gavg swprt mctlsz batch csv">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">20</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Performance Monitoring (esxtop &amp; vscsiStats)</div>
+            <div class="kb-entry-subtitle">Real-time and batch performance analysis — key counters for CPU, memory, network, disk, and VM-level I/O latency profiling</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">esxtop</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Monitoring</span>
+                <span class="tag">vscsiStats</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Context:</strong> <code class="inline">esxtop</code> is the definitive tool for real-time ESXi performance troubleshooting. Understanding key counters like %RDY, KAVG, and SWPRT is essential for diagnosing VM slowness, storage latency, and resource contention at the hypervisor level.</span>
+        </div>
+
+        <div class="section-label">Key Performance Counters</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">CPU &amp; Memory Counters</div>
+                <ul>
+                    <li><strong>%RDY</strong> — CPU ready time (>5% = contention, >10% = critical)</li>
+                    <li><strong>%CSTP</strong> — Co-stop time (vSMP scheduling delay)</li>
+                    <li><strong>%USED</strong> — Actual CPU utilization</li>
+                    <li><strong>SWPRT</strong> — Swap read rate (>0 = memory pressure)</li>
+                    <li><strong>MCTLSZ</strong> — Balloon driver memory reclaimed</li>
+                    <li><strong>ZIP/UNZIP</strong> — Compressed memory pages</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title blue">Storage &amp; Network Counters</div>
+                <ul>
+                    <li><strong>KAVG</strong> — Kernel average latency (>2ms = investigate)</li>
+                    <li><strong>DAVG</strong> — Device average latency (storage array)</li>
+                    <li><strong>GAVG</strong> — Guest average latency (KAVG + DAVG)</li>
+                    <li><strong>QAVG</strong> — Queue average latency (VMkernel queue)</li>
+                    <li><strong>%DRPTX/%DRPRX</strong> — Network dropped packets</li>
+                    <li><strong>MbRX/MbTX</strong> — Network throughput (Mbps)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Usage Procedures</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Real-time monitoring with esxtop</strong></p>
+                    <pre><code># SSH to ESXi host and launch esxtop:
+esxtop
+
+# Navigation keys:
+# c = CPU view     m = Memory view
+# n = Network view d = Disk/Storage view
+# u = Disk device  v = VM disk (virtual)
+# p = Power        i = Interrupt
+
+# Useful key commands inside esxtop:
+# f = Toggle fields (add/remove counters)
+# o = Order/sort by column
+# V = Toggle VM-only view
+# s = Set refresh interval (default 5s)
+
+# Filter to specific VM:
+# Press 'f' to add fields, then 'V' for VM-only mode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Batch mode for data collection and analysis</strong></p>
+                    <pre><code># Capture 60 samples at 5-second intervals to CSV:
+esxtop -b -d 5 -n 60 > /tmp/perfdata.csv
+
+# Capture with specific counters (use .esxtop-rc config):
+# Create custom config: run esxtop → configure fields → press W to save
+# Then use saved config in batch mode:
+esxtop -b -d 5 -n 120 -c /etc/esxtop-custom.rc > /tmp/perfdata.csv
+
+# Download CSV via SCP for analysis:
+# scp root@esxi01:/tmp/perfdata.csv ./
+
+# Open in Windows Performance Monitor (perfmon):
+# Import CSV → analyze trends, spikes, and correlations
+
+# Quick CLI analysis — find peak CPU ready:
+awk -F',' 'NR>1 {print $1, $5}' /tmp/perfdata.csv | sort -t',' -k2 -rn | head</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>VM-level I/O profiling with vscsiStats</strong></p>
+                    <pre><code># List VMs with world IDs:
+vscsiStats -l
+
+# Start I/O profiling for a specific VM (by world ID):
+vscsiStats -s -w &lt;worldID&gt;
+
+# Collect histogram data (run during workload):
+vscsiStats -p all -w &lt;worldID&gt;
+
+# Save results and stop profiling:
+vscsiStats -p all -w &lt;worldID&gt; > /tmp/vm-io-profile.txt
+vscsiStats -x -w &lt;worldID&gt;
+
+# Key output: I/O size distribution, latency histogram
+# Helps identify: random vs sequential I/O, read/write ratio, latency buckets</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Establish baselines by running esxtop batch collections during normal operations. Key thresholds: %RDY >5% (CPU contention), KAVG >2ms (storage latency), SWPRT >0 (memory pressure). Use batch mode CSV exports for trend analysis and capacity planning. Combine esxtop data with vCenter performance charts for a complete picture. For storage-intensive VMs, use vscsiStats to profile I/O patterns before making storage tier decisions.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 2: Day-2 Operations &amp; Maintenance</p>
+    <p style="margin-top:0.3rem;"><a href="phase1.html">&larr; Phase 1</a> &nbsp;|&nbsp; <a href="phase3.html">Next: Phase 3 &rarr;</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-11)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

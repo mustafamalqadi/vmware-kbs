@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 5: vCenter Server &amp; Platform Services</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout for symptoms/root cause ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        /* ── Prefers reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 5 — vCenter &amp; PSC</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html" class="active">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search vCenter, vpxd, SSO, certificates, database, VAMI, backup, plugins..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">vCenter Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">5</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 5</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #41: VCSA Disk Space Full                 -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-41" data-type="break" data-severity="critical" data-keywords="vcsa disk space full partition storage log db seat vami cleanup logrotate appliance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">41</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VCSA Disk Space Full — Partition Cleanup</div>
+            <div class="kb-entry-subtitle">vCenter services stop when VCSA partitions fill up — /storage/log, /storage/db, /storage/seat overflow</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">VCSA</span>
+                <span class="tag">Disk Space</span>
+                <span class="tag">Partition</span>
+                <span class="tag">VAMI</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vCenter services refuse to start when disk partitions exceed 95%. The vSphere Client becomes inaccessible, all management operations halt, and automated workflows (DRS, HA) lose their orchestration layer.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client returns <strong>503 Service Unavailable</strong></li>
+                    <li>VAMI shows partition utilization at <strong>95-100%</strong></li>
+                    <li>SSH login succeeds but <code class="inline">service-control --status</code> shows services <strong>STOPPED</strong></li>
+                    <li>Logs: <code class="inline">No space left on device</code> in /var/log/messages</li>
+                    <li>VCSA sends email alerts: <strong>"Storage Health Alarm"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li><strong>/storage/log</strong> — verbose logging, old log files not rotated</li>
+                    <li><strong>/storage/db</strong> — PostgreSQL WAL files, stats bloat</li>
+                    <li><strong>/storage/seat</strong> — inventory service data growth</li>
+                    <li>VCSA deployed with <strong>Tiny</strong> sizing for a large environment</li>
+                    <li>Core dumps accumulating in <strong>/storage/core</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Identify which partitions are full</strong></p>
+                    <pre><code># SSH to VCSA as root:
+df -h
+
+# Check top consumers per partition:
+du -sh /storage/log/* | sort -rh | head -20
+du -sh /storage/db/* | sort -rh | head -10
+du -sh /storage/seat/* | sort -rh | head -10</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check service status and identify stopped services</strong></p>
+                    <pre><code># List all service states:
+service-control --status
+
+# Check for core dumps consuming space:
+ls -lh /storage/core/
+du -sh /storage/core/</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Clean old logs and rotate current logs</strong></p>
+                    <pre><code># Remove old compressed logs:
+find /storage/log -name "*.gz" -mtime +7 -delete
+find /storage/log -name "*.log.*" -mtime +3 -delete
+
+# Force log rotation:
+logrotate -f /etc/logrotate.conf
+
+# Clean old core dumps:
+rm -f /storage/core/core.*</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Restart services after freeing space</strong></p>
+                    <pre><code># Verify space recovered:
+df -h
+
+# Start all vCenter services:
+service-control --start --all
+
+# Verify all services running:
+service-control --status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Expand disk or resize VCSA for long-term fix</strong></p>
+                    <pre><code># Option A — Expand disk via VAMI:
+# https://vcsa:5480 → Storage → Increase storage size
+
+# Option B — Resize VCSA deployment size:
+# Shut down VCSA → Increase CPU/RAM/Disk in vSphere
+# Boot → VAMI detects new size automatically
+
+# Option C — Move to larger VCSA size:
+# Backup → Deploy new VCSA with correct sizing → Restore</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Monitor VCSA disk usage with vCenter alarms set at 80% threshold. Configure log rotation in /etc/logrotate.d/ for all services. Use the VCSA sizing guide — Tiny handles up to 10 hosts, choose Small or Medium for production. Schedule weekly cleanup scripts via cron.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #42: vpxd Service Crash & Recovery        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-42" data-type="break" data-severity="critical" data-keywords="vpxd crash restart virtualcenter service log profiler db connection pool cert plugin recovery">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">42</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vpxd Service Crash &amp; Recovery</div>
+            <div class="kb-entry-subtitle">VMware VirtualCenter Server service crashes or fails to start — DB pool exhaustion, certificate issues, or plugin conflicts</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">vpxd</span>
+                <span class="tag">Service Crash</span>
+                <span class="tag">vCenter Core</span>
+                <span class="tag">Recovery</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vpxd is the core vCenter daemon. When it crashes, the entire vSphere Client is down, all API/SDK operations fail, DRS/HA orchestration stops, and no management tasks can be performed on the cluster.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client: <strong>"Cannot connect to vCenter Server"</strong></li>
+                    <li><code class="inline">service-control --status vmware-vpxd</code> shows <strong>STOPPED</strong></li>
+                    <li>vpxd.log: <code class="inline">Panic: Unhandled exception</code> or <code class="inline">ODBC error</code></li>
+                    <li>Service restarts in a loop — starts then crashes within seconds</li>
+                    <li>vpxd-profiler.log shows <strong>DB connection pool exhausted</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>PostgreSQL connection pool max reached (default 60)</li>
+                    <li>Expired or mismatched <strong>machine SSL certificate</strong></li>
+                    <li>Corrupted plugin extension blocking startup</li>
+                    <li>Insufficient memory — vpxd OOM killed by systemd</li>
+                    <li>Orphaned tasks or sessions locking DB tables</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vpxd logs for crash reason</strong></p>
+                    <pre><code># Primary vpxd log:
+tail -200 /var/log/vmware/vpxd/vpxd.log | grep -i "error\|panic\|abort\|fatal"
+
+# Profiler log for performance/DB issues:
+tail -100 /var/log/vmware/vpxd/vpxd-profiler.log | grep -i "pool\|connection\|timeout"
+
+# Check if OOM killed:
+journalctl -u vmware-vpxd --since "1 hour ago" | grep -i "oom\|killed"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify database connectivity</strong></p>
+                    <pre><code># Test PostgreSQL connection:
+/opt/vmware/vpostgres/current/bin/psql -U postgres -d VCDB -c "SELECT 1;"
+
+# Check active connections:
+/opt/vmware/vpostgres/current/bin/psql -U postgres -d VCDB \
+  -c "SELECT count(*) FROM pg_stat_activity;"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restart vpxd service cleanly</strong></p>
+                    <pre><code># Stop vpxd and its dependencies:
+service-control --stop vmware-vpxd
+
+# Wait 10 seconds, then start:
+service-control --start vmware-vpxd
+
+# Monitor startup in real-time:
+tail -f /var/log/vmware/vpxd/vpxd.log</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Increase DB connection pool if exhausted</strong></p>
+                    <pre><code># Edit vpxd configuration:
+vi /etc/vmware-vpxd/vpxd.cfg
+
+# Find and increase maxDbConnections:
+# &lt;maxDbConnections&gt;80&lt;/maxDbConnections&gt;
+
+# Restart vpxd after change:
+service-control --stop vmware-vpxd
+service-control --start vmware-vpxd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Remove problematic plugin if blocking startup</strong></p>
+                    <pre><code># List registered extensions via MOB:
+# https://vcsa/mob → content → ExtensionManager → extensionList
+
+# Or via CLI — query registered extensions:
+/opt/vmware/vpostgres/current/bin/psql -U postgres -d VCDB \
+  -c "SELECT ext_key FROM vpx_ext WHERE enabled = true;"
+
+# Disable a problematic extension:
+/opt/vmware/vpostgres/current/bin/psql -U postgres -d VCDB \
+  -c "UPDATE vpx_ext SET enabled = false WHERE ext_key = 'com.vendor.plugin';"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Caution:</strong> Never force-kill vpxd with <code class="inline">kill -9</code> — this can corrupt in-flight DB transactions. Always use <code class="inline">service-control</code> for clean shutdown. If vpxd is in a crash loop, check certificate validity before anything else: expired machine SSL certs are the #1 cause of persistent vpxd failures.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #43: vCenter Database (PostgreSQL)        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-43" data-type="break" data-severity="high" data-keywords="postgresql database vcdb connections bloat vacuum analyze locks slow ui vpxd timeout pg_stat_activity">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">43</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Database (PostgreSQL) Troubleshooting</div>
+            <div class="kb-entry-subtitle">Embedded PostgreSQL issues — high connections, table bloat, locks, and performance degradation</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">PostgreSQL</span>
+                <span class="tag">VCDB</span>
+                <span class="tag">Database</span>
+                <span class="tag">Performance</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Database issues cause slow vSphere Client responsiveness, vpxd timeouts, failed task operations, and in severe cases "connection refused" errors that make vCenter completely unresponsive.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client <strong>extremely slow</strong> — pages take 30+ seconds</li>
+                    <li>vpxd.log: <code class="inline">ODBC connection timeout</code> or <code class="inline">connection refused</code></li>
+                    <li>Tasks hang in <strong>"Queued"</strong> state indefinitely</li>
+                    <li><code class="inline">/storage/db</code> partition usage climbing rapidly</li>
+                    <li>PostgreSQL log: <code class="inline">too many connections for role "vc"</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Connection pool saturation — max_connections exceeded</li>
+                    <li>Table bloat — autovacuum not running or too slow</li>
+                    <li>Long-running queries holding locks</li>
+                    <li>WAL (Write-Ahead Log) files accumulating</li>
+                    <li>Stats collector data growing unbounded</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Connect to PostgreSQL and check connection stats</strong></p>
+                    <pre><code># Connect to embedded PostgreSQL:
+/opt/vmware/vpostgres/current/bin/psql -U postgres VCDB
+
+# Check active connections:
+SELECT datname, usename, state, query_start, query
+FROM pg_stat_activity
+WHERE datname = 'VCDB'
+ORDER BY query_start;
+
+# Connection count vs max:
+SELECT count(*) AS active, 
+       (SELECT setting FROM pg_settings WHERE name='max_connections') AS max
+FROM pg_stat_activity;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check table bloat and vacuum status</strong></p>
+                    <pre><code># Find largest tables:
+SELECT schemaname, relname, 
+       pg_size_pretty(pg_total_relation_size(relid)) AS total_size,
+       n_dead_tup, last_autovacuum
+FROM pg_stat_user_tables
+ORDER BY pg_total_relation_size(relid) DESC
+LIMIT 20;
+
+# Check WAL file accumulation:
+SELECT count(*) FROM pg_ls_waldir();</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Kill long-running queries and run vacuum</strong></p>
+                    <pre><code># Kill idle-in-transaction connections older than 1 hour:
+SELECT pg_terminate_backend(pid) 
+FROM pg_stat_activity 
+WHERE state = 'idle in transaction' 
+AND query_start &lt; now() - interval '1 hour';
+
+# Run manual vacuum on bloated tables:
+VACUUM (VERBOSE, ANALYZE) vpx_event;
+VACUUM (VERBOSE, ANALYZE) vpx_event_arg;
+VACUUM (VERBOSE, ANALYZE) vpx_task;
+VACUUM (VERBOSE, ANALYZE) vpx_task_arg;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Purge old events and tasks</strong></p>
+                    <pre><code># Check event/task counts:
+SELECT count(*) FROM vpx_event;
+SELECT count(*) FROM vpx_task;
+
+# Delete events older than 30 days (adjust as needed):
+DELETE FROM vpx_event_arg WHERE event_id IN 
+  (SELECT event_id FROM vpx_event WHERE create_time &lt; now() - interval '30 days');
+DELETE FROM vpx_event WHERE create_time &lt; now() - interval '30 days';
+
+# Reclaim space after large deletes:
+VACUUM FULL vpx_event;
+VACUUM FULL vpx_event_arg;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Tune PostgreSQL settings for vCenter workload</strong></p>
+                    <pre><code># Key tuning parameters in postgresql.conf:
+# /storage/db/vpostgres/postgresql.conf
+
+# Increase max connections if needed:
+max_connections = 100
+
+# Tune autovacuum to be more aggressive:
+autovacuum_vacuum_cost_delay = 10
+autovacuum_vacuum_cost_limit = 400
+autovacuum_max_workers = 4
+
+# Restart PostgreSQL after changes:
+service-control --stop vmware-vpostgres
+service-control --start vmware-vpostgres</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Set vCenter's event/task retention to 30 days (Administration → vCenter Settings → Database). Monitor /storage/db usage and set alarms at 70%. Schedule weekly VACUUM ANALYZE via cron. Never run VACUUM FULL during business hours — it locks tables exclusively.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #44: SSO / STS Certificate Expiry         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-44" data-type="break" data-severity="critical" data-keywords="sso sts certificate expiry renewal login token signing vmdir fixsts certificate-manager ldap">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">44</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">SSO / STS Certificate Expiry &amp; Renewal</div>
+            <div class="kb-entry-subtitle">STS signing certificate expires — all logins fail, API/SDK operations blocked, complete vCenter lockout</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">SSO</span>
+                <span class="tag">STS</span>
+                <span class="tag">Certificate</span>
+                <span class="tag">Authentication</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> When the STS signing certificate expires, NO user can log in to vCenter — web UI, API, SDK, PowerCLI all fail. ALL vCenter operations are blocked. This is one of the most severe vCenter outage scenarios.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client login: <strong>"Unable to authenticate"</strong> or <strong>"A general system error occurred"</strong></li>
+                    <li>PowerCLI: <code class="inline">Connect-VIServer</code> returns <strong>401 Unauthorized</strong></li>
+                    <li>REST API: <code class="inline">com.vmware.vapi.std.errors.unauthenticated</code></li>
+                    <li>SSO log: <code class="inline">Token is not valid: expired certificate</code></li>
+                    <li>All services appear running but authentication fails</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li><strong>STS signing certificate</strong> expired (default 2-year validity)</li>
+                    <li>Machine SSL certificate expired</li>
+                    <li>VMCA root certificate expired (10-year validity)</li>
+                    <li>Clock skew between VCSA and ESXi hosts &gt; 5 minutes</li>
+                    <li>vmdir replication failure causing stale cert data</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check STS certificate expiry date</strong></p>
+                    <pre><code># Check all trusted certificates:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert list --login administrator@vsphere.local
+
+# For each cert ID, check expiry:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert get --id &lt;cert-id&gt; --outcert /tmp/cert.pem
+openssl x509 -in /tmp/cert.pem -noout -dates
+
+# Quick check — STS signing cert in VMDIR:
+/usr/lib/vmware-vmafd/bin/vecs-cli entry list --store STS_INTERNAL_SSL_CERT</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check machine SSL and solution user certificates</strong></p>
+                    <pre><code># Machine SSL cert expiry:
+/usr/lib/vmware-vmafd/bin/vecs-cli entry getcert --store MACHINE_SSL_CERT --alias __MACHINE_CERT \
+  | openssl x509 -noout -dates
+
+# List all certificate stores:
+/usr/lib/vmware-vmafd/bin/vecs-cli store list
+
+# Check each store for expired certs:
+for store in $(/usr/lib/vmware-vmafd/bin/vecs-cli store list); do
+  echo "=== $store ==="
+  /usr/lib/vmware-vmafd/bin/vecs-cli entry list --store "$store" 2>/dev/null
+done</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Renew STS signing certificate using fixsts script</strong></p>
+                    <pre><code># VMware KB 79248 — fix expired STS certificate:
+# Download fixsts.sh from VMware KB or use built-in:
+
+# Option A — Use the fixsts.sh script:
+chmod +x /tmp/fixsts.sh
+/tmp/fixsts.sh
+
+# Option B — Use certificate-manager (interactive):
+/usr/lib/vmware-vmca/bin/certificate-manager
+# Select Option 8: Reset all certificates
+
+# After renewal, restart all services:
+service-control --stop --all
+service-control --start --all</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify certificate renewal and test login</strong></p>
+                    <pre><code># Verify new STS cert dates:
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert list --login administrator@vsphere.local
+
+# Test authentication:
+curl -k -X POST "https://localhost/rest/com/vmware/cis/session" \
+  -u "administrator@vsphere.local:PASSWORD"
+
+# Check all services healthy:
+service-control --status
+
+# Verify from vSphere Client login page</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix clock skew if present</strong></p>
+                    <pre><code># Check VCSA time:
+date
+timedatectl status
+
+# Configure NTP on VCSA:
+# VAMI → Time → Edit NTP servers
+
+# Or via CLI:
+/usr/lib/vmware-applmgmt/bin/timesync.py set --mode NTP
+/usr/lib/vmware-applmgmt/bin/timesync.py set --servers "ntp1.example.com ntp2.example.com"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Caution:</strong> Always take a VCSA snapshot/backup before renewing certificates. STS cert renewal affects ALL connected vCenters in Enhanced Linked Mode. After renewal, ESXi hosts may need to be reconnected. Monitor STS cert expiry proactively — set calendar reminders 30 days before expiry.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #45: Content Library Sync Failures        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-45" data-type="fix" data-severity="high" data-keywords="content library sync subscribed publisher https proxy certificate trust template iso ovf bandwidth">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">45</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Content Library Sync Failures</div>
+            <div class="kb-entry-subtitle">Subscribed library not syncing from publisher — HTTPS, proxy, certificate trust, and bandwidth issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Content Library</span>
+                <span class="tag">Sync</span>
+                <span class="tag">Templates</span>
+                <span class="tag">ISO</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VM templates and ISO images are not available at remote sites. New VM deployments fail if they depend on subscribed library content. Patching workflows using Content Library for update staging are blocked.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Subscribed library shows <strong>"Last sync: Failed"</strong></li>
+                    <li>Items show as <strong>"Not synchronized"</strong> with red icons</li>
+                    <li>vCenter events: <code class="inline">Content library sync session failed</code></li>
+                    <li>Sync starts but hangs at 0% or fails mid-transfer</li>
+                    <li>Error: <code class="inline">SSL certificate problem: unable to get local issuer certificate</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Resolution Targets</div>
+                <ul>
+                    <li>Verify HTTPS connectivity between subscriber and publisher</li>
+                    <li>Update SSL thumbprint after publisher cert renewal</li>
+                    <li>Configure proxy settings if required</li>
+                    <li>Check firewall rules for port 443 between sites</li>
+                    <li>Validate publisher URL is accessible and correct</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Test connectivity from subscriber vCenter to publisher URL</strong></p>
+                    <pre><code># SSH to subscriber VCSA — test HTTPS connectivity:
+curl -vk https://publisher-vcsa.example.com:443/cls/vcsp/lib/&lt;library-id&gt;/lib.json
+
+# Check DNS resolution:
+nslookup publisher-vcsa.example.com
+
+# Test port connectivity:
+python3 -c "import socket; s=socket.create_connection(('publisher-vcsa.example.com', 443), timeout=5); print('OK'); s.close()"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify publisher SSL certificate thumbprint</strong></p>
+                    <pre><code># Get current publisher certificate thumbprint:
+echo | openssl s_client -connect publisher-vcsa.example.com:443 2>/dev/null \
+  | openssl x509 -noout -fingerprint -sha256
+
+# Compare with thumbprint configured in subscribed library:
+# vSphere Client → Content Libraries → Select subscribed library → Settings
+
+# Check Content Library logs:
+tail -100 /var/log/vmware/content-library/cls.log | grep -i "error\|fail\|ssl"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Update SSL thumbprint and resync</strong></p>
+                    <pre><code># In vSphere Client:
+# Content Libraries → Select subscribed library → Actions → Edit Settings
+# Click "Probe" to fetch new publisher cert → Accept thumbprint
+# Click "Sync Now"
+
+# Or via REST API:
+curl -k -X POST "https://vcsa/rest/com/vmware/content/subscribed-library/id:&lt;lib-id&gt;?~action=sync" \
+  -H "vmware-api-session-id: &lt;session-id&gt;"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure proxy settings if needed</strong></p>
+                    <pre><code># Set proxy for VCSA outbound connections:
+# VAMI (https://vcsa:5480) → Networking → Proxy Settings
+
+# Or via CLI:
+/opt/vmware/share/vami/vami_set_proxy https proxy.example.com 8080
+
+# Verify proxy is applied:
+/opt/vmware/share/vami/vami_get_proxy
+
+# Add no-proxy exceptions for internal publisher:
+# No proxy: localhost,127.0.0.1,publisher-vcsa.example.com</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Recreate library if persistent corruption</strong></p>
+                    <pre><code># If sync continues to fail after all fixes:
+# 1. Delete the broken subscribed library
+# 2. Re-create it with the correct publisher URL
+# 3. Accept the SSL thumbprint
+# 4. Set sync schedule (immediate or on-demand)
+
+# Verify sync completes:
+# Content Libraries → Select library → check "Last Successful Sync" timestamp</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Use "on-demand" sync for large libraries to save bandwidth — items are downloaded only when needed. Set automatic sync schedules during off-peak hours. After publisher certificate renewal, always update the thumbprint on all subscriber libraries. Monitor Content Library datastore free space to avoid sync failures due to insufficient storage.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #46: vCenter Convergence — External PSC   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-46" data-type="fix" data-severity="high" data-keywords="psc convergence embedded external topology migration vdcrepadmin replication simplified vcsa converge">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">46</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Convergence — External PSC to Embedded</div>
+            <div class="kb-entry-subtitle">Migrate from deprecated external PSC topology to embedded — simplified single-appliance architecture</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">PSC</span>
+                <span class="tag">Convergence</span>
+                <span class="tag">Migration</span>
+                <span class="tag">Topology</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> External PSC topology is deprecated since vSphere 7.0. Convergence to embedded is required for future upgrades and eliminates a single point of failure. The process is non-disruptive when performed correctly.</span>
+        </div>
+
+        <div class="section-label">Pre-Checks &amp; Planning</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Prerequisites</div>
+                <ul>
+                    <li>vCenter Server <strong>6.7 Update 1+</strong> or <strong>7.0+</strong></li>
+                    <li>All PSC replication partners <strong>healthy and in sync</strong></li>
+                    <li>All vCenter services running on both PSC and VC</li>
+                    <li>Fresh <strong>file-based backup</strong> of VCSA and PSC</li>
+                    <li>Downtime window: <strong>~30 minutes</strong> per vCenter</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Benefits</div>
+                <ul>
+                    <li>Single appliance to manage instead of PSC + VC</li>
+                    <li>Eliminates PSC as a single point of failure</li>
+                    <li>Required for <strong>vSphere 8.x upgrade path</strong></li>
+                    <li>Simplified certificate and backup management</li>
+                    <li>Reduced resource consumption (decommission PSC VMs)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic — Verify Replication Health</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify vmdir replication status across all nodes</strong></p>
+                    <pre><code># Check replication status:
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showpartners \
+  -h localhost -u administrator -w 'PASSWORD'
+
+# Check replication agreements:
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showservers \
+  -h localhost -u administrator -w 'PASSWORD'
+
+# Verify no replication lag:
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showpartnerstatus \
+  -h localhost -u administrator -w 'PASSWORD'</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div name="step-content">
+                    <p><strong>Verify all services are healthy before convergence</strong></p>
+                    <pre><code># On the vCenter:
+service-control --status
+
+# On the external PSC:
+service-control --status
+
+# Verify VCHA (if configured) is disabled before convergence:
+# vSphere Client → vCenter HA → Edit → Turn Off vCenter HA</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure — Convergence</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Run the convergence tool on vCenter</strong></p>
+                    <pre><code># SSH to the vCenter Server (not the PSC):
+# Run the convergence CLI tool:
+/usr/lib/vmware-vmca/bin/cdc-converge
+
+# The tool will:
+# 1. Validate current topology
+# 2. Move SSO/vmdir data into the embedded vCenter
+# 3. Reconfigure endpoints
+# 4. Restart all services
+
+# Monitor progress — convergence takes 15-30 minutes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify convergence success and decommission PSC</strong></p>
+                    <pre><code># After convergence — verify topology:
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showservers \
+  -h localhost -u administrator -w 'PASSWORD'
+# Should show only vCenter nodes, no external PSC
+
+# Verify all services running on vCenter:
+service-control --status
+
+# Test login to vSphere Client
+# Test SSO, permissions, roles
+
+# Decommission external PSC:
+# 1. Take final backup of PSC
+# 2. Power off PSC VM
+# 3. After 7 days of stable operation, delete PSC VM</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always converge one vCenter at a time in Enhanced Linked Mode environments. Take snapshots of both PSC and VC before starting. Update DNS records after convergence if the PSC had a separate FQDN used by other systems. After convergence, verify that all third-party integrations (SRM, NSX, vROps) still connect properly.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #47: VAMI Backup Schedule & Automated Recovery -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-47" data-type="fix" data-severity="high" data-keywords="vami backup schedule automated recovery restore ftp ftps scp smb http https retention file-based appliance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">47</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VAMI Backup Schedule &amp; Automated Recovery</div>
+            <div class="kb-entry-subtitle">Configure automated VCSA backups via VAMI or API — schedule, retention, protocols, and restore procedures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">VAMI</span>
+                <span class="tag">Backup</span>
+                <span class="tag">Restore</span>
+                <span class="tag">DR</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Objective:</strong> Establish a reliable backup and recovery plan for vCenter Server Appliance. File-based backups capture the VCSA configuration, inventory, and database needed for full recovery.</span>
+        </div>
+
+        <div class="section-label">Backup Options &amp; Protocols</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Supported Protocols</div>
+                <ul>
+                    <li><strong>FTP</strong> — Basic FTP transfer (not recommended)</li>
+                    <li><strong>FTPS</strong> — FTP over SSL/TLS</li>
+                    <li><strong>HTTP/HTTPS</strong> — Web server target</li>
+                    <li><strong>SCP</strong> — Secure copy over SSH (recommended)</li>
+                    <li><strong>SMB</strong> — Windows file share (CIFS)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title green">Backup Contents</div>
+                <ul>
+                    <li><strong>Common</strong> — Config, inventory, tasks, events (small, fast)</li>
+                    <li><strong>Seat data</strong> — Stats, alarms, tags (medium size)</li>
+                    <li><strong>Full</strong> — Everything including historical performance data (largest)</li>
+                    <li>Backup size: ~2-10 GB depending on inventory</li>
+                    <li>Duration: 15-60 minutes depending on data size</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Configure Automated Backup</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure backup schedule via VAMI</strong></p>
+                    <pre><code># Access VAMI:
+# https://vcsa:5480 → Backup → Configure Backup Schedule
+
+# Settings:
+# Protocol: SCP (recommended)
+# Server: backup-server.example.com
+# Path: /backups/vcsa/
+# Username: backup-user
+# Schedule: Daily at 02:00
+# Retention: Keep last 5 backups
+# Backup type: Full (with stats)
+# Encryption: Enable with strong passphrase</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure backup via REST API (for automation)</strong></p>
+                    <pre><code># Create a backup schedule via API:
+curl -k -X POST "https://vcsa/api/appliance/recovery/backup/schedules" \
+  -H "vmware-api-session-id: $SESSION" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "schedule_id": "daily-backup",
+    "spec": {
+      "location": "scp://backup-server.example.com/backups/vcsa",
+      "location_user": "backup-user",
+      "location_password": "PASSWORD",
+      "enable": true,
+      "recurrence_info": {
+        "minute": 0, "hour": 2,
+        "days": ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]
+      },
+      "retention_info": { "max_count": 5 },
+      "backup_password": "ENCRYPTION_PASSPHRASE"
+    }
+  }'</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Trigger manual backup and verify</strong></p>
+                    <pre><code># Trigger on-demand backup via VAMI:
+# https://vcsa:5480 → Backup → Backup Now
+
+# Or via API:
+curl -k -X POST "https://vcsa/api/appliance/recovery/backup/jobs" \
+  -H "vmware-api-session-id: $SESSION" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "piece": { "location": "scp://backup-server.example.com/backups/vcsa",
+               "location_user": "backup-user",
+               "location_password": "PASSWORD",
+               "backup_password": "ENCRYPTION_PASSPHRASE",
+               "parts": ["common","seat"] }
+  }'
+
+# Monitor backup job:
+curl -k "https://vcsa/api/appliance/recovery/backup/jobs" \
+  -H "vmware-api-session-id: $SESSION"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Restore Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore VCSA from file-based backup</strong></p>
+                    <pre><code># Full restore process:
+# 1. Mount VCSA ISO on a workstation with network access
+# 2. Launch the VCSA Installer
+# 3. Select "Restore" instead of "Install"
+# 4. Stage 1: Deploy new VCSA appliance (fresh OVA)
+# 5. Stage 2: Select "Restore from file-based backup"
+#    - Protocol: SCP/FTP/etc.
+#    - Backup location: scp://backup-server/backups/vcsa/
+#    - Select the backup to restore
+#    - Enter encryption passphrase
+# 6. Wait for restore to complete (30-90 minutes)
+# 7. Verify vSphere Client access and all services</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Test restore procedures quarterly in a lab environment. Use SCP for backups — it's the most reliable protocol. Enable backup encryption always — backups contain sensitive credential data. Store the encryption passphrase in a secure vault (not on the vCenter itself). Keep at least 5 daily backups and 2 weekly backups. Monitor backup job success via vCenter alarms or API polling.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #48: vCenter Plugin & UI Extension Issues -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-48" data-type="fix" data-severity="medium" data-keywords="plugin ui extension mob slow blank pages vsphere-ui srm nsx vsan vrops unregister register client">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">48</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Plugin &amp; UI Extension Issues</div>
+            <div class="kb-entry-subtitle">Plugins causing slow UI, errors, blank pages — troubleshooting and cleanup via MOB and logs</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Plugins</span>
+                <span class="tag">UI</span>
+                <span class="tag">MOB</span>
+                <span class="tag">Extensions</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Broken or outdated plugins can cause the vSphere Client to load slowly, display blank sections, throw JavaScript errors, or even prevent login. Common offenders include SRM, NSX, vSAN health, and vROps plugins after version upgrades.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client takes <strong>60+ seconds</strong> to load</li>
+                    <li>Blank white sections or <strong>missing menu items</strong></li>
+                    <li>Browser console: <strong>JavaScript errors</strong> from plugin modules</li>
+                    <li>Error banner: <code class="inline">"An internal error has occurred"</code></li>
+                    <li>Specific plugin pages throw <strong>500 errors</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Plugin version <strong>incompatible</strong> with current vCenter version</li>
+                    <li>Plugin's backend server <strong>decommissioned</strong> but registration remains</li>
+                    <li>Failed plugin upgrade left <strong>orphaned extension data</strong></li>
+                    <li>Plugin server SSL certificate <strong>expired or untrusted</strong></li>
+                    <li>Multiple versions of same plugin <strong>registered simultaneously</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vSphere Client UI logs for plugin errors</strong></p>
+                    <pre><code># vSphere Client (HTML5) logs:
+tail -200 /var/log/vmware/vsphere-ui/logs/vsphere_client_virgo.log \
+  | grep -i "error\|exception\|plugin\|extension"
+
+# Check plugin loading times:
+grep -i "plugin.*load\|extension.*register" \
+  /var/log/vmware/vsphere-ui/logs/vsphere_client_virgo.log | tail -30
+
+# Check for connectivity issues to plugin backends:
+grep -i "connect.*refused\|timeout\|unreachable" \
+  /var/log/vmware/vsphere-ui/logs/vsphere_client_virgo.log | tail -20</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>List all registered extensions</strong></p>
+                    <pre><code># Via MOB (Managed Object Browser):
+# https://vcsa/mob → content → ExtensionManager → extensionList
+# Review each extension's key, description, and server URL
+
+# Via PowerCLI:
+Connect-VIServer vcsa.example.com
+$ext = Get-View ExtensionManager
+$ext.ExtensionList | Select-Object Key, 
+  @{N='Company';E={$_.Description.Label}}, 
+  @{N='Version';E={$_.Version}} | Format-Table -AutoSize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Unregister broken plugin via MOB</strong></p>
+                    <pre><code># 1. Navigate to MOB:
+#    https://vcsa/mob → content → ExtensionManager
+# 2. Click "UnregisterExtension" method
+# 3. Enter the extension key (e.g., "com.vmware.vrops.install")
+# 4. Click "Invoke Method"
+
+# Common plugin keys to check:
+# com.vmware.vrops.install — vROps
+# com.vmware.vcHms — NSX
+# com.vmware.vcDr — SRM
+# com.vmware.vsan.health — vSAN Health</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Clear vSphere Client cache and restart</strong></p>
+                    <pre><code># Stop the vSphere Client service:
+service-control --stop vsphere-ui
+
+# Clear the client cache:
+rm -rf /etc/vmware/vsphere-ui/vc-packages/vsphere-client-serenity/*
+rm -rf /etc/vmware/vsphere-ui/cm-init-status
+
+# Restart vSphere Client:
+service-control --start vsphere-ui
+
+# Monitor startup (takes 2-5 minutes):
+tail -f /var/log/vmware/vsphere-ui/logs/vsphere_client_virgo.log</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Re-register plugin with correct version</strong></p>
+                    <pre><code># After fixing the plugin backend (upgrade, cert renewal, etc.):
+# Re-register from the product's management interface:
+
+# For NSX: NSX Manager → vCenter Registration → Re-register
+# For SRM: SRM appliance → Reconfigure → Register vCenter plugin
+# For vROps: vROps → Administration → vCenter Adapter → Re-register
+
+# Verify in MOB that the new version is registered:
+# https://vcsa/mob → content → ExtensionManager → extensionList</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Before upgrading vCenter, check VMware's Interoperability Matrix to verify all plugins are compatible with the target version. After vCenter upgrade, immediately check for plugin errors. Keep a list of all registered extensions and their expected versions. Decommission products properly — always unregister the plugin before removing the backend server.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #49: Lookup Service & Component Registration -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-49" data-type="break" data-severity="high" data-keywords="lookup service lstool solution user registration endpoint stale missing component sso vmdir service-control">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">49</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Lookup Service &amp; Component Registration</div>
+            <div class="kb-entry-subtitle">Services fail to register with Lookup Service — stale endpoints, missing solution users, broken service discovery</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Lookup Service</span>
+                <span class="tag">Registration</span>
+                <span class="tag">SSO</span>
+                <span class="tag">Endpoints</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> The Lookup Service is the backbone of vCenter component discovery. When registrations are broken, services can't find each other — vSphere Client may not connect to inventory, ESXi hosts may appear disconnected, and third-party tools lose connectivity.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Client shows <strong>"Cannot connect to one or more vCenter Server systems"</strong></li>
+                    <li>ESXi hosts appear <strong>disconnected</strong> intermittently</li>
+                    <li>Service startup fails: <code class="inline">Failed to connect to lookup service</code></li>
+                    <li>Third-party products: <strong>"Unable to find vCenter endpoint"</strong></li>
+                    <li>Enhanced Linked Mode between vCenters is broken</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Stale Lookup Service endpoints from <strong>decommissioned components</strong></li>
+                    <li>Solution user certificates <strong>expired or mismatched</strong></li>
+                    <li>vmdir replication failure causing <strong>inconsistent endpoint data</strong></li>
+                    <li>IP/FQDN change without <strong>re-registering endpoints</strong></li>
+                    <li>Lookup Service database <strong>corruption</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>List all Lookup Service registrations</strong></p>
+                    <pre><code># Use lstool to list all registered endpoints:
+python /usr/lib/vmware-lookupsvc/tools/lstool.py list \
+  --url https://localhost/lookupservice/sdk \
+  --no-check-cert
+
+# Filter for specific service types:
+python /usr/lib/vmware-lookupsvc/tools/lstool.py list \
+  --url https://localhost/lookupservice/sdk \
+  --no-check-cert --type vcenterserver
+
+# Check for stale entries (services that no longer exist):
+python /usr/lib/vmware-lookupsvc/tools/lstool.py list \
+  --url https://localhost/lookupservice/sdk \
+  --no-check-cert 2>&1 | grep -i "serviceUrl\|nodeId"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check solution user status and certificates</strong></p>
+                    <pre><code># List solution users:
+/usr/lib/vmware-vmafd/bin/dir-cli service list \
+  --login administrator@vsphere.local
+
+# Check specific solution user certificate:
+/usr/lib/vmware-vmafd/bin/vecs-cli entry list --store vpxd-extension
+
+# Verify Lookup Service is healthy:
+service-control --status vmware-lookupsvc
+tail -50 /var/log/vmware/lookupsvc/lookupsvc.log | grep -i "error\|fail"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Fix Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Remove stale Lookup Service entries</strong></p>
+                    <pre><code># Unregister a stale service endpoint:
+python /usr/lib/vmware-lookupsvc/tools/lstool.py unregister \
+  --url https://localhost/lookupservice/sdk \
+  --no-check-cert \
+  --id "&lt;service-id-from-list&gt;" \
+  --user "administrator@vsphere.local" \
+  --password "PASSWORD"
+
+# After cleanup, restart affected services:
+service-control --stop --all
+service-control --start --all</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Re-register solution users</strong></p>
+                    <pre><code># Re-register vpxd solution user:
+/usr/lib/vmware-vpxd/bin/vpxd_servicecfg fix
+
+# Or use certificate-manager to refresh solution user certs:
+/usr/lib/vmware-vmca/bin/certificate-manager
+# Option 6: Replace solution user certificates with VMCA certificates
+
+# Restart all services after re-registration:
+service-control --stop --all
+service-control --start --all
+
+# Verify endpoints are registered:
+python /usr/lib/vmware-lookupsvc/tools/lstool.py list \
+  --url https://localhost/lookupservice/sdk --no-check-cert</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix Enhanced Linked Mode registration</strong></p>
+                    <pre><code># If ELM is broken between vCenters:
+# Verify vmdir replication is working:
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showpartnerstatus \
+  -h localhost -u administrator -w 'PASSWORD'
+
+# Re-point the Lookup Service if FQDN changed:
+cmsso-util repoint --repoint-psc psc.example.com \
+  --username administrator@vsphere.local \
+  --passwd 'PASSWORD'
+
+# Verify cross-vCenter connectivity:
+python /usr/lib/vmware-lookupsvc/tools/lstool.py list \
+  --url https://remote-vcsa/lookupservice/sdk --no-check-cert</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> After any vCenter FQDN/IP change, always re-register Lookup Service endpoints. Keep a documented list of all Lookup Service registrations for audit purposes. In multi-vCenter environments, verify vmdir replication health weekly. Before decommissioning any VMware product, always unregister it from the Lookup Service first.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #50: vCenter Performance & Sizing         -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-50" data-type="fix" data-severity="medium" data-keywords="vcsa sizing performance tiny small medium large xlarge cpu ram storage vpxd tuning maxQueryResult inventory concurrent connections">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">50</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vCenter Performance &amp; Sizing Guidelines</div>
+            <div class="kb-entry-subtitle">VCSA sizing recommendations, performance tuning, and capacity monitoring for optimal vCenter operations</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Sizing</span>
+                <span class="tag">Performance</span>
+                <span class="tag">Tuning</span>
+                <span class="tag">Capacity</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Objective:</strong> Right-size the VCSA deployment and tune vpxd parameters to ensure responsive vSphere Client performance, efficient task processing, and stable operations as your environment scales.</span>
+        </div>
+
+        <div class="section-label">VCSA Sizing Matrix</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title blue">Deployment Sizes</div>
+                <ul>
+                    <li><strong>Tiny:</strong> 2 vCPU, 12 GB RAM — up to 10 hosts, 100 VMs</li>
+                    <li><strong>Small:</strong> 4 vCPU, 19 GB RAM — up to 100 hosts, 1,000 VMs</li>
+                    <li><strong>Medium:</strong> 8 vCPU, 28 GB RAM — up to 400 hosts, 4,000 VMs</li>
+                    <li><strong>Large:</strong> 16 vCPU, 37 GB RAM — up to 2,000 hosts, 35,000 VMs</li>
+                    <li><strong>X-Large:</strong> 24 vCPU, 56 GB RAM — up to 2,500 hosts, 45,000 VMs</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Storage Requirements</div>
+                <ul>
+                    <li><strong>Tiny:</strong> 415 GB (default) — 1,700 GB (large stats)</li>
+                    <li><strong>Small:</strong> 480 GB (default) — 1,765 GB (large stats)</li>
+                    <li><strong>Medium:</strong> 700 GB (default) — 1,985 GB (large stats)</li>
+                    <li><strong>Large:</strong> 1,065 GB (default) — 2,350 GB (large stats)</li>
+                    <li><strong>X-Large:</strong> 1,295 GB (default) — 2,580 GB (large stats)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Performance Monitoring</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Monitor vpxd task and session metrics</strong></p>
+                    <pre><code># Check active vpxd tasks:
+/opt/vmware/vpostgres/current/bin/psql -U postgres VCDB \
+  -c "SELECT count(*) AS active_tasks FROM vpx_task WHERE state = 'running';"
+
+# Check concurrent sessions:
+/opt/vmware/vpostgres/current/bin/psql -U postgres VCDB \
+  -c "SELECT count(*) AS active_sessions FROM vpx_session WHERE logged_out IS NULL;"
+
+# Monitor vpxd CPU and memory usage:
+top -bn1 | grep vpxd
+ps aux | grep vpxd | grep -v grep</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check inventory scale and growth</strong></p>
+                    <pre><code># Count managed objects:
+/opt/vmware/vpostgres/current/bin/psql -U postgres VCDB -c "
+  SELECT 'Hosts' AS type, count(*) FROM vpx_host
+  UNION ALL
+  SELECT 'VMs', count(*) FROM vpx_vm
+  UNION ALL
+  SELECT 'Clusters', count(*) FROM vpx_compute_resource WHERE type='CLUSTER'
+  UNION ALL
+  SELECT 'Datastores', count(*) FROM vpx_datastore;
+"
+
+# Check VCSA resource utilization via VAMI:
+# https://vcsa:5480 → Monitor → CPU, Memory, Network, Storage</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Tuning Recommendations</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Tune vpxd configuration for large environments</strong></p>
+                    <pre><code># Edit vpxd.cfg:
+vi /etc/vmware-vpxd/vpxd.cfg
+
+# Key tuning parameters:
+# &lt;maxQueryResult&gt;
+#   Default: 1000 — increase to 5000 for large inventories
+# &lt;/maxQueryResult&gt;
+
+# config.vpxd.stats.maxQueryMetrics
+#   Default: 64 — increase for heavy monitoring tools
+#   Set via Advanced Settings in vSphere Client:
+#   vCenter → Configure → Advanced Settings → Add:
+#   config.vpxd.stats.maxQueryMetrics = 256
+
+# Restart vpxd after changes:
+service-control --stop vmware-vpxd
+service-control --start vmware-vpxd</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Optimize task and event retention</strong></p>
+                    <pre><code># Reduce event/task retention to lower DB load:
+# vSphere Client → vCenter → Configure → General → Database
+# Task retention: 30 days (default)
+# Event retention: 30 days (default)
+
+# For large environments, consider:
+# Task retention: 15 days
+# Event retention: 15 days
+
+# Disable stats levels not needed:
+# vSphere Client → vCenter → Configure → General → Statistics
+# Level 1 (Basic) for intervals &gt; 1 day
+# Level 2 (Detailed) only for 5-minute interval</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Scale up VCSA when approaching limits</strong></p>
+                    <pre><code># Check if current sizing is sufficient:
+# VAMI → Monitor → check CPU/RAM sustained utilization
+# If CPU &gt; 80% sustained or RAM &gt; 85% — scale up
+
+# Scale-up procedure:
+# 1. Take backup via VAMI
+# 2. Shut down VCSA gracefully
+# 3. Edit VM settings — increase vCPU and RAM to next size tier
+# 4. Power on VCSA
+# 5. VAMI will detect new resources automatically
+
+# Note: Cannot downsize — only scale up
+# Note: Storage can be expanded while VCSA is running (VAMI → Storage)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Best Practice:</strong> Always deploy one size larger than your current needs to accommodate growth. Monitor vCenter performance weekly using VAMI dashboards. Keep maxQueryMetrics at -1 (unlimited) only if absolutely required by monitoring tools — it significantly increases DB load. Review stats collection levels annually and disable unnecessary detail levels. For environments with &gt;500 hosts, consider distributed vCenter architectures with Enhanced Linked Mode.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Knowledge Base &mdash; Phase 5: vCenter Server &amp; Platform Services</p>
+    <p style="margin-top:0.3rem;">Last Updated: May 2026 &nbsp;|&nbsp; <a href="phase6.html">Next: Phase 6 &rarr;</a> &nbsp;|&nbsp; <a href="phase4.html">&larr; Phase 4</a> &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Portal</a></p>
+    <p style="margin-top:0.75rem;">&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+    // Toggle KB entry open/close
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+
+    // Copy code block
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code');
+        navigator.clipboard.writeText(code.textContent).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 1500);
+        });
+    }
+
+    // Filter by type (all, break, fix, critical, high)
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    // Search / filter
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        // Reset tab highlight
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    // Keyboard shortcut: Escape clears search
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    // Auto-open KB entry from URL hash (e.g. #kb-41)
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>

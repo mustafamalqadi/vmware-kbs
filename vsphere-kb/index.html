@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere Knowledge Base — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ── Hero Header ── */
+        .hero {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 2.4rem; font-weight: 700; margin-bottom: 0.6rem;
+            color: var(--text-primary); letter-spacing: -0.5px;
+        }
+        .hero h1 span { color: var(--accent-light); }
+        .hero .subtitle {
+            font-size: 1rem; color: var(--text-secondary); font-weight: 400;
+            margin-bottom: 1.25rem; max-width: 600px; margin-left: auto; margin-right: auto;
+        }
+        .hero-badges {
+            display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+            margin-bottom: 0;
+        }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 0.85rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2px;
+        }
+        .badge-total { background: rgba(88,166,255,0.15); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.3); }
+        .badge-break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.3); }
+        .badge-fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.3); }
+        .badge-phase { background: rgba(210,153,34,0.15); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.3); }
+
+        /* ── Global Search ── */
+        .search-section {
+            max-width: 900px; margin: -1.5rem auto 0; padding: 0 2rem;
+            position: relative; z-index: 10;
+        }
+        .search-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: border-color 0.2s;
+        }
+        .search-box:focus-within { border-color: var(--accent); }
+        .search-box input {
+            width: 100%; padding: 0.75rem 1rem 0.75rem 3rem;
+            border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1.1rem; outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 0.85rem center;
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-hint {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem;
+            justify-content: center;
+        }
+        .search-chip {
+            font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 12px;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+        }
+        .search-chip:hover { border-color: var(--accent); color: var(--accent-light); }
+        .search-results {
+            display: none; margin-top: 1rem; max-height: 480px; overflow-y: auto;
+            border-top: 1px solid var(--border); padding-top: 0.75rem;
+        }
+        .search-results.visible { display: block; }
+        .search-result-item {
+            display: flex; align-items: flex-start; gap: 0.85rem;
+            padding: 0.75rem 0.5rem; border-radius: 8px; cursor: pointer;
+            text-decoration: none; color: inherit; transition: background 0.2s;
+        }
+        .search-result-item:hover { background: var(--bg-card-hover); }
+        .sr-num {
+            flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem;
+        }
+        .sr-num.break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.25); }
+        .sr-num.fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.25); }
+        .sr-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .sr-meta { font-size: 0.75rem; color: var(--text-muted); }
+        .sr-highlight { background: rgba(88,166,255,0.25); padding: 0 2px; border-radius: 2px; }
+        .no-results { text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.9rem; }
+
+        /* ── Stats Grid ── */
+        .stats-section {
+            max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem; text-align: center;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+        .stat-label { font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.25rem; }
+
+        /* ── Phase Cards ── */
+        .phases-section {
+            max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem;
+        }
+        .section-title {
+            font-size: 0.75rem; font-weight: 600; margin-bottom: 1.25rem;
+            display: flex; align-items: center; gap: 0.75rem;
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
+        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .phases-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.25rem;
+        }
+        .phase-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; overflow: hidden;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+            text-decoration: none; color: inherit; display: block;
+            position: relative;
+        }
+        .phase-card:hover { border-color: rgba(88,166,255,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
+        /* Phase card colored top accent bar */
+        .phase-card-bar { height: 3px; width: 100%; }
+        .phase-card-header {
+            padding: 1.25rem 1.5rem 0.75rem;
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .phase-icon {
+            width: 42px; height: 42px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; font-weight: 700;
+        }
+        .phase-card-title { font-size: 0.95rem; font-weight: 600; }
+        .phase-card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem; }
+        .phase-card-body { padding: 0 1.5rem 1.25rem; }
+        .phase-kb-list { list-style: none; }
+        .phase-kb-list li {
+            font-size: 0.8rem; color: var(--text-secondary); padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(42,63,82,0.5);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .phase-kb-list li:last-child { border-bottom: none; }
+        .kb-num-small {
+            font-weight: 700; font-size: 0.7rem; min-width: 26px; text-align: center;
+            padding: 0.1rem 0.3rem; border-radius: 4px;
+        }
+        .kb-num-small.b { color: var(--danger-light); background: rgba(248,81,73,0.1); }
+        .kb-num-small.f { color: var(--success-light); background: rgba(63,185,80,0.1); }
+        .phase-card-footer {
+            padding: 0.75rem 1.5rem; background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.78rem;
+        }
+        .phase-card-footer .count { color: var(--text-muted); }
+        .phase-card-footer .link-text { color: var(--accent-light); font-weight: 600; }
+        /* Break/Fix mini progress bar */
+        .bf-progress { display:flex; height:3px; border-radius:2px; overflow:hidden; margin-top:.5rem; gap:1px; }
+        .bf-bar-break { background: var(--danger); height:100%; border-radius:2px 0 0 2px; transition: width .6s ease; }
+        .bf-bar-fix { background: var(--success); height:100%; border-radius:0 2px 2px 0; transition: width .6s ease; }
+        .bf-legend { display:flex; gap:.75rem; margin-top:.35rem; font-size:.65rem; color:var(--text-muted); }
+        .bf-legend span { display:flex; align-items:center; gap:.3rem; }
+        .bf-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+        /* ── Category Filter ── */
+        .filter-section {
+            max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem;
+        }
+        .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .filter-tab {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .filter-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .filter-tab.active { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent-light); }
+
+        /* ── Full KB Index ── */
+        .kb-index { margin-top: 0.5rem; }
+        .kb-index-item {
+            display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.65rem 1rem; border-radius: 8px;
+            border-bottom: 1px solid rgba(42,63,82,0.4);
+            transition: background 0.2s; cursor: pointer; text-decoration: none; color: inherit;
+        }
+        .kb-index-item:hover { background: var(--bg-card-hover); }
+        /* KB Index hover accent bar */
+        .kb-index-item { border-left: 3px solid transparent; transition: background .2s, border-left-color .3s, transform .2s; }
+        .kb-index-item:hover { transform: translateX(4px); }
+        .kb-index-item[data-type='break']:hover { border-left-color: var(--danger); }
+        .kb-index-item[data-type='fix']:hover { border-left-color: var(--success); }
+        .kb-idx-num {
+            flex-shrink: 0; width: 38px; height: 38px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.95rem;
+        }
+        .kb-idx-num.break { background: rgba(248,81,73,0.12); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
+        .kb-idx-num.fix { background: rgba(63,185,80,0.12); color: var(--success-light); border: 1px solid rgba(63,185,80,0.2); }
+        .kb-idx-info { flex: 1; min-width: 0; }
+        .kb-idx-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kb-idx-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; margin-top: 0.15rem; }
+        .kb-idx-tags { display: flex; gap: 0.3rem; flex-shrink: 0; }
+        .idx-tag {
+            font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600;
+        }
+        .idx-tag.critical { background: rgba(248,81,73,0.1); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
+        .idx-tag.high { background: rgba(210,153,34,0.1); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.2); }
+        .idx-tag.medium { background: rgba(88,166,255,0.1); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.2); }
+
+        /* Animated stat counters */
+        .stat-value { font-variant-numeric: tabular-nums; }
+
+        /* Scroll-reveal */
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* Section dividers */
+        .section-divider { width:100%; max-width:1400px; margin:0 auto; height:1px; background:var(--border); }
+
+        /* Sticky compact nav */
+        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(13,17,23,.95); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
+        .sticky-nav.visible { transform:translateY(0); }
+        .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:600; font-size:.8rem; }
+        .sticky-nav-brand .sn-logo { width:24px; height:24px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.5rem; color:#fff; }
+        .sticky-nav-links { display:flex; gap:1.25rem; align-items:center; }
+        .sticky-nav-links a { color:var(--text-secondary); text-decoration:none; font-size:.78rem; font-weight:500; transition:color .15s; }
+        .sticky-nav-links a:hover { color:var(--accent); }
+
+        /* Decision tree card */
+        .phase-card.dt-special { border-color: rgba(210,153,34,0.3); }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border); margin-top: 3rem;
+            padding: 3rem 2rem 2rem; color: var(--text-muted); font-size: 0.8rem;
+        }
+        .footer-inner { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr; gap:2rem; }
+        .footer-brand p { line-height:1.6; max-width:340px; margin-top:.5rem; }
+        .footer-logo { display:flex; align-items:center; gap:.6rem; margin-bottom:.25rem; }
+        .footer-logo .logo-mark { width:28px; height:28px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.55rem; color:#fff; }
+        .footer-logo span { font-weight:700; font-size:.9rem; color:var(--text-primary); }
+        .footer-col h4 { font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-secondary); margin-bottom:.75rem; }
+        .footer-col a { display:block; font-size:.8rem; color:var(--text-muted); text-decoration:none; padding:.2rem 0; transition:color .2s; }
+        .footer-col a:hover { color:var(--accent-light); }
+        .footer-bottom { max-width:1400px; margin:1.5rem auto 0; padding-top:1.25rem; border-top:1px solid var(--border); text-align:center; font-size:.75rem; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.8rem; }
+            .phases-grid { grid-template-columns: 1fr; }
+            .stats-section { grid-template-columns: repeat(2, 1fr); }
+            .search-section, .phases-section, .filter-section, .stats-section { padding: 0 1rem; }
+            .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+        }
+        /* Prefers reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sticky compact nav -->
+<div class="sticky-nav" id="stickyNav">
+    <a href="index.html" class="sticky-nav-brand"><div class="sn-logo">vS</div> vSphere Knowledge Base</a>
+    <div class="sticky-nav-links">
+        <a href="#stats">Stats</a>
+        <a href="#phases">Phases</a>
+        <a href="#kbindex">KB Index</a>
+        <a href="decision-tree.html">Decision Tree</a>
+        <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">↑ Portal</a>
+    </div>
+</div>
+
+<!-- ── Hero ── -->
+<section class="hero">
+    <h1>VMware vSphere <span>Knowledge Base</span></h1>
+    <p class="subtitle">Professional vSphere cluster troubleshooting — HA, DRS, vMotion, vCenter, Storage &amp; Networking</p>
+    <div class="hero-badges">
+        <span class="badge badge-total">70 KB Entries</span>
+        <span class="badge badge-break">&#9888; 34 Break</span>
+        <span class="badge badge-fix">&#10003; 36 Fix</span>
+        <span class="badge badge-phase">7 Phases</span>
+    </div>
+</section>
+
+<!-- ── Global Search ── -->
+<div class="search-section">
+    <div class="search-box" id="searchBox">
+        <input type="text" id="globalSearch" placeholder="Search all 70 KB entries — HA, DRS, vMotion, PSOD, vCenter, certificates, VMFS, NFS..." oninput="performSearch()" autocomplete="off">
+        <div class="search-hint">
+            <span class="search-chip" onclick="quickSearch('HA')">HA</span>
+            <span class="search-chip" onclick="quickSearch('DRS')">DRS</span>
+            <span class="search-chip" onclick="quickSearch('vMotion')">vMotion</span>
+            <span class="search-chip" onclick="quickSearch('PSOD')">PSOD</span>
+            <span class="search-chip" onclick="quickSearch('vCenter')">vCenter</span>
+            <span class="search-chip" onclick="quickSearch('Certificates')">Certificates</span>
+            <span class="search-chip" onclick="quickSearch('VMFS')">VMFS</span>
+            <span class="search-chip" onclick="quickSearch('NFS')">NFS</span>
+            <span class="search-chip" onclick="quickSearch('Multipathing')">Multipathing</span>
+            <span class="search-chip" onclick="quickSearch('esxtop')">esxtop</span>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+</div>
+
+<!-- ── Stats ── -->
+<div class="stats-section reveal" id="stats">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="70">0</div><div class="stat-label">Total KB Entries</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="34">0</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="36">0</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="7">0</div><div class="stat-label">Phases</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
+</div>
+
+<!-- Section divider -->
+<div class="section-divider"></div>
+
+<!-- ── Phase Cards ── -->
+<section class="phases-section reveal" id="phases">
+    <div class="section-title">Phases</div>
+    <div class="phases-grid">
+
+        <!-- Phase 1 -->
+        <a href="phase1.html" class="phase-card" data-color="cyan">
+            <div class="phase-card-bar" style="background:var(--accent)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light)">1</div>
+                <div>
+                    <div class="phase-card-title">Top 10 Common Issues</div>
+                    <div class="phase-card-sub">Most frequent vSphere fix &amp; break scenarios</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#1</span> HA Failover</li>
+                    <li><span class="kb-num-small b">#2</span> DRS Imbalance</li>
+                    <li><span class="kb-num-small b">#3</span> vMotion Failure</li>
+                    <li><span class="kb-num-small b">#4</span> Host Disconnected</li>
+                    <li><span class="kb-num-small b">#5</span> PSOD Recovery</li>
+                    <li><span class="kb-num-small b">#6</span> VM Power-On Failure</li>
+                    <li><span class="kb-num-small b">#7</span> vpxd Crash</li>
+                    <li><span class="kb-num-small f">#8</span> Snapshot Consolidation</li>
+                    <li><span class="kb-num-small f">#9</span> Maintenance Mode Stuck</li>
+                    <li><span class="kb-num-small f">#10</span> Alarm Storm</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #1–10</span>
+                <span class="link-text">Open Phase 1 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 2 -->
+        <a href="phase2.html" class="phase-card" data-color="green">
+            <div class="phase-card-bar" style="background:var(--success)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.25);color:var(--success-light)">2</div>
+                <div>
+                    <div class="phase-card-title">Day-2 Operations</div>
+                    <div class="phase-card-sub">Maintenance, patching &amp; operational tasks</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#11</span> Certificate Expiry</li>
+                    <li><span class="kb-num-small f">#12</span> vLCM Patching</li>
+                    <li><span class="kb-num-small f">#13</span> Backup &amp; Restore</li>
+                    <li><span class="kb-num-small f">#14</span> Log Bundle</li>
+                    <li><span class="kb-num-small f">#15</span> SSH Hardening</li>
+                    <li><span class="kb-num-small b">#16</span> SSO Issues</li>
+                    <li><span class="kb-num-small b">#17</span> NTP Drift</li>
+                    <li><span class="kb-num-small f">#18</span> Syslog Setup</li>
+                    <li><span class="kb-num-small f">#19</span> Host Profiles</li>
+                    <li><span class="kb-num-small f">#20</span> Performance esxtop</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #11–20</span>
+                <span class="link-text">Open Phase 2 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 3 -->
+        <a href="phase3.html" class="phase-card" data-color="red">
+            <div class="phase-card-bar" style="background:var(--danger)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(248,81,73,0.12);border:1px solid rgba(248,81,73,0.25);color:var(--danger-light)">3</div>
+                <div>
+                    <div class="phase-card-title">HA &amp; Fault Tolerance</div>
+                    <div class="phase-card-sub">High availability, FDM, isolation &amp; FT</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#21</span> Admission Control</li>
+                    <li><span class="kb-num-small b">#22</span> Master Election</li>
+                    <li><span class="kb-num-small b">#23</span> Heartbeat Datastores</li>
+                    <li><span class="kb-num-small b">#24</span> FDM Agent Crash</li>
+                    <li><span class="kb-num-small f">#25</span> VMCP Setup</li>
+                    <li><span class="kb-num-small f">#26</span> Fault Tolerance</li>
+                    <li><span class="kb-num-small b">#27</span> Network Split Brain</li>
+                    <li><span class="kb-num-small f">#28</span> Proactive HA</li>
+                    <li><span class="kb-num-small f">#29</span> Isolation Response</li>
+                    <li><span class="kb-num-small f">#30</span> Restart Priority</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #21–30</span>
+                <span class="link-text">Open Phase 3 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 4 -->
+        <a href="phase4.html" class="phase-card" data-color="amber">
+            <div class="phase-card-bar" style="background:var(--warning)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:var(--warning-light)">4</div>
+                <div>
+                    <div class="phase-card-title">DRS &amp; Resource Management</div>
+                    <div class="phase-card-sub">Load balancing, affinity, NUMA &amp; EVC</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#31</span> Affinity Conflicts</li>
+                    <li><span class="kb-num-small b">#32</span> Resource Pool Issues</li>
+                    <li><span class="kb-num-small f">#33</span> DRS Threshold</li>
+                    <li><span class="kb-num-small b">#34</span> EVC Mismatch</li>
+                    <li><span class="kb-num-small f">#35</span> VM-Host Rules</li>
+                    <li><span class="kb-num-small f">#36</span> NUMA Optimization</li>
+                    <li><span class="kb-num-small b">#37</span> Memory Ballooning</li>
+                    <li><span class="kb-num-small f">#38</span> Storage DRS</li>
+                    <li><span class="kb-num-small b">#39</span> DRS Faults</li>
+                    <li><span class="kb-num-small f">#40</span> Latency Tuning</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #31–40</span>
+                <span class="link-text">Open Phase 4 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 5 -->
+        <a href="phase5.html" class="phase-card" data-color="sky">
+            <div class="phase-card-bar" style="background:#79c0ff"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:#79c0ff">5</div>
+                <div>
+                    <div class="phase-card-title">vCenter Server &amp; PSC</div>
+                    <div class="phase-card-sub">VCSA, vpxd, SSO, database &amp; backups</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#41</span> VCSA Disk Full</li>
+                    <li><span class="kb-num-small b">#42</span> vpxd Crash</li>
+                    <li><span class="kb-num-small b">#43</span> PostgreSQL Issues</li>
+                    <li><span class="kb-num-small b">#44</span> STS Certificate</li>
+                    <li><span class="kb-num-small f">#45</span> Content Library</li>
+                    <li><span class="kb-num-small f">#46</span> PSC Convergence</li>
+                    <li><span class="kb-num-small f">#47</span> VAMI Backup</li>
+                    <li><span class="kb-num-small f">#48</span> Plugin Issues</li>
+                    <li><span class="kb-num-small b">#49</span> Lookup Service</li>
+                    <li><span class="kb-num-small f">#50</span> VC Sizing</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #41–50</span>
+                <span class="link-text">Open Phase 5 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 6 -->
+        <a href="phase6.html" class="phase-card" data-color="gold">
+            <div class="phase-card-bar" style="background:#e3b341"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:#e3b341">6</div>
+                <div>
+                    <div class="phase-card-title">Storage — VMFS, NFS &amp; Multipathing</div>
+                    <div class="phase-card-sub">Datastores, APD/PDL, iSCSI, VAAI</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#51</span> VMFS Unmount</li>
+                    <li><span class="kb-num-small b">#52</span> APD/PDL</li>
+                    <li><span class="kb-num-small f">#53</span> Multipathing PSP</li>
+                    <li><span class="kb-num-small b">#54</span> NFS Issues</li>
+                    <li><span class="kb-num-small b">#55</span> VMFS Heap</li>
+                    <li><span class="kb-num-small b">#56</span> Storage vMotion</li>
+                    <li><span class="kb-num-small f">#57</span> Thin Provisioning</li>
+                    <li><span class="kb-num-small f">#58</span> iSCSI/FC HBA</li>
+                    <li><span class="kb-num-small f">#59</span> VAAI Offload</li>
+                    <li><span class="kb-num-small f">#60</span> SDRS Issues</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #51–60</span>
+                <span class="link-text">Open Phase 6 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 7 -->
+        <a href="phase7.html" class="phase-card" data-color="purple">
+            <div class="phase-card-bar" style="background:#a5d6ff"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(139,148,158,0.12);border:1px solid rgba(139,148,158,0.25);color:#a5d6ff">7</div>
+                <div>
+                    <div class="phase-card-title">Networking — vDS, vSS &amp; vMotion</div>
+                    <div class="phase-card-sub">Distributed switches, teaming, MTU, NIOC</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#61</span> vDS Disconnect</li>
+                    <li><span class="kb-num-small b">#62</span> vMotion Network</li>
+                    <li><span class="kb-num-small b">#63</span> MTU Mismatch</li>
+                    <li><span class="kb-num-small f">#64</span> NIC Teaming</li>
+                    <li><span class="kb-num-small b">#65</span> VLAN Config</li>
+                    <li><span class="kb-num-small f">#66</span> vSS to vDS</li>
+                    <li><span class="kb-num-small f">#67</span> NIOC</li>
+                    <li><span class="kb-num-small f">#68</span> TCP/IP Stacks</li>
+                    <li><span class="kb-num-small f">#69</span> Firewall Ports</li>
+                    <li><span class="kb-num-small f">#70</span> SR-IOV</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #61–70</span>
+                <span class="link-text">Open Phase 7 →</span>
+            </div>
+        </a>
+
+        <!-- Decision Tree -->
+        <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(210,153,34,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(210,153,34,0.04));">
+            <div class="phase-card-bar" style="background:var(--warning)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:var(--warning-light);font-size:1.3rem;">&#9881;</div>
+                <div>
+                    <div class="phase-card-title" style="color:var(--warning-light);">Interactive Decision Tree</div>
+                    <div class="phase-card-sub">Step-by-step symptom-based troubleshooting</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul>
+                    <li>Select symptoms to narrow down the root cause</li>
+                    <li>Covers all 70 KB entries across 8 categories</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count" style="color:var(--warning-light);">All 70 KBs</span>
+                <span class="link-text">Open Decision Tree →</span>
+            </div>
+        </a>
+
+    </div>
+</section>
+
+<!-- Section divider -->
+<div class="section-divider"></div>
+
+<!-- ── Full KB Index ── -->
+<section class="filter-section reveal" id="kbindex">
+    <div class="section-title">Complete KB Index</div>
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterIndex('all', this)">All (70)</button>
+        <button class="filter-tab" onclick="filterIndex('break', this)">Break (34)</button>
+        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (36)</button>
+        <button class="filter-tab" onclick="filterIndex('critical', this)">Critical</button>
+        <button class="filter-tab" onclick="filterIndex('high', this)">High</button>
+        <button class="filter-tab" onclick="filterIndex('medium', this)">Medium</button>
+    </div>
+    <div class="kb-index" id="kbIndex"></div>
+</section>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <div class="logo-mark">vS</div>
+                <span>vSphere Knowledge Base</span>
+            </div>
+            <p>70 fix &amp; break entries across 7 phases. Official VMware / Broadcom tooling only — esxcli, vSphere Client, esxtop, DCLI, VAMI CLI, service-control. Zero Python, PowerCLI, or third-party tools.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Navigate</h4>
+            <a href="index.html">Dashboard</a>
+            <a href="decision-tree.html">Decision Tree</a>
+            <a href="phase1.html">Phase 1 — Top 10</a>
+            <a href="phase5.html">Phase 5 — vCenter</a>
+        </div>
+        <div class="footer-col">
+            <h4>Portal</h4>
+            <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Personal Portal</a>
+            <a href="https://mustafamalqadi.github.io/vmware-kbs/" target="_blank" rel="noopener">VMware KB Hub</a>
+            <a href="https://mustafamalqadi.github.io/training-courses/" target="_blank" rel="noopener">Training Courses</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; 2026 Eng. Mustafa Al-Qadi — All rights reserved
+    </div>
+</footer>
+
+<script>
+// ── Complete KB Database ──
+const kbEntries = [
+    { id:1,  title:"HA Failover — Cluster Failover Issues", type:"break", severity:"critical", phase:1, file:"phase1.html", keywords:"HA failover cluster high availability VM restart host failure" },
+    { id:2,  title:"DRS Imbalance — Uneven Load Distribution", type:"break", severity:"high", phase:1, file:"phase1.html", keywords:"DRS imbalance load balancing resource distribution uneven migration" },
+    { id:3,  title:"vMotion Failure — Live Migration Errors", type:"break", severity:"critical", phase:1, file:"phase1.html", keywords:"vMotion failure live migration error compatibility CPU network timeout" },
+    { id:4,  title:"Host Disconnected from vCenter", type:"break", severity:"critical", phase:1, file:"phase1.html", keywords:"host disconnected vCenter not responding management agent vpxa hostd" },
+    { id:5,  title:"PSOD Recovery — Purple Screen of Death", type:"break", severity:"critical", phase:1, file:"phase1.html", keywords:"PSOD purple screen of death crash dump kernel panic recovery" },
+    { id:6,  title:"VM Power-On Failure", type:"break", severity:"high", phase:1, file:"phase1.html", keywords:"VM power on failure cannot start virtual machine resource file lock" },
+    { id:7,  title:"vpxd Crash — vCenter Service Down", type:"break", severity:"critical", phase:1, file:"phase1.html", keywords:"vpxd crash vCenter service down database connection management" },
+    { id:8,  title:"Snapshot Consolidation Issues", type:"fix", severity:"high", phase:1, file:"phase1.html", keywords:"snapshot consolidation delta VMDK disk chain commit merge" },
+    { id:9,  title:"Maintenance Mode Stuck — Host Won't Enter", type:"fix", severity:"high", phase:1, file:"phase1.html", keywords:"maintenance mode stuck host enter exit DRS migrate evacuate" },
+    { id:10, title:"Alarm Storm — Excessive vCenter Alerts", type:"fix", severity:"medium", phase:1, file:"phase1.html", keywords:"alarm storm alerts vCenter excessive notifications triggered suppress" },
+    { id:11, title:"Certificate Expiry — STS & VMCA Renewal", type:"break", severity:"critical", phase:2, file:"phase2.html", keywords:"certificate expiry STS VMCA renewal expired SSL TLS trust" },
+    { id:12, title:"vLCM Patching — Lifecycle Manager Updates", type:"fix", severity:"high", phase:2, file:"phase2.html", keywords:"vLCM patching lifecycle manager update baseline image ESXi firmware" },
+    { id:13, title:"Backup & Restore — VCSA File-Based Backup", type:"fix", severity:"high", phase:2, file:"phase2.html", keywords:"backup restore VCSA file-based backup recovery FTP SFTP NFS" },
+    { id:14, title:"Log Bundle — vm-support Collection", type:"fix", severity:"medium", phase:2, file:"phase2.html", keywords:"log bundle vm-support collection diagnostic support request GSS" },
+    { id:15, title:"SSH Hardening — ESXi Security Lockdown", type:"fix", severity:"medium", phase:2, file:"phase2.html", keywords:"SSH hardening ESXi security lockdown mode shell access disable" },
+    { id:16, title:"SSO Issues — Login & Identity Source Failures", type:"break", severity:"high", phase:2, file:"phase2.html", keywords:"SSO issues login identity source LDAP Active Directory authentication" },
+    { id:17, title:"NTP Drift — Time Synchronization Failure", type:"break", severity:"high", phase:2, file:"phase2.html", keywords:"NTP drift time synchronization failure clock skew host vCenter" },
+    { id:18, title:"Syslog Setup — Centralized Log Forwarding", type:"fix", severity:"medium", phase:2, file:"phase2.html", keywords:"syslog setup centralized log forwarding remote server UDP TCP TLS" },
+    { id:19, title:"Host Profiles — Configuration Compliance", type:"fix", severity:"medium", phase:2, file:"phase2.html", keywords:"host profiles configuration compliance remediate extract apply baseline" },
+    { id:20, title:"Performance esxtop — Real-Time Diagnostics", type:"fix", severity:"high", phase:2, file:"phase2.html", keywords:"performance esxtop real-time diagnostics CPU memory disk network counters" },
+    { id:21, title:"Admission Control — HA Slot Misconfiguration", type:"break", severity:"critical", phase:3, file:"phase3.html", keywords:"admission control HA slot misconfiguration policy percentage dedicated failover" },
+    { id:22, title:"Master Election — FDM Agent Issues", type:"break", severity:"critical", phase:3, file:"phase3.html", keywords:"master election FDM agent issues primary secondary HA cluster" },
+    { id:23, title:"Heartbeat Datastores — HA Datastore Heartbeat", type:"break", severity:"high", phase:3, file:"phase3.html", keywords:"heartbeat datastores HA datastore heartbeat storage network isolation" },
+    { id:24, title:"FDM Agent Crash — HA Agent Not Running", type:"break", severity:"critical", phase:3, file:"phase3.html", keywords:"FDM agent crash HA agent not running reconfigure restart" },
+    { id:25, title:"VMCP Setup — VM Component Protection", type:"fix", severity:"high", phase:3, file:"phase3.html", keywords:"VMCP VM component protection APD PDL storage failure response" },
+    { id:26, title:"Fault Tolerance — FT Configuration & Troubleshooting", type:"fix", severity:"high", phase:3, file:"phase3.html", keywords:"fault tolerance FT configuration troubleshooting secondary VM logging" },
+    { id:27, title:"Network Split Brain — Partition Scenarios", type:"break", severity:"critical", phase:3, file:"phase3.html", keywords:"network split brain partition isolation HA cluster two partitions" },
+    { id:28, title:"Proactive HA — Hardware Health Monitoring", type:"fix", severity:"medium", phase:3, file:"phase3.html", keywords:"proactive HA hardware health monitoring provider pre-emptive migration" },
+    { id:29, title:"Isolation Response — Host Isolation Policy", type:"fix", severity:"high", phase:3, file:"phase3.html", keywords:"isolation response host isolation policy power off leave powered on shutdown" },
+    { id:30, title:"Restart Priority — VM Restart Order & Dependencies", type:"fix", severity:"medium", phase:3, file:"phase3.html", keywords:"restart priority VM restart order dependencies orchestrated HA tier" },
+    { id:31, title:"Affinity Conflicts — VM-VM & VM-Host Rules", type:"break", severity:"high", phase:4, file:"phase4.html", keywords:"affinity conflicts VM-VM VM-Host rules anti-affinity DRS violation" },
+    { id:32, title:"Resource Pool Issues — Reservation & Shares", type:"break", severity:"high", phase:4, file:"phase4.html", keywords:"resource pool issues reservation shares limit expandable CPU memory" },
+    { id:33, title:"DRS Threshold — Aggressiveness Tuning", type:"fix", severity:"medium", phase:4, file:"phase4.html", keywords:"DRS threshold aggressiveness tuning migration level conservative aggressive" },
+    { id:34, title:"EVC Mismatch — Enhanced vMotion Compatibility", type:"break", severity:"high", phase:4, file:"phase4.html", keywords:"EVC mismatch enhanced vMotion compatibility CPU generation baseline" },
+    { id:35, title:"VM-Host Rules — Placement Constraints", type:"fix", severity:"medium", phase:4, file:"phase4.html", keywords:"VM-Host rules placement constraints should must run affinity group" },
+    { id:36, title:"NUMA Optimization — vNUMA & CPU Topology", type:"fix", severity:"high", phase:4, file:"phase4.html", keywords:"NUMA optimization vNUMA CPU topology socket core wide VM" },
+    { id:37, title:"Memory Ballooning — VMkernel Pressure", type:"break", severity:"high", phase:4, file:"phase4.html", keywords:"memory ballooning VMkernel pressure swap compression vmmemctl balloon driver" },
+    { id:38, title:"Storage DRS — Datastore Cluster Management", type:"fix", severity:"medium", phase:4, file:"phase4.html", keywords:"storage DRS SDRS datastore cluster management automation space latency" },
+    { id:39, title:"DRS Faults — Migration Failures & Errors", type:"break", severity:"high", phase:4, file:"phase4.html", keywords:"DRS faults migration failures errors cannot move VM compatibility" },
+    { id:40, title:"Latency Tuning — Latency Sensitivity Settings", type:"fix", severity:"medium", phase:4, file:"phase4.html", keywords:"latency tuning sensitivity settings high performance exclusive CPU memory reservation" },
+    { id:41, title:"VCSA Disk Full — Partition Cleanup", type:"break", severity:"critical", phase:5, file:"phase5.html", keywords:"VCSA disk full partition cleanup /storage/log /storage/db space" },
+    { id:42, title:"vpxd Crash — Database & Service Recovery", type:"break", severity:"critical", phase:5, file:"phase5.html", keywords:"vpxd crash database service recovery vCenter management restart" },
+    { id:43, title:"PostgreSQL Issues — VCSA Database Problems", type:"break", severity:"critical", phase:5, file:"phase5.html", keywords:"PostgreSQL issues VCSA database problems corruption vacuum WAL logs" },
+    { id:44, title:"STS Certificate — Token Signing Expiry", type:"break", severity:"critical", phase:5, file:"phase5.html", keywords:"STS certificate token signing expiry SSO login failure renewal" },
+    { id:45, title:"Content Library — Sync & Subscription Issues", type:"fix", severity:"medium", phase:5, file:"phase5.html", keywords:"content library sync subscription issues template OVF ISO publish" },
+    { id:46, title:"PSC Convergence — External to Embedded Migration", type:"fix", severity:"high", phase:5, file:"phase5.html", keywords:"PSC convergence external embedded migration platform services controller" },
+    { id:47, title:"VAMI Backup — Appliance File-Level Backup", type:"fix", severity:"high", phase:5, file:"phase5.html", keywords:"VAMI backup appliance file-level backup schedule retention restore" },
+    { id:48, title:"Plugin Issues — vSphere Client Extensions", type:"fix", severity:"medium", phase:5, file:"phase5.html", keywords:"plugin issues vSphere client extensions UI registration mob unregister" },
+    { id:49, title:"Lookup Service — SSO Service Registration", type:"break", severity:"high", phase:5, file:"phase5.html", keywords:"lookup service SSO service registration endpoint discovery lstool" },
+    { id:50, title:"VC Sizing — vCenter Performance & Scaling", type:"fix", severity:"medium", phase:5, file:"phase5.html", keywords:"VC sizing vCenter performance scaling tiny small medium large resources" },
+    { id:51, title:"VMFS Unmount — Datastore Removal Issues", type:"break", severity:"high", phase:6, file:"phase6.html", keywords:"VMFS unmount datastore removal issues detach force locked file" },
+    { id:52, title:"APD/PDL — All Paths Down & Permanent Device Loss", type:"break", severity:"critical", phase:6, file:"phase6.html", keywords:"APD PDL all paths down permanent device loss storage timeout SCSI" },
+    { id:53, title:"Multipathing PSP — Path Selection Policy", type:"fix", severity:"high", phase:6, file:"phase6.html", keywords:"multipathing PSP path selection policy round robin fixed MRU NMP SATP" },
+    { id:54, title:"NFS Issues — Mount & Connectivity Problems", type:"break", severity:"high", phase:6, file:"phase6.html", keywords:"NFS issues mount connectivity problems datastore unreachable export firewall" },
+    { id:55, title:"VMFS Heap — Heap Size Exhaustion", type:"break", severity:"high", phase:6, file:"phase6.html", keywords:"VMFS heap size exhaustion MaxHeapSizeMB datastore large files open" },
+    { id:56, title:"Storage vMotion — Live Storage Migration Failure", type:"break", severity:"high", phase:6, file:"phase6.html", keywords:"storage vMotion live storage migration failure disk move datastore" },
+    { id:57, title:"Thin Provisioning — Space Reclamation & UNMAP", type:"fix", severity:"medium", phase:6, file:"phase6.html", keywords:"thin provisioning space reclamation UNMAP TRIM dead space SAN array" },
+    { id:58, title:"iSCSI/FC HBA — Adapter Configuration", type:"fix", severity:"high", phase:6, file:"phase6.html", keywords:"iSCSI FC HBA adapter configuration software initiator target binding" },
+    { id:59, title:"VAAI Offload — Hardware Acceleration", type:"fix", severity:"medium", phase:6, file:"phase6.html", keywords:"VAAI offload hardware acceleration clone zeroing ATS XCOPY lock" },
+    { id:60, title:"SDRS Issues — Storage DRS Faults", type:"fix", severity:"medium", phase:6, file:"phase6.html", keywords:"SDRS issues storage DRS faults recommendations placement anti-affinity" },
+    { id:61, title:"vDS Disconnect — Distributed Switch Issues", type:"break", severity:"critical", phase:7, file:"phase7.html", keywords:"vDS disconnect distributed switch issues host rollback vSS uplink" },
+    { id:62, title:"vMotion Network — Dedicated VMkernel Configuration", type:"break", severity:"high", phase:7, file:"phase7.html", keywords:"vMotion network dedicated VMkernel configuration adapter subnet VLAN" },
+    { id:63, title:"MTU Mismatch — Jumbo Frame Issues", type:"break", severity:"critical", phase:7, file:"phase7.html", keywords:"MTU mismatch jumbo frame issues 9000 1500 fragmentation packet loss" },
+    { id:64, title:"NIC Teaming — Failover & Load Balancing", type:"fix", severity:"high", phase:7, file:"phase7.html", keywords:"NIC teaming failover load balancing active standby LACP EtherChannel" },
+    { id:65, title:"VLAN Config — Port Group VLAN Tagging", type:"break", severity:"high", phase:7, file:"phase7.html", keywords:"VLAN config port group VLAN tagging VST EST trunk 802.1Q" },
+    { id:66, title:"vSS to vDS — Standard to Distributed Migration", type:"fix", severity:"high", phase:7, file:"phase7.html", keywords:"vSS vDS standard distributed switch migration convert port group" },
+    { id:67, title:"NIOC — Network I/O Control & Traffic Shaping", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"NIOC network IO control traffic shaping bandwidth shares reservation" },
+    { id:68, title:"TCP/IP Stacks — Custom VMkernel Routing", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"TCP/IP stacks custom VMkernel routing provisioning vMotion gateway" },
+    { id:69, title:"Firewall Ports — ESXi & vCenter Port Requirements", type:"fix", severity:"high", phase:7, file:"phase7.html", keywords:"firewall ports ESXi vCenter port requirements 443 902 8000 blocked" },
+    { id:70, title:"SR-IOV — Single Root I/O Virtualization", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"SR-IOV single root IO virtualization passthrough virtual function NIC" }
+];
+
+const phaseNames = {
+    1: "Phase 1 — Top 10 Common Issues",
+    2: "Phase 2 — Day-2 Operations",
+    3: "Phase 3 — HA & Fault Tolerance",
+    4: "Phase 4 — DRS & Resource Management",
+    5: "Phase 5 — vCenter Server & PSC",
+    6: "Phase 6 — Storage — VMFS, NFS & Multipathing",
+    7: "Phase 7 — Networking — vDS, vSS & vMotion"
+};
+
+// ── Render KB Index ──
+function renderIndex(entries) {
+    const container = document.getElementById('kbIndex');
+    if (entries.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:2rem;">No entries match the filter.</div>';
+        return;
+    }
+    container.innerHTML = entries.map(e => `
+        <a href="${e.file}" class="kb-index-item" data-type="${e.type}" data-severity="${e.severity}">
+            <div class="kb-idx-num ${e.type === 'break' ? 'break' : 'fix'}">${e.id}</div>
+            <div class="kb-idx-info">
+                <div class="kb-idx-title">${e.title}</div>
+                <div class="kb-idx-meta">
+                    <span>${phaseNames[e.phase]}</span>
+                    <span>${e.type === 'break' ? '⚠ Break' : '✓ Fix'}</span>
+                </div>
+            </div>
+            <div class="kb-idx-tags">
+                <span class="idx-tag ${e.severity}">${e.severity.charAt(0).toUpperCase() + e.severity.slice(1)}</span>
+            </div>
+        </a>
+    `).join('');
+}
+
+function filterIndex(filter, btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    let filtered = kbEntries;
+    if (filter === 'break' || filter === 'fix') filtered = kbEntries.filter(e => e.type === filter);
+    else if (filter === 'critical' || filter === 'high' || filter === 'medium') filtered = kbEntries.filter(e => e.severity === filter);
+    renderIndex(filtered);
+}
+
+// ── Global Search ──
+function performSearch() {
+    const query = document.getElementById('globalSearch').value.toLowerCase().trim();
+    const resultsDiv = document.getElementById('searchResults');
+
+    if (query.length < 2) {
+        resultsDiv.classList.remove('visible');
+        resultsDiv.innerHTML = '';
+        return;
+    }
+
+    const matches = kbEntries.filter(e => {
+        const searchable = `${e.id} ${e.title} ${e.keywords} ${phaseNames[e.phase]} ${e.type} ${e.severity}`.toLowerCase();
+        return query.split(/\s+/).every(term => searchable.includes(term));
+    });
+
+    resultsDiv.classList.add('visible');
+
+    if (matches.length === 0) {
+        resultsDiv.innerHTML = '<div class="no-results">No entries match your search. Try different keywords.</div>';
+        return;
+    }
+
+    resultsDiv.innerHTML = matches.map(e => {
+        const typeClass = e.type === 'break' ? 'break' : 'fix';
+        return `
+            <a href="${e.file}" class="search-result-item">
+                <div class="sr-num ${typeClass}">${e.id}</div>
+                <div>
+                    <div class="sr-title">${highlightMatch(e.title, query)}</div>
+                    <div class="sr-meta">${phaseNames[e.phase]} · ${e.type === 'break' ? '⚠ Break' : '✓ Fix'} · ${e.severity}</div>
+                </div>
+            </a>
+        `;
+    }).join('');
+}
+
+function highlightMatch(text, query) {
+    const terms = query.split(/\s+/).filter(t => t.length >= 2);
+    let result = text;
+    terms.forEach(term => {
+        const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        result = result.replace(regex, '<span class="sr-highlight">$1</span>');
+    });
+    return result;
+}
+
+function quickSearch(term) {
+    document.getElementById('globalSearch').value = term;
+    performSearch();
+    document.getElementById('globalSearch').focus();
+}
+
+// Close search results on outside click
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('searchBox').contains(e.target)) {
+        document.getElementById('searchResults').classList.remove('visible');
+    }
+});
+
+// ── Init ──
+renderIndex(kbEntries);
+
+/* ═══════════ Animated Stat Counters ═══════════ */
+(function() {
+    var statEls = document.querySelectorAll('.stat-value[data-target]');
+    if (!statEls.length) return;
+    if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (!entry.isIntersecting) return;
+                obs.unobserve(entry.target);
+                var el = entry.target;
+                var target = parseInt(el.getAttribute('data-target'), 10);
+                if (target === 0) return;
+                var dur = 1000, start = performance.now();
+                (function tick(now) {
+                    var p = Math.min((now - start) / dur, 1);
+                    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                    if (p < 1) requestAnimationFrame(tick);
+                })(performance.now());
+            });
+        }, { threshold: 0.3 });
+        statEls.forEach(function(el) { obs.observe(el); });
+    } else {
+        statEls.forEach(function(el) { el.textContent = el.getAttribute('data-target'); });
+    }
+})();
+
+/* ═══════════ Break/Fix Progress Bars per Phase ═══════════ */
+(function() {
+    var phaseCounts = {
+        1: {b:7, f:3}, 2: {b:3, f:7}, 3: {b:5, f:5},
+        4: {b:5, f:5}, 5: {b:5, f:5}, 6: {b:5, f:5}, 7: {b:4, f:6}
+    };
+    var footers = document.querySelectorAll('.phase-card-footer');
+    footers.forEach(function(footer, i) {
+        var p = i + 1;
+        var c = phaseCounts[p];
+        if (!c) return;
+        var total = c.b + c.f;
+        var bar = document.createElement('div');
+        bar.className = 'bf-progress';
+        bar.innerHTML = '<div class="bf-bar-break" style="width:' + ((c.b / total) * 100) + '%"></div>' +
+            '<div class="bf-bar-fix" style="width:' + ((c.f / total) * 100) + '%"></div>';
+        var legend = document.createElement('div');
+        legend.className = 'bf-legend';
+        legend.innerHTML = '<span><span class="bf-dot" style="background:var(--danger)"></span>' + c.b + ' Break</span>' +
+            '<span><span class="bf-dot" style="background:var(--success)"></span>' + c.f + ' Fix</span>';
+        footer.appendChild(bar);
+        footer.appendChild(legend);
+    });
+})();
+
+/* ═══════════ Scroll-Reveal ═══════════ */
+(function() {
+    var revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    obs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        revealEls.forEach(function(el) { obs.observe(el); });
+    } else {
+        revealEls.forEach(function(el) { el.classList.add('visible'); });
+    }
+})();
+
+/* ═══════════ Sticky Nav on Scroll ═══════════ */
+(function() {
+    var nav = document.getElementById('stickyNav');
+    var hero = document.querySelector('.hero');
+    if (!nav || !hero) return;
+    var threshold = hero.offsetTop + hero.offsetHeight - 60;
+    var shown = false;
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > threshold && !shown) { nav.classList.add('visible'); shown = true; }
+        else if (window.scrollY <= threshold && shown) { nav.classList.remove('visible'); shown = false; }
+    }, { passive: true });
+})();
+</script>
+<script src="kb-ux.js"></script>
+
+</body>
+</html>
