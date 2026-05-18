@@ -396,19 +396,19 @@
             animation: card-border-spin 3s linear infinite;
         }
         @keyframes card-border-spin { to { --card-angle: 360deg; } }
-        /* Shimmer sweep overlay */
+        /* Shimmer sweep overlay (right-to-left) */
         .product-card::after {
             content: '';
             position: absolute;
-            top: 0; left: -100%; right: 0; bottom: 0;
+            top: 0; right: -100%; bottom: 0;
             width: 60%;
-            background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%);
-            transition: left 0.6s ease;
+            background: linear-gradient(255deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%);
+            transition: right 0.6s ease;
             pointer-events: none;
             z-index: 3;
         }
         .product-card:hover::after {
-            left: 150%;
+            right: 150%;
         }
         .product-card:hover {
             transform: translateY(-8px);
@@ -1066,7 +1066,11 @@
         <!-- ══ NSX-T — LIVE ══ -->
         <a href="nsx-kb/" class="product-card nsx reveal" style="transition-delay:0.2s;">
             <div class="card-spotlight"></div>
-            <div class="entry-count">90</div>
+            <div class="entry-count">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                90 Entries
+            </div>
+            <div class="live-ribbon">AVAILABLE</div>
             <div class="card-accent-bar"></div>
             <div class="card-body">
                 <div class="card-icon-wrap">
@@ -1076,13 +1080,14 @@
                     </svg>
                 </div>
                 <div class="card-label">VMware NSX-T</div>
-                <div class="card-title">NSX-T Troubleshooting<br>Knowledge Base</div>
+                <div class="card-title">NSX-T Fix &amp; Break<br>Knowledge Base</div>
                 <div class="card-desc">
-                    Troubleshooting reference for NSX-T — Segments, T0/T1 Gateways, Distributed Firewall, Edge Nodes, BGP/OSPF, and Transport Zones.
+                    Comprehensive reference covering 90 NSX-T scenarios — Transport Nodes, Distributed Firewall, T0/T1 Gateways, Edge Services, BGP/OSPF, Segments, VCF Federation &amp; Advanced Security. Copy-ready nsxcli commands with verification steps.
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><span class="num">90</span>&nbsp;<span class="lbl">KB Entries</span></div>
-                    <div class="card-stat"><span class="num">9</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num" data-target="90">0</span>&nbsp;<span class="lbl">KB Entries</span></div>
+                    <div class="card-stat"><span class="num" data-target="9">0</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num" data-target="5">0</span>&nbsp;<span class="lbl">Enrichments</span></div>
                 </div>
             </div>
             <div class="card-footer">
@@ -1091,6 +1096,7 @@
                     <span class="card-tag">DFW</span>
                     <span class="card-tag">Edge</span>
                     <span class="card-tag">BGP</span>
+                    <span class="card-tag">Federation</span>
                 </div>
                 <span class="status-live">Live</span>
             </div>
