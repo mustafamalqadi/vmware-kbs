@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive NSX-T troubleshooting decision tree — diagnose transport nodes, DFW, routing, edge services, segments, and federation issues across 80 KB entries.">
+    <title>VMware NSX-T KB — Interactive Troubleshooting Decision Tree</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.7; }
+        .scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); z-index: 9999; width: 0%; transition: width 0.1s linear; }
+        .header { background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%); border-bottom: 1px solid var(--border); padding: 2rem 0; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); }
+        .header-inner { max-width: 1400px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.3px; }
+        .header h1 span { font-weight: 400; color: var(--text-secondary); }
+        .header-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.85rem; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+        .badge-tree { background: rgba(210,153,34,0.12); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.25); }
+        .badge-phase { background: rgba(88,166,255,0.12); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.25); }
+        .phase-nav { max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .phase-nav a { padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-secondary); text-decoration: none; font-size: 0.78rem; font-weight: 500; transition: all .15s; }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(210,153,34,0.25); color: var(--warning-light); background: rgba(210,153,34,0.06); }
+        .search-bar { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 0; }
+        .search-bar input { width: 100%; padding: 0.9rem 1.2rem 0.9rem 3rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); font-size: 1rem; outline: none; transition: border-color 0.2s; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236e7681' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 1rem center; }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .search-results-info { max-width: 1100px; margin: 0.5rem auto 0; padding: 0 2rem; font-size: 0.78rem; color: var(--text-muted); min-height: 1.2rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
+        .hero { margin-bottom: 2rem; }
+        .hero h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.3px; }
+        .hero p { color: var(--text-secondary); font-size: 0.9rem; }
+        .breadcrumb { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.5rem; font-size: 0.8rem; }
+        .breadcrumb-home { color: var(--accent-light); cursor: pointer; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 4px; transition: background .15s; }
+        .breadcrumb-home:hover { background: rgba(88,166,255,0.08); }
+        .breadcrumb-sep { color: var(--text-muted); }
+        .breadcrumb-item { color: var(--text-secondary); cursor: pointer; padding: 0.2rem 0.5rem; border-radius: 4px; transition: background .15s; }
+        .breadcrumb-item:hover { background: rgba(88,166,255,0.08); color: var(--text-primary); }
+        .breadcrumb-current { color: var(--text-primary); font-weight: 600; }
+        .choice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.85rem; }
+        .choice-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+        .choice-card:hover { border-color: rgba(88,166,255,0.4); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .choice-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .choice-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); opacity: 0; transition: opacity .2s; }
+        .choice-card:hover::before { opacity: 1; }
+        .choice-icon { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .choice-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-primary); }
+        .choice-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+        .choice-count { position: absolute; top: 0.75rem; right: 0.75rem; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(88,166,255,0.08); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.18); font-weight: 500; }
+        .choice-card.hidden { display: none; }
+        .result-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.75rem; margin-bottom: 1.25rem; border-left: 3px solid var(--success); }
+        .result-card.break-result { border-left-color: var(--danger); }
+        .result-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .result-kb-num { font-size: 1.25rem; font-weight: 800; color: var(--accent-light); }
+        .result-title { font-size: 1.1rem; font-weight: 600; }
+        .result-type { padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+        .result-type.break { background: rgba(248,81,73,0.12); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.25); }
+        .result-type.fix { background: rgba(63,185,80,0.12); color: var(--success-light); border: 1px solid rgba(63,185,80,0.25); }
+        .result-summary { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.65; }
+        .result-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.25rem; border-radius: 8px; background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); color: var(--accent-light); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: all .15s; }
+        .result-link:hover { background: rgba(88,166,255,0.15); border-color: var(--accent); }
+        .restart-bar { text-align: center; padding: 2rem 0; }
+        .restart-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem; border-radius: 8px; background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all .15s; font-family: inherit; }
+        .restart-btn:hover { border-color: rgba(210,153,34,0.35); color: var(--warning-light); }
+        .go-back-link { color: var(--text-muted); font-size: 0.8rem; cursor: pointer; transition: color .15s; text-decoration: none; display: inline-block; margin-top: 0.5rem; }
+        .go-back-link:hover { color: var(--text-secondary); }
+        .fade-in { animation: fadeSlide 0.3s ease forwards; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .quick-paths { margin-top: 2rem; padding: 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; }
+        .quick-paths h3 { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .quick-path-list { display: flex; flex-direction: column; gap: 0.35rem; }
+        .quick-path-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.9rem; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); cursor: pointer; transition: border-color .15s; font-size: 0.8rem; }
+        .quick-path-item:hover { border-color: rgba(88,166,255,0.35); }
+        .quick-path-item .qp-icon { font-size: 0.9rem; flex-shrink: 0; }
+        .quick-path-item .qp-label { color: var(--text-primary); font-weight: 500; flex: 1; }
+        .quick-path-item .qp-desc { color: var(--text-muted); font-size: 0.72rem; margin-left: auto; white-space: nowrap; }
+        .no-results { text-align: center; padding: 3rem 1rem; color: var(--text-muted); display: none; }
+        .no-results .nr-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.5; }
+        .footer { border-top: 1px solid var(--border); margin-top: 3rem; padding: 2rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+        .footer a { color: var(--accent-light); text-decoration: none; }
+        .footer p { margin-bottom: 0.4rem; }
+        @media (max-width: 600px) { .choice-grid { grid-template-columns: 1fr; } .header h1 { font-size: 1.2rem; } }
+    </style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>NSX-T KB <span>— Decision Tree</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-tree">&#9878; Interactive Troubleshooting</span>
+            <span class="badge badge-phase">80 KB Entries</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&#8592; Dashboard</a>
+    <a href="decision-tree.html" class="nav-dt">&#9878; Decision Tree</a>
+    <a href="phase1.html">P1 Common</a>
+    <a href="phase2.html">P2 Day-2</a>
+    <a href="phase3.html">P3 DFW</a>
+    <a href="phase4.html">P4 Routing</a>
+    <a href="phase5.html">P5 Edge</a>
+    <a href="phase6.html">P6 Segments</a>
+    <a href="phase7.html">P7 VCF</a>
+    <a href="phase8.html">P8 CLI</a>
+    <a href="https://mustafamalqadi.github.io/vmware-kbs/" target="_blank" rel="noopener">&#8593; Portal</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="treeSearch" placeholder="Search symptoms, topics, KB numbers..." oninput="searchTree()">
+</div>
+<div class="search-results-info" id="searchInfo"></div>
+
+<div class="container">
+    <div class="hero" id="heroSection">
+        <h2>What NSX-T symptom are you experiencing?</h2>
+        <p>Select the category that best describes your issue. The tree will guide you step-by-step to the right KB entry.</p>
+    </div>
+
+    <div class="breadcrumb" id="breadcrumb" role="navigation" aria-label="Decision tree breadcrumb">
+        <span class="breadcrumb-home" onclick="goHome()" role="button" tabindex="0">&#8962; Start</span>
+    </div>
+
+    <div id="treeContent" class="fade-in" role="main"></div>
+
+    <div class="no-results" id="noResults">
+        <div class="nr-icon">&#128269;</div>
+        <p>No matching symptoms found. Try different keywords.</p>
+    </div>
+
+    <div class="quick-paths" id="quickPaths">
+        <h3>Common Scenarios — Jump Directly</h3>
+        <div class="quick-path-list">
+            <div class="quick-path-item" onclick="jumpTo(['root','transport','tn_prep_fail'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Transport Node preparation failure</span>
+                <span class="qp-desc">KB #1</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','routing','bgp_peer_fail'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">BGP peering failure on Edge</span>
+                <span class="qp-desc">KB #8</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','firewall','rules_not_applied'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">DFW rules not applied to VMs</span>
+                <span class="qp-desc">KB #4</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','edge','edge_failover'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">Edge cluster failover issues</span>
+                <span class="qp-desc">KB #3</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','transport','vtep_fail'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">VTEP communication failure</span>
+                <span class="qp-desc">KB #7</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','manager','split_brain'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">NSX Manager cluster split-brain</span>
+                <span class="qp-desc">KB #6</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','edge','vpn_flap'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">IPSec VPN tunnel flapping</span>
+                <span class="qp-desc">KB #43</span>
+            </div>
+            <div class="quick-path-item" onclick="jumpTo(['root','segments','mtu_issue'])" role="button" tabindex="0">
+                <span class="qp-icon">&#128308;</span>
+                <span class="qp-label">GENEVE MTU / encapsulation issues</span>
+                <span class="qp-desc">KB #52</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <p>VMware NSX-T Knowledge Base — Interactive Troubleshooting Decision Tree</p>
+    <p><a href="index.html">&larr; Dashboard</a> &nbsp;|&nbsp; <a href="https://mustafamalqadi.github.io/vmware-kbs/" target="_blank" rel="noopener">Portal</a></p>
+    <p>&copy; 2026 Eng. Mustafa Al-Qadi</p>
+</footer>
+
+<script>
+const tree = {
+    root: {
+        question: "What area is affected?",
+        choices: [
+            { id: "transport", icon: "&#128421;", title: "Transport Nodes & Connectivity", desc: "Host preparation, VTEP, TEP pools, N-VDS, controller connectivity", count: 14 },
+            { id: "firewall", icon: "&#128737;", title: "Distributed Firewall (DFW)", desc: "Rules not applied, publish failure, IDFW, microsegmentation, security groups", count: 10 },
+            { id: "routing", icon: "&#127760;", title: "Routing & BGP", desc: "T0/T1 gateways, BGP peering, ECMP, route redistribution, NAT, BFD", count: 12 },
+            { id: "edge", icon: "&#9889;", title: "Edge Services", desc: "Load balancer, VPN, DHCP, DNS, edge node failures, datapath issues", count: 12 },
+            { id: "segments", icon: "&#128268;", title: "Segments & Overlays", desc: "GENEVE, MTU, MAC learning, VLAN trunks, TEP pools, segment connectivity", count: 10 },
+            { id: "manager", icon: "&#128187;", title: "NSX Manager & Platform", desc: "Cluster health, split-brain, certificates, backup/restore, upgrades", count: 12 },
+            { id: "federation", icon: "&#127758;", title: "VCF & Federation", desc: "Global Manager, stretched segments, VCF lifecycle, cross-location", count: 10 },
+            { id: "troubleshoot", icon: "&#128295;", title: "CLI & Diagnostics", desc: "central-cli, packet capture, API issues, support bundles, monitoring", count: 10 }
+        ]
+    },
+
+    transport: {
+        question: "What transport node symptom are you seeing?",
+        choices: [
+            { id: "tn_prep_fail", icon: "&#128308;", title: "Transport Node preparation failure", desc: "Host prep stuck at 'In Progress' or 'Failed' — VIBs not installed", result: true },
+            { id: "vtep_fail", icon: "&#128308;", title: "VTEP communication failure", desc: "VTEPs cannot reach each other, overlay traffic broken", result: true },
+            { id: "tep_exhaustion", icon: "&#128308;", title: "TEP pool exhaustion / IP conflict", desc: "No available TEP IPs or duplicate addresses on transport nodes", result: true },
+            { id: "controller_lost", icon: "&#128308;", title: "Controller connectivity lost", desc: "Transport node shows 'Disconnected' from control plane", result: true },
+            { id: "nvds_migration", icon: "&#128993;", title: "N-VDS to VDS migration", desc: "Migrating from N-VDS to vSphere Distributed Switch", result: true },
+            { id: "tz_drift", icon: "&#128993;", title: "Transport Zone configuration drift", desc: "Inconsistent TZ membership across hosts", result: true },
+            { id: "tn_health", icon: "&#128993;", title: "Host transport node health check", desc: "Proactive health monitoring of transport node status", result: true },
+            { id: "bfd_flap", icon: "&#128308;", title: "BFD session flapping", desc: "BFD between TEPs going up/down repeatedly", result: true }
+        ]
+    },
+
+    firewall: {
+        question: "What DFW issue are you experiencing?",
+        choices: [
+            { id: "rules_not_applied", icon: "&#128308;", title: "DFW rules not applied to VMs", desc: "Rules created but traffic not being filtered", result: true },
+            { id: "publish_fail", icon: "&#128308;", title: "Rule publish failure", desc: "DFW rules fail to publish — timeout or error", result: true },
+            { id: "exclusion_list", icon: "&#128308;", title: "Exclusion list not working", desc: "VMs in exclusion list still being firewalled", result: true },
+            { id: "idfw_issues", icon: "&#128308;", title: "Identity Firewall (IDFW) issues", desc: "AD-based rules not matching user sessions", result: true },
+            { id: "time_rules", icon: "&#128993;", title: "Time-based rules not triggering", desc: "Scheduled rules not activating at expected time", result: true },
+            { id: "dfw_perf", icon: "&#128308;", title: "DFW performance degradation", desc: "High CPU on hosts, slow VM networking due to DFW", result: true },
+            { id: "security_group", icon: "&#128308;", title: "Security group membership stale", desc: "Dynamic groups not updating with new VMs", result: true },
+            { id: "microseg", icon: "&#128993;", title: "Microsegmentation design patterns", desc: "Best practices for zero-trust DFW architecture", result: true },
+            { id: "applied_to", icon: "&#128993;", title: "Applied To scope best practices", desc: "Optimizing rule scope for performance", result: true },
+            { id: "rule_export", icon: "&#128993;", title: "DFW rule export/import", desc: "Backing up and migrating DFW rulesets", result: true }
+        ]
+    },
+
+    routing: {
+        question: "What routing/BGP symptom do you see?",
+        choices: [
+            { id: "gateway_loss", icon: "&#128308;", title: "T0/T1 Gateway connectivity loss", desc: "North-south traffic broken, gateway unreachable", result: true },
+            { id: "bgp_peer_fail", icon: "&#128308;", title: "BGP peering failure on Edge", desc: "BGP neighbor state stuck in Active/Idle, no routes learned", result: true },
+            { id: "ecmp_asym", icon: "&#128308;", title: "ECMP load balancing asymmetric", desc: "Traffic not distributing evenly across uplinks", result: true },
+            { id: "redist_loop", icon: "&#128308;", title: "Route redistribution loops", desc: "Routes oscillating between T0 and physical routers", result: true },
+            { id: "sr_dr_fail", icon: "&#128308;", title: "T0 SR-to-DR communication failure", desc: "Inter-tier routing broken between service router and distributed router", result: true },
+            { id: "static_blackhole", icon: "&#128308;", title: "Static route blackhole", desc: "Traffic dropped due to misconfigured static routes", result: true },
+            { id: "prefix_filter", icon: "&#128993;", title: "Route filtering with prefix lists", desc: "Controlling which routes are advertised/learned", result: true },
+            { id: "bfd_tuning", icon: "&#128993;", title: "BFD timer tuning for fast failover", desc: "Optimizing failure detection timers", result: true },
+            { id: "nat_conflict", icon: "&#128308;", title: "NAT rules conflict resolution", desc: "Overlapping NAT rules causing unexpected translations", result: true },
+            { id: "bgp_reflector", icon: "&#128993;", title: "BGP route reflector design", desc: "Scale-out BGP design for large NSX environments", result: true },
+            { id: "fed_routing", icon: "&#128993;", title: "Multi-site / Federation routing", desc: "Cross-location routing with Global Manager", result: true },
+            { id: "edge_rebalance", icon: "&#128993;", title: "Edge cluster traffic rebalancing", desc: "Redistributing workloads across edge nodes", result: true }
+        ]
+    },
+
+    edge: {
+        question: "What Edge service issue are you experiencing?",
+        choices: [
+            { id: "edge_failover", icon: "&#128308;", title: "Edge cluster failover issues", desc: "Active/standby failover not working correctly", result: true },
+            { id: "lb_health", icon: "&#128308;", title: "Load balancer health monitor failure", desc: "Backend pool members marked down incorrectly", result: true },
+            { id: "ssl_binding", icon: "&#128993;", title: "L7 LB SSL certificate binding", desc: "SSL termination issues on load balancer", result: true },
+            { id: "vpn_flap", icon: "&#128308;", title: "IPSec VPN tunnel flapping", desc: "VPN tunnel going up/down repeatedly", result: true },
+            { id: "edge_cpu", icon: "&#128308;", title: "Edge node CPU/memory exhaustion", desc: "Edge VM overloaded, services degraded", result: true },
+            { id: "edge_datapath", icon: "&#128308;", title: "Edge datapath failure", desc: "Data plane crash on edge node — traffic blackholed", result: true },
+            { id: "dns_cache", icon: "&#128993;", title: "DNS forwarder cache issues", desc: "Stale DNS cache causing resolution failures", result: true },
+            { id: "dhcp_relay", icon: "&#128993;", title: "DHCP relay configuration", desc: "VMs not getting IP addresses via DHCP relay", result: true },
+            { id: "edge_affinity", icon: "&#128993;", title: "Edge VM anti-affinity rules", desc: "Ensuring edges don't run on same host", result: true },
+            { id: "gfw_dfw", icon: "&#128993;", title: "Gateway Firewall vs DFW precedence", desc: "Understanding rule evaluation order", result: true },
+            { id: "edge_redeploy", icon: "&#128993;", title: "Edge node redeployment procedure", desc: "Replacing a failed edge node cleanly", result: true }
+        ]
+    },
+
+    segments: {
+        question: "What segment/overlay issue do you see?",
+        choices: [
+            { id: "port_block", icon: "&#128308;", title: "Segment port blocking table full", desc: "Too many MAC entries, traffic drops", result: true },
+            { id: "mtu_issue", icon: "&#128308;", title: "GENEVE encapsulation MTU issues", desc: "Jumbo frames needed, packets fragmented or dropped", result: true },
+            { id: "mac_flood", icon: "&#128308;", title: "MAC learning & unknown unicast flood", desc: "BUM traffic flooding, performance impact", result: true },
+            { id: "post_migrate", icon: "&#128308;", title: "Segment connectivity post-migration", desc: "VMs lose connectivity after migration to NSX segments", result: true },
+            { id: "arp_suppress", icon: "&#128993;", title: "ARP suppression & broadcast optimization", desc: "Reducing broadcast traffic on overlay segments", result: true },
+            { id: "cross_vc", icon: "&#128993;", title: "Cross-vCenter NSX segment extension", desc: "Extending L2 segments across vCenter instances", result: true },
+            { id: "vlan_trunk", icon: "&#128993;", title: "VLAN-backed segment trunk configuration", desc: "Connecting physical VLANs to NSX segments", result: true },
+            { id: "sec_profile", icon: "&#128993;", title: "Segment security profile assignment", desc: "Applying security profiles to segment ports", result: true },
+            { id: "tep_exhaust", icon: "&#128308;", title: "TEP pool exhaustion / IP conflict", desc: "Running out of TEP addresses", result: true },
+            { id: "seg_disconnect", icon: "&#128308;", title: "Segment disconnect from T1 gateway", desc: "Segment traffic not reaching the gateway", result: true }
+        ]
+    },
+
+    manager: {
+        question: "What NSX Manager / platform issue?",
+        choices: [
+            { id: "split_brain", icon: "&#128308;", title: "NSX Manager cluster split-brain", desc: "Manager nodes disagree on cluster leadership", result: true },
+            { id: "cert_rotation", icon: "&#128993;", title: "Certificate rotation & expiry", desc: "Certificates expiring, services failing TLS validation", result: true },
+            { id: "backup_restore", icon: "&#128993;", title: "Backup & restore procedures", desc: "Setting up automated backups and performing restore", result: true },
+            { id: "edge_replace", icon: "&#128993;", title: "Edge node replacement", desc: "Replacing a failed edge without service disruption", result: true },
+            { id: "ldap_issues", icon: "&#128993;", title: "LDAP/AD identity source issues", desc: "LDAP login failing, AD connectivity problems", result: true },
+            { id: "cert_regen", icon: "&#128308;", title: "MP/CCP cluster certificate regeneration", desc: "Regenerating internal certificates after expiry", result: true },
+            { id: "node_decom", icon: "&#128993;", title: "NSX Manager node decommission", desc: "Safely removing a manager node from the cluster", result: true },
+            { id: "upgrade_coord", icon: "&#128308;", title: "Upgrade coordinator failure", desc: "NSX upgrade stuck or coordinator not responding", result: true },
+            { id: "alarm_corr", icon: "&#128993;", title: "Alarm & event correlation", desc: "Understanding and resolving NSX system alarms", result: true },
+            { id: "syslog_config", icon: "&#128993;", title: "Syslog & log collection", desc: "Configuring centralized logging for NSX components", result: true },
+            { id: "api_throttle", icon: "&#128308;", title: "NSX API rate limiting & throttling", desc: "API calls being rejected due to rate limits", result: true },
+            { id: "support_bundle", icon: "&#128993;", title: "Support bundle collection & analysis", desc: "Gathering diagnostic data for VMware support", result: true }
+        ]
+    },
+
+    federation: {
+        question: "What VCF / Federation issue?",
+        choices: [
+            { id: "gm_lm_conn", icon: "&#128308;", title: "GM/LM connectivity failure", desc: "Global Manager cannot reach Local Manager", result: true },
+            { id: "stretched_seg", icon: "&#128993;", title: "Cross-location stretched segments", desc: "Extending segments across sites via Federation", result: true },
+            { id: "vcf_upgrade", icon: "&#128993;", title: "VCF lifecycle manager — NSX upgrade", desc: "Upgrading NSX through SDDC Manager", result: true },
+            { id: "vcf_bom", icon: "&#128993;", title: "NSX compliance with VCF BOM", desc: "Ensuring NSX version matches VCF bill of materials", result: true },
+            { id: "gm_failover", icon: "&#128308;", title: "Active/standby GM failover", desc: "Global Manager failover not triggering correctly", result: true },
+            { id: "wd_isolation", icon: "&#128993;", title: "Workload domain NSX isolation", desc: "Isolating NSX instances per workload domain", result: true },
+            { id: "edge_vcf", icon: "&#128993;", title: "NSX Edge cluster in VCF", desc: "Deploying and managing edges in VCF context", result: true },
+            { id: "cert_sync", icon: "&#128308;", title: "Certificate synchronization in Federation", desc: "Certificates not syncing between GM and LMs", result: true },
+            { id: "tz_mapping", icon: "&#128993;", title: "Transport zone mapping", desc: "Mapping transport zones across federated sites", result: true },
+            { id: "fed_span", icon: "&#128993;", title: "Federation span & ingress/egress", desc: "Traffic flow design in federated environments", result: true }
+        ]
+    },
+
+    troubleshoot: {
+        question: "What diagnostic/CLI tool do you need?",
+        choices: [
+            { id: "central_cli", icon: "&#128993;", title: "central-cli command reference", desc: "Essential central-cli commands for troubleshooting", result: true },
+            { id: "pkt_capture", icon: "&#128993;", title: "Packet capture (tcpdump/pktcap-uw)", desc: "Capturing traffic on edges and host transport nodes", result: true },
+            { id: "nsx_intel", icon: "&#128993;", title: "NSX Intelligence — flow visualization", desc: "Using NSX Intelligence to map traffic flows", result: true },
+            { id: "get_cmds", icon: "&#128993;", title: "get logical-switches / get firewall", desc: "Common 'get' commands for status checks", result: true },
+            { id: "edge_dp_cli", icon: "&#128993;", title: "Edge datapath CLI deep dive", desc: "Debugging edge data plane with dp-cli commands", result: true },
+            { id: "tn_workflow", icon: "&#128993;", title: "Host transport node troubleshooting", desc: "Step-by-step workflow for host-side issues", result: true },
+            { id: "metrics_mon", icon: "&#128993;", title: "NSX metrics & monitoring", desc: "Prometheus, SNMP, and built-in monitoring tools", result: true },
+            { id: "proactive_health", icon: "&#128993;", title: "Proactive transport node health checks", desc: "Automated health verification scripts", result: true }
+        ]
+    }
+};
+
+// Result mappings: choice ID -> KB details
+const results = {
+    // Transport Nodes
+    tn_prep_fail: { kb: 1, title: "Transport Node Preparation Failure", type: "break", phase: 1, summary: "Host transport node stuck in 'In Progress' or 'Failed' state. VIBs not installed, NSX kernel modules not loaded. Check /var/log/proton/nsxa.log and verify VIB compatibility with ESXi version." },
+    vtep_fail: { kb: 7, title: "VTEP Communication Failure", type: "break", phase: 1, summary: "VTEPs cannot establish GENEVE tunnels. Check MTU (1700+ required), verify TEP IP connectivity with vmkping, and ensure no firewall blocks UDP 6081." },
+    tep_exhaustion: { kb: 59, title: "TEP Pool Exhaustion / IP Conflict", type: "break", phase: 6, summary: "TEP IP pool depleted or duplicate IPs assigned. Expand pool via API, identify conflicts with 'get vteps' on each host, release stale allocations." },
+    controller_lost: { kb: 9, title: "Controller Connectivity Lost", type: "fix", phase: 1, summary: "Transport node shows 'Disconnected' from central control plane. Check NSX Manager cluster health, verify port 1235 connectivity, restart nsx-proxy service on host." },
+    nvds_migration: { kb: 13, title: "N-VDS to VDS Migration", type: "fix", phase: 2, summary: "Migrate from N-VDS to vSphere Distributed Switch for simplified management. Use Migration Coordinator in NSX Manager UI — plan maintenance window." },
+    tz_drift: { kb: 15, title: "Transport Zone Configuration Drift", type: "break", phase: 2, summary: "Transport zone membership inconsistent across hosts. Some hosts missing from TZ, VMs on those hosts lose overlay connectivity. Re-apply TN profile." },
+    tn_health: { kb: 78, title: "Proactive Transport Node Health Checks", type: "fix", phase: 8, summary: "Automated health checks for transport node status — verify tunnel status, TEP reachability, NSX VIB versions, and controller channel health." },
+    bfd_flap: { kb: 5, title: "BFD Session Flapping", type: "break", phase: 1, summary: "BFD between TEPs going up/down repeatedly causing route oscillation. Check physical network for CRC errors, MTU mismatches, or congestion on underlay." },
+
+    // DFW
+    rules_not_applied: { kb: 4, title: "Distributed Firewall Rules Not Applied", type: "break", phase: 1, summary: "DFW rules created but VMs not being filtered. Verify VM is on NSX-managed segment, check 'get firewall <vnic-id> ruleset' on host, ensure no exclusion list conflict." },
+    publish_fail: { kb: 24, title: "Rule Publish Failure", type: "break", phase: 3, summary: "DFW rule publish fails with timeout or transport node error. Check CCP channel health, verify all hosts reachable, review /var/log/proton/nsxdfw.log for errors." },
+    exclusion_list: { kb: 23, title: "DFW Exclusion List Not Working", type: "break", phase: 3, summary: "VMs added to exclusion list still being firewalled. Check if VM has multiple vNICs, verify exclusion propagation with 'get firewall <vnic> exclusion' on host." },
+    idfw_issues: { kb: 25, title: "Identity-Based Firewall (IDFW) Issues", type: "break", phase: 3, summary: "AD-based rules not matching user sessions. Verify Guest Introspection service, check AD event log collection, ensure RDSH configuration if using terminal services." },
+    time_rules: { kb: 26, title: "Time-Based Rules Not Triggering", type: "break", phase: 3, summary: "Scheduled DFW rules not activating at the expected time. Verify NTP sync on NSX Manager nodes, check time window configuration in UTC vs local timezone." },
+    dfw_perf: { kb: 27, title: "DFW Performance Degradation", type: "break", phase: 3, summary: "High CPU on hosts due to DFW rule processing. Review rule count (>10K per host = concern), optimize Applied To scope, consolidate overlapping rules." },
+    security_group: { kb: 28, title: "Security Group Membership Stale", type: "break", phase: 3, summary: "Dynamic security groups not updating with new VMs. Check group criteria expression, verify tag assignment on VMs, check CCP sync status." },
+    microseg: { kb: 22, title: "DFW Microsegmentation Design Patterns", type: "fix", phase: 3, summary: "Best practices for zero-trust architecture with DFW — application-centric grouping, environment isolation, emergency rules, and category hierarchy." },
+    applied_to: { kb: 29, title: "Applied To Scope Best Practices", type: "fix", phase: 3, summary: "Optimizing DFW rule performance by narrowing Applied To scope. Use groups instead of DFW for rule targeting. Reduces host-level rule table size." },
+    rule_export: { kb: 30, title: "DFW Rule Export/Import", type: "fix", phase: 3, summary: "Backup DFW ruleset via API: GET /policy/api/v1/infra/domains/default/security-policies. Import with PUT. Use for DR or migration scenarios." },
+    hit_count: { kb: 21, title: "DFW Rule Hit Count Analysis", type: "fix", phase: 3, summary: "Identify unused or overly broad rules via hit count statistics. Enable stats collection, export via API, remove rules with zero hits after observation period." },
+
+    // Routing
+    gateway_loss: { kb: 2, title: "T0/T1 Gateway Connectivity Loss", type: "break", phase: 1, summary: "North-south traffic completely broken. Check edge cluster status, verify T0 uplink interface, confirm BGP/static routes on physical router, check 'get route-table' on edge." },
+    bgp_peer_fail: { kb: 8, title: "BGP Peering Failure on Edge", type: "break", phase: 1, summary: "BGP neighbor stuck in Active/Idle. Verify: ASN mismatch, IP reachability between peers, MD5 authentication, BFD if enabled. Check 'get bgp neighbor summary' on edge." },
+    ecmp_asym: { kb: 32, title: "ECMP Load Balancing Asymmetric", type: "break", phase: 4, summary: "Traffic not distributing evenly across ECMP uplinks. Verify all BGP peers advertising same routes, check hash algorithm, ensure symmetric return path for stateful services." },
+    redist_loop: { kb: 33, title: "Route Redistribution Loops", type: "break", phase: 4, summary: "Routes oscillating between NSX T0 and physical routers. Apply route-maps/prefix-lists to prevent re-advertisement of learned routes. Set correct redistribution rules." },
+    sr_dr_fail: { kb: 34, title: "T0 SR-to-DR Communication Failure", type: "break", phase: 4, summary: "Inter-tier routing broken. Intra-edge transit link down. Check edge node health, verify internal transit subnet connectivity, review 'get logical-router' on edge." },
+    static_blackhole: { kb: 35, title: "Static Route Blackhole", type: "break", phase: 4, summary: "Traffic dropped due to static routes pointing to unreachable next-hop. Verify next-hop reachability, check BFD for static route failover, review null routes." },
+    prefix_filter: { kb: 36, title: "Route Filtering with Prefix Lists", type: "fix", phase: 4, summary: "Control which routes are advertised/learned via BGP. Configure prefix lists and route maps via API to filter specific subnets at T0 gateway." },
+    bfd_tuning: { kb: 37, title: "BFD Timer Tuning for Fast Failover", type: "fix", phase: 4, summary: "Reduce failover time by tuning BFD timers (min 300ms recommended). Balance between fast detection and false positives on congested links." },
+    nat_conflict: { kb: 39, title: "NAT Rules Conflict Resolution", type: "break", phase: 4, summary: "Overlapping SNAT/DNAT rules causing unexpected translations. Check rule priority/order, verify match criteria specificity, use NO_NAT rules to exclude specific traffic." },
+    bgp_reflector: { kb: 31, title: "BGP Route Reflector Design", type: "fix", phase: 4, summary: "Scale-out BGP design using route reflectors for large environments. Reduces full-mesh requirement, centralizes route policy, improves convergence time." },
+    fed_routing: { kb: 38, title: "Multi-Site / Federation Routing", type: "fix", phase: 4, summary: "Configure cross-location routing with Global Manager. Stretched T0/T1 gateways, location-aware egress, and inter-site transit configuration." },
+    edge_rebalance: { kb: 40, title: "Edge Cluster Traffic Rebalancing", type: "fix", phase: 4, summary: "Redistribute SR placement across edge nodes. Use allocation rules or manual rebalance via API when edge nodes become uneven." },
+
+    // Edge Services
+    edge_failover: { kb: 3, title: "Edge Node Cluster Failover Issues", type: "break", phase: 1, summary: "Active/standby failover not triggering or causing prolonged outage. Check BFD between edges, verify HA datastore, review 'get high-availability status' on edge." },
+    lb_health: { kb: 41, title: "Load Balancer Health Monitor Failure", type: "break", phase: 5, summary: "Pool members marked DOWN when actually healthy. Check health monitor type/port/URL, verify edge can reach backend IPs, check HTTP response code expectations." },
+    ssl_binding: { kb: 42, title: "L7 LB SSL Certificate Binding", type: "fix", phase: 5, summary: "SSL termination failing on LB VIP. Verify certificate chain completeness, check private key match, ensure SNI configuration for multiple virtual servers." },
+    vpn_flap: { kb: 43, title: "IPSec VPN Tunnel Flapping", type: "break", phase: 5, summary: "VPN tunnel going up/down. Check IKE Phase 1/2 parameter mismatch, DPD timers, NAT-T detection, and MTU/fragmentation issues between endpoints." },
+    edge_cpu: { kb: 44, title: "Edge Node CPU/Memory Exhaustion", type: "break", phase: 5, summary: "Edge VM resources saturated. Identify top consumers (NAT table size, route table, LB connections), consider scale-out edge cluster or larger form factor." },
+    edge_datapath: { kb: 45, title: "Edge Transport Node Datapath Failure", type: "break", phase: 5, summary: "Edge data plane crashed. Traffic blackholed through affected edge. Check core dumps in /var/log/core/, trigger failover, engage VMware support with bundle." },
+    dns_cache: { kb: 46, title: "DNS Forwarder Cache Issues", type: "break", phase: 5, summary: "Stale DNS cache entries causing resolution failures. Clear cache via API: POST /policy/api/v1/infra/tier-1s/{id}/dns-forwarder?action=clear_cache." },
+    dhcp_relay: { kb: 47, title: "DHCP Relay Configuration", type: "fix", phase: 5, summary: "VMs not getting DHCP leases via relay. Verify relay profile on segment, check T1 gateway connectivity to DHCP server, ensure gateway IP acts as giaddr." },
+    edge_affinity: { kb: 48, title: "Edge VM Anti-Affinity Rules", type: "fix", phase: 5, summary: "Ensure active/standby edges run on different hosts. Configure DRS anti-affinity rules in vSphere for edge VM pairs to survive host failures." },
+    gfw_dfw: { kb: 49, title: "Gateway Firewall vs DFW Precedence", type: "fix", phase: 5, summary: "Gateway Firewall processes north-south traffic at T0/T1. DFW processes east-west at vNIC. GFW evaluated before DFW for ingress. Understand evaluation order." },
+    edge_redeploy: { kb: 50, title: "Edge Node Redeployment Procedure", type: "fix", phase: 5, summary: "Replace a failed edge cleanly: remove from cluster, delete transport node, redeploy from scratch, re-add to cluster. Verify SR failover first." },
+
+    // Segments
+    port_block: { kb: 51, title: "Segment Port Blocking Table Full", type: "break", phase: 6, summary: "MAC address table saturated on segment. VMs experience connectivity drops. Increase table limit or investigate broadcast storms/MAC flapping." },
+    mtu_issue: { kb: 52, title: "GENEVE Encapsulation MTU Issues", type: "break", phase: 6, summary: "Packets dropped due to MTU too small for GENEVE overhead (50 bytes). Physical switches need MTU 1700+ (or 9000 for jumbo). Test with vmkping --df -s 8972." },
+    mac_flood: { kb: 53, title: "MAC Learning & Unknown Unicast Flood", type: "break", phase: 6, summary: "BUM traffic flooding all TEPs. Check MAC learning enabled on segment, verify suppress ARP/ND, identify source of unknown unicast (missing ARP entries)." },
+    post_migrate: { kb: 54, title: "Segment Connectivity Post-Migration", type: "break", phase: 6, summary: "VMs lose connectivity after migrating to NSX overlay segments. Check segment port binding, verify VLAN stripping, ensure default gateway on correct T1." },
+    arp_suppress: { kb: 55, title: "ARP Suppression & Broadcast Optimization", type: "fix", phase: 6, summary: "Enable ARP/ND suppression on segments to reduce broadcast. NSX proxies ARP responses locally, reducing cross-VTEP BUM traffic significantly." },
+    cross_vc: { kb: 56, title: "Cross-vCenter NSX Segment Extension", type: "fix", phase: 6, summary: "Extend L2 segment across vCenter instances using NSX Federation or cross-VC networking. Requires proper TEP connectivity between sites." },
+    vlan_trunk: { kb: 57, title: "VLAN-Backed Segment Trunk Configuration", type: "fix", phase: 6, summary: "Connect physical VLANs to NSX using VLAN-backed segments. Configure trunk port on edge uplink, map VLANs to segments for bridging use cases." },
+    sec_profile: { kb: 58, title: "Segment Security Profile Assignment", type: "fix", phase: 6, summary: "Apply spoofguard, segment security, and IPFIX profiles to overlay segments. Profile inheritance from segment to port-level configuration." },
+    tep_exhaust: { kb: 59, title: "TEP Pool Exhaustion / IP Conflict", type: "break", phase: 6, summary: "TEP IP pool depleted or duplicate IPs. Expand pool range, identify leaked allocations, resolve conflicts with 'get vteps' command on hosts." },
+    seg_disconnect: { kb: 60, title: "Segment Disconnect from T1 Gateway", type: "break", phase: 6, summary: "Segment port shows connected but no traffic reaches T1 gateway. Check segment-to-T1 connectivity, verify router port, ensure no overlapping subnets." },
+
+    // Manager & Platform
+    split_brain: { kb: 6, title: "NSX Manager Cluster Split-Brain", type: "break", phase: 1, summary: "Manager nodes disagree on leadership. Multiple VIPs active. Check network partitioning between managers, verify cluster status with GET /api/v1/cluster/status, may need manual intervention." },
+    cert_rotation: { kb: 11, title: "Certificate Rotation & Expiry", type: "fix", phase: 2, summary: "Rotate expiring certificates before they cause service failures. Use API to check expiry: GET /api/v1/trust-management/certificates. Replace via UI or API before deadline." },
+    backup_restore: { kb: 12, title: "Backup & Restore Procedures", type: "fix", phase: 2, summary: "Configure automated backup to SFTP. Verify backup schedule, test restore in lab. Critical: backup includes cluster VIP, node configs, DFW rules, and routing state." },
+    edge_replace: { kb: 14, title: "Edge Node Replacement", type: "fix", phase: 2, summary: "Replace failed edge: ensure SR failover happened, remove old node from cluster, deploy new edge VM, join to cluster, verify services redistribute correctly." },
+    ldap_issues: { kb: 16, title: "LDAP/AD Identity Source Issues", type: "fix", phase: 2, summary: "LDAP login failing. Verify: LDAP server reachability from all manager nodes, bind DN credentials, base DN correctness, and TLS certificate trust chain." },
+    cert_regen: { kb: 19, title: "MP/CCP Certificate Regeneration", type: "fix", phase: 2, summary: "Internal cluster certificates expired. Services failing mutual TLS. Use POST /api/v1/trust-management/certificates?action=regenerate to regenerate. Plan downtime." },
+    node_decom: { kb: 20, title: "NSX Manager Node Decommission", type: "fix", phase: 2, summary: "Safely remove a manager node: detach from cluster, verify remaining quorum (2/3 nodes needed), clean up references. Never go below 3 nodes in production." },
+    upgrade_coord: { kb: 10, title: "Upgrade Coordinator Failure", type: "fix", phase: 1, summary: "NSX upgrade stuck. Coordinator not responding. Check /var/log/upgrade-coordinator/upgrade-coordinator.log, verify all component group pre-checks passed, restart coordinator service." },
+    alarm_corr: { kb: 17, title: "Alarm & Event Correlation", type: "fix", phase: 2, summary: "Correlate NSX system alarms with root cause. Critical alarms: cluster down, edge failover, certificate expiry, control plane disconnects. Use API for alarm suppression during maintenance." },
+    syslog_config: { kb: 18, title: "Syslog & Log Collection", type: "fix", phase: 2, summary: "Configure remote syslog on manager/edge nodes for centralized logging. Set facility, severity, protocol (TCP/TLS recommended). Verify with logger test command." },
+    api_throttle: { kb: 77, title: "NSX API Rate Limiting & Throttling", type: "break", phase: 8, summary: "API calls rejected with HTTP 429. Default limits: 100 calls/sec for concurrent client, 40 calls/sec per client. Implement exponential backoff, batch operations." },
+    support_bundle: { kb: 75, title: "Support Bundle Collection & Analysis", type: "fix", phase: 8, summary: "Collect support bundle: POST /api/v1/administration/support-bundles. Include all nodes, edges, and host logs. Analyze with NSX Support Bundle Analyzer tool." },
+
+    // Federation
+    gm_lm_conn: { kb: 61, title: "NSX Federation — GM/LM Connectivity", type: "break", phase: 7, summary: "Global Manager cannot reach Local Manager. Check inter-site network, verify GM-LM certificate trust, confirm port 443 accessibility, review async replication status." },
+    stretched_seg: { kb: 62, title: "Cross-Location Stretched Segments", type: "fix", phase: 7, summary: "Extend overlay segments across federated sites. Configure location span on segment, verify TEP cross-site connectivity, understand egress optimization behavior." },
+    vcf_upgrade: { kb: 63, title: "VCF Lifecycle Manager — NSX Upgrade", type: "fix", phase: 7, summary: "Upgrade NSX through SDDC Manager. Download bundle, run pre-checks, follow component order (MP → Edge → Host). Plan rolling maintenance for zero-downtime." },
+    vcf_bom: { kb: 64, title: "NSX Compliance with VCF BOM", type: "fix", phase: 7, summary: "Ensure NSX version matches VCF bill of materials. Check SDDC Manager inventory, compare with VMware Interoperability Matrix, plan upgrade if out of compliance." },
+    gm_failover: { kb: 65, title: "Active/Standby GM Failover", type: "break", phase: 7, summary: "Global Manager failover not triggering. Check GM cluster health, verify standby GM has current config sync, test manual failover with POST /global-manager/api/v1/cluster?action=activate." },
+    wd_isolation: { kb: 66, title: "Workload Domain NSX Isolation", type: "fix", phase: 7, summary: "Configure separate NSX instances per VCF workload domain. Each domain gets dedicated manager cluster, transport zones, and edge clusters for isolation." },
+    edge_vcf: { kb: 67, title: "NSX Edge Cluster in VCF", type: "fix", phase: 7, summary: "Deploy and manage edge clusters within VCF context. SDDC Manager handles deployment, TEP assignment, and uplink configuration. Follow VCF validated design." },
+    cert_sync: { kb: 68, title: "Certificate Synchronization in Federation", type: "break", phase: 7, summary: "Certificates not syncing between GM and LMs. Cross-site trust broken. Verify CA chain at each site, re-establish trust via certificate exchange API." },
+    tz_mapping: { kb: 69, title: "Transport Zone Mapping", type: "fix", phase: 7, summary: "Map transport zones across federated sites for stretched segments. Use span configuration to specify which TZs participate in cross-site communication." },
+    fed_span: { kb: 70, title: "Federation Span & Ingress/Egress", type: "fix", phase: 7, summary: "Design traffic flow in federated environment. Configure location-aware egress for optimal pathing, set preferred edge cluster per location." },
+
+    // CLI & Diagnostics
+    central_cli: { kb: 71, title: "central-cli Command Reference", type: "fix", phase: 8, summary: "Key commands: 'get cluster status', 'get transport-nodes', 'get logical-switches', 'get edge-cluster status'. Run from any NSX Manager node SSH session." },
+    pkt_capture: { kb: 72, title: "Packet Capture (tcpdump/pktcap-uw)", type: "fix", phase: 8, summary: "Capture on host: pktcap-uw --uplink vmnic0 --dir 0 -o /tmp/cap.pcap. On edge: start capture interface <name>. Analyze with Wireshark for GENEVE/overlay issues." },
+    nsx_intel: { kb: 73, title: "NSX Intelligence — Flow Visualization", type: "fix", phase: 8, summary: "Use NSX Intelligence to visualize east-west traffic flows between application tiers. Identify unprotected flows, generate DFW rule recommendations from observed traffic." },
+    get_cmds: { kb: 74, title: "get logical-switches / get firewall", type: "fix", phase: 8, summary: "On host: nsxcli -c 'get logical-switches'. On edge: 'get logical-router', 'get route-table', 'get firewall rules'. Essential for verifying realized state." },
+    edge_dp_cli: { kb: 76, title: "Edge Datapath CLI Deep Dive", type: "fix", phase: 8, summary: "On edge VM: 'get datapath', 'get interface', 'get arp-table', 'get nat statistics'. Use dp-cli for low-level debugging of edge forwarding plane." },
+    tn_workflow: { kb: 79, title: "Host Transport Node Troubleshooting", type: "fix", phase: 8, summary: "Step-by-step: 1) Check nsx-proxy status, 2) Verify tunnel status, 3) Check TEP ping, 4) Review nsxa.log, 5) Verify controller channel, 6) Check VIB version." },
+    metrics_mon: { kb: 80, title: "NSX Metrics & Monitoring", type: "fix", phase: 8, summary: "Configure Prometheus endpoint on NSX Manager (/monitoring/v1/metrics). SNMP traps for alerts. Built-in monitoring dashboard for edge throughput, DFW hit counts." },
+    proactive_health: { kb: 78, title: "Proactive Transport Node Health Checks", type: "fix", phase: 8, summary: "Automated checks: tunnel status, TEP reachability, VIB consistency, controller connectivity. Use GET /api/v1/transport-nodes/<id>/status for each node." }
+};
+
+// ===== APP STATE =====
+let currentPath = ['root'];
+let searchActive = false;
+
+function getPhaseUrl(phase) { return 'phase' + phase + '.html'; }
+
+function renderNode(nodeId) {
+    var node = tree[nodeId];
+    if (!node) return;
+    var html = '<div class="choice-grid">';
+    node.choices.forEach(function(c) {
+        var keywords = (c.title + ' ' + c.desc + ' ' + (c.id || '')).toLowerCase();
+        html += '<div class="choice-card" data-id="' + c.id + '" data-keywords="' + keywords.replace(/"/g, '') + '" onclick="selectChoice(\'' + c.id + '\',' + (c.result ? 'true' : 'false') + ')" role="button" tabindex="0">';
+        html += '<div class="choice-icon">' + c.icon + '</div>';
+        html += '<div class="choice-title">' + c.title + '</div>';
+        html += '<div class="choice-desc">' + c.desc + '</div>';
+        if (c.count) html += '<span class="choice-count">' + c.count + ' KBs</span>';
+        html += '</div>';
+    });
+    html += '</div>';
+    document.getElementById('treeContent').innerHTML = html;
+    document.getElementById('treeContent').className = 'fade-in';
+}
+
+function renderResults(choiceId) {
+    var r = results[choiceId];
+    if (!r) { document.getElementById('treeContent').innerHTML = '<p style="color:var(--text-muted)">No result mapped for this selection.</p>'; return; }
+    var cls = r.type === 'break' ? 'break-result' : '';
+    var typeCls = r.type === 'break' ? 'break' : 'fix';
+    var typeLabel = r.type === 'break' ? '⚠ Break' : '✓ Fix';
+    var html = '<div class="result-card ' + cls + '">';
+    html += '<div class="result-header">';
+    html += '<span class="result-kb-num">#' + r.kb + '</span>';
+    html += '<span class="result-title">' + r.title + '</span>';
+    html += '<span class="result-type ' + typeCls + '">' + typeLabel + '</span>';
+    html += '</div>';
+    html += '<div class="result-summary">' + r.summary + '</div>';
+    html += '<a class="result-link" href="' + getPhaseUrl(r.phase) + '#kb-' + r.kb + '">View Full KB Entry →</a>';
+    html += '</div>';
+    html += '<div class="restart-bar"><button class="restart-btn" onclick="goHome()">&#8634; Start Over</button><br><span class="go-back-link" onclick="goBack()">← Go Back One Step</span></div>';
+    document.getElementById('treeContent').innerHTML = html;
+    document.getElementById('treeContent').className = 'fade-in';
+}
+
+function selectChoice(id, isResult) {
+    if (isResult) {
+        currentPath.push(id);
+        renderResults(id);
+    } else {
+        currentPath.push(id);
+        renderNode(id);
+    }
+    updateBreadcrumb();
+    document.getElementById('quickPaths').style.display = 'none';
+    document.getElementById('heroSection').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+    currentPath = ['root'];
+    renderNode('root');
+    updateBreadcrumb();
+    document.getElementById('quickPaths').style.display = '';
+    document.getElementById('heroSection').style.display = '';
+    document.getElementById('treeSearch').value = '';
+    document.getElementById('searchInfo').textContent = '';
+    searchActive = false;
+    showAllCards();
+}
+
+function goBack() {
+    if (currentPath.length <= 1) return goHome();
+    currentPath.pop();
+    var last = currentPath[currentPath.length - 1];
+    if (tree[last]) renderNode(last);
+    else renderNode('root');
+    updateBreadcrumb();
+    if (currentPath.length === 1) {
+        document.getElementById('quickPaths').style.display = '';
+        document.getElementById('heroSection').style.display = '';
+    }
+}
+
+function updateBreadcrumb() {
+    var bc = document.getElementById('breadcrumb');
+    var html = '<span class="breadcrumb-home" onclick="goHome()" role="button" tabindex="0">&#8962; Start</span>';
+    for (var i = 1; i < currentPath.length; i++) {
+        var id = currentPath[i];
+        var label = id.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+        // Try to find a better label from tree/results
+        if (results[id]) label = results[id].title;
+        else {
+            for (var key in tree) {
+                var found = tree[key].choices.find(function(c) { return c.id === id; });
+                if (found) { label = found.title; break; }
+            }
+        }
+        html += '<span class="breadcrumb-sep">›</span>';
+        if (i === currentPath.length - 1) {
+            html += '<span class="breadcrumb-current">' + label + '</span>';
+        } else {
+            html += '<span class="breadcrumb-item" onclick="jumpToBreadcrumb(' + i + ')">' + label + '</span>';
+        }
+    }
+    bc.innerHTML = html;
+}
+
+function jumpToBreadcrumb(idx) {
+    currentPath = currentPath.slice(0, idx + 1);
+    var last = currentPath[currentPath.length - 1];
+    if (tree[last]) renderNode(last);
+    updateBreadcrumb();
+    if (currentPath.length === 1) {
+        document.getElementById('quickPaths').style.display = '';
+        document.getElementById('heroSection').style.display = '';
+    }
+}
+
+function jumpTo(path) {
+    currentPath = path.slice(0, -1);
+    var targetId = path[path.length - 1];
+    currentPath.push(targetId);
+    if (results[targetId]) {
+        renderResults(targetId);
+    } else if (tree[targetId]) {
+        renderNode(targetId);
+    }
+    updateBreadcrumb();
+    document.getElementById('quickPaths').style.display = 'none';
+    document.getElementById('heroSection').style.display = 'none';
+}
+
+function showAllCards() {
+    document.querySelectorAll('.choice-card').forEach(function(c) { c.classList.remove('hidden'); });
+    document.getElementById('noResults').style.display = 'none';
+}
+
+function searchTree() {
+    var query = document.getElementById('treeSearch').value.toLowerCase().trim();
+    var info = document.getElementById('searchInfo');
+    if (!query) {
+        showAllCards();
+        info.textContent = '';
+        searchActive = false;
+        if (currentPath.length === 1) {
+            document.getElementById('quickPaths').style.display = '';
+        }
+        return;
+    }
+    searchActive = true;
+    document.getElementById('quickPaths').style.display = 'none';
+
+    // If we're at root, search across all categories
+    if (currentPath.length === 1) {
+        // Show all results as a flat list
+        var allResults = [];
+        for (var key in results) {
+            var r = results[key];
+            var text = (r.title + ' ' + r.summary + ' kb' + r.kb + ' #' + r.kb).toLowerCase();
+            if (text.indexOf(query) >= 0) allResults.push({ id: key, data: r });
+        }
+        if (allResults.length > 0) {
+            var html = '<div style="margin-bottom:1rem;font-size:.85rem;color:var(--text-secondary)">' + allResults.length + ' results for "' + query + '"</div>';
+            allResults.forEach(function(item) {
+                var r = item.data;
+                var cls = r.type === 'break' ? 'break-result' : '';
+                var typeCls = r.type === 'break' ? 'break' : 'fix';
+                var typeLabel = r.type === 'break' ? '⚠ Break' : '✓ Fix';
+                html += '<div class="result-card ' + cls + '" style="cursor:pointer" onclick="window.location.href=\'' + getPhaseUrl(r.phase) + '#kb-' + r.kb + '\'">';
+                html += '<div class="result-header">';
+                html += '<span class="result-kb-num">#' + r.kb + '</span>';
+                html += '<span class="result-title">' + r.title + '</span>';
+                html += '<span class="result-type ' + typeCls + '">' + typeLabel + '</span>';
+                html += '</div>';
+                html += '<div class="result-summary">' + r.summary + '</div>';
+                html += '</div>';
+            });
+            document.getElementById('treeContent').innerHTML = html;
+            document.getElementById('noResults').style.display = 'none';
+        } else {
+            document.getElementById('treeContent').innerHTML = '';
+            document.getElementById('noResults').style.display = 'block';
+        }
+        info.textContent = allResults.length + ' KB entries match "' + query + '"';
+    } else {
+        // Filter visible cards
+        var cards = document.querySelectorAll('.choice-card');
+        var visible = 0;
+        cards.forEach(function(card) {
+            var kw = card.getAttribute('data-keywords') || '';
+            if (kw.indexOf(query) >= 0) { card.classList.remove('hidden'); visible++; }
+            else { card.classList.add('hidden'); }
+        });
+        document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+        info.textContent = visible + ' options match "' + query + '"';
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('treeSearch').focus(); }
+    if (e.key === 'Escape') { document.getElementById('treeSearch').value = ''; searchTree(); document.getElementById('treeSearch').blur(); }
+});
+
+// Scroll progress
+window.addEventListener('scroll', function() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+    document.getElementById('scrollProgress').style.width = pct + '%';
+});
+
+// Init
+renderNode('root');
+updateBreadcrumb();
+</script>
+</body>
+</html>
