@@ -74,7 +74,17 @@
         67: { t:"NIOC — Traffic Shaping",                   ty:"fix",   f:"phase7.html" },
         68: { t:"TCP/IP Stack & VMkernel Routing",          ty:"fix",   f:"phase7.html" },
         69: { t:"ESXi Firewall & Ports",                    ty:"fix",   f:"phase7.html" },
-        70: { t:"SR-IOV & DirectPath I/O",                  ty:"fix",   f:"phase7.html" }
+        70: { t:"SR-IOV & DirectPath I/O",                  ty:"fix",   f:"phase7.html" },
+        71: { t:"vSphere+ Cloud Gateway",                   ty:"break", f:"phase8.html" },
+        72: { t:"VM Encryption & vTPM",                     ty:"break", f:"phase8.html" },
+        73: { t:"vGPU & DirectPath I/O",                    ty:"fix",   f:"phase8.html" },
+        74: { t:"Auto Deploy & Stateless ESXi",             ty:"break", f:"phase8.html" },
+        75: { t:"vLCM Image-Based Updates",                 ty:"fix",   f:"phase8.html" },
+        76: { t:"vSphere Replication & RPO",                ty:"break", f:"phase8.html" },
+        77: { t:"Tanzu / Workload Management",              ty:"break", f:"phase8.html" },
+        78: { t:"Enhanced Linked Mode",                     ty:"fix",   f:"phase8.html" },
+        79: { t:"ESXi Coredump & PSOD Analysis",            ty:"fix",   f:"phase8.html" },
+        80: { t:"Skyline Health & Proactive Support",       ty:"fix",   f:"phase8.html" }
     };
 
     const xref = {
@@ -147,7 +157,17 @@
         67: [64, 63, 66, 68],
         68: [62, 67, 69, 3],
         69: [4, 15, 61, 65],
-        70: [26, 3, 62, 36]
+        70: [26, 3, 62, 36],
+        71: [11, 17, 80, 75],
+        72: [44, 11, 6, 15],
+        73: [70, 36, 40, 6],
+        74: [19, 12, 75, 9],
+        75: [12, 74, 19, 80],
+        76: [56, 52, 25, 1],
+        77: [45, 75, 32, 61],
+        78: [49, 16, 44, 11],
+        79: [5, 14, 20, 80],
+        80: [71, 75, 79, 12]
     };
 
     document.addEventListener('DOMContentLoaded', function () {

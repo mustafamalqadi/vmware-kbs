@@ -314,6 +314,57 @@
         70: { title:'Verify SR-IOV', steps:[
             { txt:'VM → Edit Settings → Network adapter', note:'SR-IOV adapter assigned' },
             { cmd:'esxcli network sriovnic list', note:'Virtual Functions allocated' }
+        ]},
+        /* ═══ Phase 8 — Advanced & Extended ═══ */
+        71: { title:'Verify vSphere+ Gateway', steps:[
+            { txt:'VMware Cloud Console → Gateway status: Connected', note:'Gateway online and syncing' },
+            { cmd:'curl -v https://console.cloud.vmware.com', note:'Outbound connectivity working' },
+            { txt:'vCenter → Licensing → Subscription active', note:'vSphere+ license reflected' }
+        ]},
+        72: { title:'Verify Encryption & Key Provider', steps:[
+            { txt:'vCenter → Key Providers → Status: Connected', note:'KMS/NKP reachable' },
+            { txt:'Power on encrypted VM successfully', note:'No crypto errors on power-on' },
+            { cmd:'grep -i "CryptoManager" /var/log/vmware/vpxd/vpxd.log | tail -5', note:'No KMS errors in recent logs' }
+        ]},
+        73: { title:'Verify vGPU / GPU Passthrough', steps:[
+            { cmd:'nvidia-smi', note:'GPU visible on host with correct driver version' },
+            { txt:'VM Settings shows vGPU profile assigned', note:'Shared PCI device or DirectPath configured' },
+            { cmd:'nvidia-smi (inside guest)', note:'vGPU device visible in guest OS' }
+        ]},
+        74: { title:'Verify Auto Deploy', steps:[
+            { cmd:'Get-DeployRule | Format-Table Name, Pattern', note:'Deploy rules exist and match hosts' },
+            { cmd:'vmon-cli -s rbd --status', note:'Auto Deploy service Running' },
+            { txt:'Host PXE boots and appears in vCenter inventory', note:'Host profile compliant' }
+        ]},
+        75: { title:'Verify vLCM Compliance', steps:[
+            { txt:'Cluster → Updates → All hosts Compliant', note:'Green compliance status' },
+            { cmd:'esxcli software profile get', note:'Image profile matches desired cluster image' },
+            { txt:'Hardware Support Manager: Connected', note:'Firmware aligned with cluster image' }
+        ]},
+        76: { title:'Verify vSphere Replication', steps:[
+            { txt:'vSphere Replication → All VMs show OK RPO status', note:'Green status, no violations' },
+            { txt:'SRM → Recovery Plan → Test succeeds', note:'DR readiness confirmed' },
+            { cmd:'tail -20 /opt/vmware/hms/logs/hms.log', note:'No replication errors in recent logs' }
+        ]},
+        77: { title:'Verify Tanzu / Workload Management', steps:[
+            { txt:'Workload Management → Config Status: Running', note:'Supervisor cluster healthy' },
+            { cmd:'kubectl get tkc -A', note:'TKC clusters in Running state' },
+            { cmd:'kubectl get nodes', note:'Supervisor nodes Ready' }
+        ]},
+        78: { title:'Verify Enhanced Linked Mode', steps:[
+            { cmd:'/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showpartnerstatus -h localhost', note:'All partners Available, lag 0s' },
+            { txt:'vSphere Client shows both vCenter inventories', note:'Linked mode working' },
+            { txt:'Global permissions propagate to partner vCenter', note:'SSO replication healthy' }
+        ]},
+        79: { title:'Verify Coredump Configuration', steps:[
+            { cmd:'esxcli system coredump partition get', note:'Active: true with configured destination' },
+            { cmd:'esxcli system coredump network check', note:'Network dump collector reachable' },
+            { cmd:'vm-support --listvmfs', note:'Coredump file/partition has sufficient space' }
+        ]},
+        80: { title:'Verify Skyline Health', steps:[
+            { txt:'Skyline Collector Admin UI → Collection: Active, Upload: Successful', note:'Last upload within 24hrs' },
+            { txt:'Skyline Advisor portal shows current findings', note:'Data is fresh and relevant' },
+            { cmd:'curl -v https://skyline.vmware.com', note:'Outbound connectivity to Skyline cloud working' }
         ]}
     };
 

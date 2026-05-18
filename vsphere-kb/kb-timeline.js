@@ -618,6 +618,97 @@
                 {t:'10 min',   d:'Assign VF to VM; note: no vMotion, no snapshots, no FT'},
                 {t:'10–20 min',d:'VM using SR-IOV; near-native network performance'}
             ]
+        },
+        /* ═══ Phase 8 — Advanced & Extended ═══ */
+        71: { severity:'high', detect:'1–24 hrs', impact:'vSphere+ cloud management plane lost; subscription license may warn', rto:'30–60 min',
+            steps:[
+                {t:'0 min',    d:'Cloud Console shows gateway "Disconnected"'},
+                {t:'5 min',    d:'SSH to gateway; check proxy, DNS, connectivity to cloud endpoints'},
+                {t:'15 min',   d:'Fix proxy/firewall; verify NTP sync'},
+                {t:'30 min',   d:'Re-register gateway with new activation token if expired'},
+                {t:'30–60 min',d:'Gateway reconnects; inventory syncs; subscription validated'}
+            ]
+        },
+        72: { severity:'critical', detect:'0–5 min', impact:'Encrypted VMs cannot power on; potential permanent data loss if keys lost', rto:'30–90 min',
+            steps:[
+                {t:'0 min',    d:'Encrypted VM power-on fails with crypto error'},
+                {t:'5 min',    d:'Check Key Provider status; verify KMS connectivity'},
+                {t:'15 min',   d:'Re-establish KMS trust; renew STS certificate if expired'},
+                {t:'30 min',   d:'Restore Native Key Provider from backup (.p12) if needed'},
+                {t:'30–90 min',d:'Keys pushed to hosts; encrypted VMs power on successfully'}
+            ]
+        },
+        73: { severity:'high', detect:'N/A', impact:'GPU-accelerated VMs unavailable; VDI/AI workloads impacted', rto:'20–60 min',
+            steps:[
+                {t:'0 min',    d:'VM fails to power on with GPU passthrough / vGPU error'},
+                {t:'5 min',    d:'Verify IOMMU/VT-d enabled in BIOS'},
+                {t:'15 min',   d:'Install/update NVIDIA vGPU Manager VIB; reboot host'},
+                {t:'30 min',   d:'Assign vGPU profile to VM; set EFI firmware and memory reservation'},
+                {t:'30–60 min',d:'Guest driver installed; GPU acceleration validated'}
+            ]
+        },
+        74: { severity:'critical', detect:'0–2 min', impact:'Stateless hosts offline; cluster capacity reduced; all hosts at risk on reboot', rto:'30–90 min',
+            steps:[
+                {t:'0 min',    d:'Host fails PXE boot or boots unconfigured'},
+                {t:'5 min',    d:'Check DHCP options 66/67; verify TFTP reachability'},
+                {t:'15 min',   d:'Verify Auto Deploy (rbd) service running on vCenter'},
+                {t:'30 min',   d:'Fix deploy rules; validate image profile and host profile'},
+                {t:'30–90 min',d:'Host PXE boots successfully; joins cluster configured'}
+            ]
+        },
+        75: { severity:'high', detect:'10–30 min', impact:'Hosts unpatched; known vulnerabilities remain; firmware drift', rto:'60–180 min',
+            steps:[
+                {t:'0 min',    d:'Cluster image compliance shows Non-Compliant'},
+                {t:'10 min',   d:'Check depot sync status; verify proxy and URL accessibility'},
+                {t:'20 min',   d:'Resolve VIB conflicts; reconnect Hardware Support Manager'},
+                {t:'30 min',   d:'Stage image to hosts; verify boot device space'},
+                {t:'60–180 min',d:'Sequential remediation completes; all hosts compliant'}
+            ]
+        },
+        76: { severity:'high', detect:'5–60 min', impact:'DR readiness compromised; RPO violated; potential data loss in failover', rto:'60–240 min',
+            steps:[
+                {t:'0 min',    d:'RPO violation alert in vSphere Replication'},
+                {t:'10 min',   d:'Check VR appliance health; verify bandwidth and latency'},
+                {t:'30 min',   d:'Fix CBT resets; clear target datastore space'},
+                {t:'60 min',   d:'Force full resync during off-peak window'},
+                {t:'60–240 min',d:'Replication catches up; RPO within target; SRM plan validated'}
+            ]
+        },
+        77: { severity:'critical', detect:'5–15 min', impact:'Kubernetes workloads cannot deploy; developer namespaces unavailable', rto:'30–120 min',
+            steps:[
+                {t:'0 min',    d:'Workload Management shows Error or supervisor VMs not deploying'},
+                {t:'10 min',   d:'Check WCP service; review logs for networking/resource errors'},
+                {t:'20 min',   d:'Validate NSX-T/HAProxy prerequisites; fix content library sync'},
+                {t:'40 min',   d:'Ensure sufficient resources; re-enable Workload Management'},
+                {t:'40–120 min',d:'Supervisor cluster running; TKC clusters provision successfully'}
+            ]
+        },
+        78: { severity:'high', detect:'10–60 min', impact:'Cross-vCenter visibility lost; global permissions broken; SSO issues', rto:'30–60 min',
+            steps:[
+                {t:'0 min',    d:'Linked vCenter not visible in inventory'},
+                {t:'10 min',   d:'Check vmdir replication status with vdcrepadmin'},
+                {t:'20 min',   d:'Verify DNS (forward+reverse) and NTP between vCenters'},
+                {t:'30 min',   d:'Clean stale lookup service entries; re-establish cert trust'},
+                {t:'30–60 min',d:'Linked mode restored; both inventories visible; SSO working'}
+            ]
+        },
+        79: { severity:'high', detect:'N/A', impact:'Without coredump config, PSOD root cause analysis is impossible', rto:'15–30 min',
+            steps:[
+                {t:'0 min',    d:'Review coredump configuration on host'},
+                {t:'5 min',    d:'Configure coredump partition or file on VMFS'},
+                {t:'10 min',   d:'Set up network dump collector on VCSA'},
+                {t:'15 min',   d:'Test dump collector; validate with esxcli commands'},
+                {t:'15–30 min',d:'Coredump configured; next PSOD will capture crash data for analysis'}
+            ]
+        },
+        80: { severity:'medium', detect:'24–48 hrs', impact:'Proactive health insights lost; no early warning of vulnerabilities', rto:'15–30 min',
+            steps:[
+                {t:'0 min',    d:'Skyline Advisor shows no recent data'},
+                {t:'5 min',    d:'Check collector connectivity and vCenter credentials'},
+                {t:'10 min',   d:'Update proxy settings; fix disk space; renew certificates'},
+                {t:'15 min',   d:'Force collection and upload cycle'},
+                {t:'15–30 min',d:'Skyline data flowing; findings refreshed in Advisor portal'}
+            ]
         }
     };
 

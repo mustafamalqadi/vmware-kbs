@@ -345,10 +345,10 @@
 
 <!-- ── Stats ── -->
 <div class="stats-section reveal" id="stats">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="70">0</div><div class="stat-label">Total KB Entries</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="34">0</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="36">0</div><div class="stat-label">Fix Procedures</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="7">0</div><div class="stat-label">Phases</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="80">0</div><div class="stat-label">Total KB Entries</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="39">0</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="41">0</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="8">0</div><div class="stat-label">Phases</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
 </div>
 
@@ -570,6 +570,36 @@
             </div>
         </a>
 
+        <!-- Phase 8 -->
+        <a href="phase8.html" class="phase-card" data-color="teal">
+            <div class="phase-card-bar" style="background:#a371f7"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(163,113,247,0.12);border:1px solid rgba(163,113,247,0.25);color:#a371f7">8</div>
+                <div>
+                    <div class="phase-card-title">Advanced Features &amp; Extended Platform</div>
+                    <div class="phase-card-sub">vSphere+, Encryption, vGPU, Tanzu, Replication, Skyline</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#71</span> vSphere+ Cloud Gateway</li>
+                    <li><span class="kb-num-small b">#72</span> VM Encryption &amp; vTPM</li>
+                    <li><span class="kb-num-small f">#73</span> vGPU &amp; DirectPath I/O</li>
+                    <li><span class="kb-num-small b">#74</span> Auto Deploy</li>
+                    <li><span class="kb-num-small f">#75</span> vLCM Image-Based</li>
+                    <li><span class="kb-num-small b">#76</span> vSphere Replication</li>
+                    <li><span class="kb-num-small b">#77</span> Tanzu / Workload Mgmt</li>
+                    <li><span class="kb-num-small f">#78</span> Enhanced Linked Mode</li>
+                    <li><span class="kb-num-small f">#79</span> Coredump &amp; Crashdump</li>
+                    <li><span class="kb-num-small f">#80</span> Skyline Health</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #71–80</span>
+                <span class="link-text">Open Phase 8 →</span>
+            </div>
+        </a>
+
         <!-- Decision Tree -->
         <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(210,153,34,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(210,153,34,0.04));">
             <div class="phase-card-bar" style="background:var(--warning)"></div>
@@ -583,11 +613,11 @@
             <div class="phase-card-body">
                 <ul>
                     <li>Select symptoms to narrow down the root cause</li>
-                    <li>Covers all 70 KB entries across 8 categories</li>
+                    <li>Covers all 80 KB entries across 8 categories</li>
                 </ul>
             </div>
             <div class="phase-card-footer">
-                <span class="count" style="color:var(--warning-light);">All 70 KBs</span>
+                <span class="count" style="color:var(--warning-light);">All 80 KBs</span>
                 <span class="link-text">Open Decision Tree →</span>
             </div>
         </a>
@@ -602,9 +632,9 @@
 <section class="filter-section reveal" id="kbindex">
     <div class="section-title">Complete KB Index</div>
     <div class="filter-tabs">
-        <button class="filter-tab active" onclick="filterIndex('all', this)">All (70)</button>
-        <button class="filter-tab" onclick="filterIndex('break', this)">Break (34)</button>
-        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (36)</button>
+        <button class="filter-tab active" onclick="filterIndex('all', this)">All (80)</button>
+        <button class="filter-tab" onclick="filterIndex('break', this)">Break (39)</button>
+        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (41)</button>
         <button class="filter-tab" onclick="filterIndex('critical', this)">Critical</button>
         <button class="filter-tab" onclick="filterIndex('high', this)">High</button>
         <button class="filter-tab" onclick="filterIndex('medium', this)">Medium</button>
@@ -712,7 +742,17 @@ const kbEntries = [
     { id:67, title:"NIOC — Network I/O Control & Traffic Shaping", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"NIOC network IO control traffic shaping bandwidth shares reservation" },
     { id:68, title:"TCP/IP Stacks — Custom VMkernel Routing", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"TCP/IP stacks custom VMkernel routing provisioning vMotion gateway" },
     { id:69, title:"Firewall Ports — ESXi & vCenter Port Requirements", type:"fix", severity:"high", phase:7, file:"phase7.html", keywords:"firewall ports ESXi vCenter port requirements 443 902 8000 blocked" },
-    { id:70, title:"SR-IOV — Single Root I/O Virtualization", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"SR-IOV single root IO virtualization passthrough virtual function NIC" }
+    { id:70, title:"SR-IOV — Single Root I/O Virtualization", type:"fix", severity:"medium", phase:7, file:"phase7.html", keywords:"SR-IOV single root IO virtualization passthrough virtual function NIC" },
+    { id:71, title:"vSphere+ Cloud Gateway — Subscription & Connectivity", type:"break", severity:"high", phase:8, file:"phase8.html", keywords:"vSphere+ cloud gateway subscription connectivity SaaS VMware Cloud proxy token" },
+    { id:72, title:"VM Encryption & vTPM — Key Provider & Crypto Errors", type:"break", severity:"critical", phase:8, file:"phase8.html", keywords:"VM encryption vTPM key provider KMS crypto error certificate trust native" },
+    { id:73, title:"vGPU & DirectPath I/O — GPU Passthrough Configuration", type:"fix", severity:"high", phase:8, file:"phase8.html", keywords:"vGPU DirectPath IO GPU passthrough NVIDIA SR-IOV IOMMU VT-d PCI" },
+    { id:74, title:"Auto Deploy & Stateless ESXi — PXE Boot Failures", type:"break", severity:"critical", phase:8, file:"phase8.html", keywords:"Auto Deploy stateless ESXi PXE boot TFTP DHCP image profile deploy rule" },
+    { id:75, title:"vLCM Image-Based Updates — Lifecycle Manager Deep Issues", type:"fix", severity:"high", phase:8, file:"phase8.html", keywords:"vLCM lifecycle manager image-based update depot firmware vendor add-on HSM" },
+    { id:76, title:"vSphere Replication — RPO Violations & Sync Failures", type:"break", severity:"high", phase:8, file:"phase8.html", keywords:"vSphere Replication RPO violation sync failure VR appliance SRM CBT DR" },
+    { id:77, title:"Tanzu / Workload Management — Supervisor Cluster Issues", type:"break", severity:"critical", phase:8, file:"phase8.html", keywords:"Tanzu workload management supervisor cluster TKC Kubernetes namespace WCP kubectl" },
+    { id:78, title:"Enhanced Linked Mode — Multi-vCenter Replication", type:"fix", severity:"high", phase:8, file:"phase8.html", keywords:"Enhanced Linked Mode multi-vCenter vmdir replication PSC SSO lookup service" },
+    { id:79, title:"ESXi Coredump & Crashdump — PSOD Analysis", type:"fix", severity:"high", phase:8, file:"phase8.html", keywords:"ESXi coredump crashdump PSOD analysis vmkdump network dump collector crash" },
+    { id:80, title:"Skyline Health — Proactive Findings & Recommendations", type:"fix", severity:"medium", phase:8, file:"phase8.html", keywords:"Skyline health advisor collector proactive findings upload telemetry CEIP" }
 ];
 
 const phaseNames = {
@@ -722,7 +762,8 @@ const phaseNames = {
     4: "Phase 4 — DRS & Resource Management",
     5: "Phase 5 — vCenter Server & PSC",
     6: "Phase 6 — Storage — VMFS, NFS & Multipathing",
-    7: "Phase 7 — Networking — vDS, vSS & vMotion"
+    7: "Phase 7 — Networking — vDS, vSS & vMotion",
+    8: "Phase 8 — Advanced Features & Extended Platform"
 };
 
 // ── Render KB Index ──

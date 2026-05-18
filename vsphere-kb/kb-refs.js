@@ -294,6 +294,75 @@
         ],
         70: [
             { s:'TechDocs', t:'SR-IOV and DirectPath I/O',                       u:TD+'vsphere-networking-80/sriov-and-directpath.html' }
+        ],
+        /* ═══ Phase 8 — Advanced & Extended ═══ */
+        71: [
+            { s:'Broadcom KB', t:'vSphere+ Cloud Gateway Troubleshooting',       u:BKB+'344299' },
+            { s:'TechDocs', t:'vSphere+ Getting Started',                        u:'https://docs.vmware.com/en/VMware-vSphere+/services/vsphereplus-getting-started/GUID-landing.html' }
+        ],
+        72: [
+            { s:'TechDocs', t:'vSphere VM Encryption',                           u:TD+'vsphere-security-80/virtual-machine-encryption.html' },
+            { s:'TechDocs', t:'Configuring Key Providers',                        u:TD+'vsphere-security-80/configuring-key-providers.html' },
+            { s:'Broadcom KB', t:'VM Encryption Troubleshooting',                 u:KB+'2149947' }
+        ],
+        73: [
+            { s:'TechDocs', t:'Configuring SR-IOV Passthrough',                  u:TD+'vsphere-networking-80/sriov-and-directpath.html' },
+            { s:'Broadcom KB', t:'NVIDIA vGPU on VMware vSphere',                 u:BKB+'314  772' }
+        ],
+        74: [
+            { s:'TechDocs', t:'Using vSphere Auto Deploy',                       u:TD+'vsphere-lifecycle-manager-80/using-vsphere-auto-deploy.html' },
+            { s:'Broadcom KB', t:'Auto Deploy Troubleshooting',                   u:KB+'2000
+
+
+' }
+        ],
+        75: [
+            { s:'TechDocs', t:'vSphere Lifecycle Manager',                        u:TD+'vsphere-lifecycle-manager-80/introducing-vsphere-lifecycle-manager.html' },
+            { s:'Broadcom KB', t:'vLCM Image-Based Update Issues',                u:KB+'2147
+
+
+' }
+        ],
+        76: [
+            { s:'TechDocs', t:'vSphere Replication Administration',                u:'https://docs.vmware.com/en/vSphere-Replication/8.7/vsphere-replication-admin/GUID-landing.html' },
+            { s:'Broadcom KB', t:'vSphere Replication RPO Violations',            u:BKB+'321
+
+
+' }
+        ],
+        77: [
+            { s:'TechDocs', t:'vSphere with Tanzu Configuration',                  u:'https://docs.vmware.com/en/VMware-vSphere/8.0/vsphere-with-tanzu-concepts-planning/GUID-landing.html' },
+            { s:'Broadcom KB', t:'Troubleshooting Workload Management',           u:KB+'2148
+
+
+' }
+        ],
+        78: [
+            { s:'TechDocs', t:'vCenter Enhanced Linked Mode',                      u:TD+'vsphere-vcenter-esxi-management-80/vcenter-server-and-host-management.html' },
+            { s:'Broadcom KB', t:'vmdir Replication Troubleshooting',             u:KB+'2
+
+
+127
+
+
+' }
+        ],
+        79: [
+            { s:'TechDocs', t:'ESXi Core Dump Configuration',                      u:TD+'vsphere-vcenter-esxi-management-80/configuring-esxi-coredump.html' },
+            { s:'Broadcom KB', t:'Analyzing PSOD Core Dumps',                     u:KB+'1
+
+
+004
+
+
+250
+
+
+' }
+        ],
+        80: [
+            { s:'TechDocs', t:'VMware Skyline Advisor',                             u:'https://docs.vmware.com/en/VMware-Skyline/services/skyline-user-guide/GUID-landing.html' },
+            { s:'Broadcom KB', t:'Skyline Collector Troubleshooting',             u:BKB+'342811' }
         ]
     };
 

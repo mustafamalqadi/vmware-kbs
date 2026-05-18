@@ -91,7 +91,18 @@
         67: ['p','y','y','y','y'],   // NIOC — 6.x limited v2
         68: ['p','y','y','y','y'],   // TCP/IP stacks — limited in 6.x
         69: ['y','y','y','y','y'],   // Firewall ports
-        70: ['p','y','y','y','y']    // SR-IOV — broader support in 7.0+
+        70: ['p','y','y','y','y'],   // SR-IOV — broader support in 7.0+
+        /* ═══ Phase 8 — Advanced & Extended ═══ */
+        71: ['n','n','n','n','y'],   // vSphere+ — 8.0 U1+ only
+        72: ['p','y','y','y','y'],   // VM Encryption — 6.5 basic, full in 7.0+
+        73: ['p','y','y','y','y'],   // vGPU — 6.x limited, improved in 7.0/8.0
+        74: ['y','y','y','y','y'],   // Auto Deploy — all versions
+        75: ['n','y','y','y','y'],   // vLCM — 7.0+ only
+        76: ['y','y','y','y','y'],   // vSphere Replication
+        77: ['n','n','y','y','y'],   // Tanzu — 7.0 U1+ only
+        78: ['y','y','y','y','y'],   // Enhanced Linked Mode
+        79: ['y','y','y','y','y'],   // Coredump — all versions
+        80: ['n','y','y','y','y']    // Skyline — 7.0+ (collector 3.x+)
     };
 
     var labels = { y:'Applies', n:'N/A', p:'Partial', f:'Fixed' };

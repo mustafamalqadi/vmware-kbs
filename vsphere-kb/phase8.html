@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware vSphere KB — Phase 8: Advanced Features &amp; Extended Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+        .header h1 span {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        .header-badges {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .badge-break {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.25);
+        }
+        .badge-fix {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.25);
+        }
+        .badge-phase {
+            background: rgba(88,166,255,0.12);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.25);
+        }
+
+        /* ── Search ── */
+        .search-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 1rem center;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent);
+        }
+        .search-bar input::placeholder { color: var(--text-muted); }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Navigation Tabs ── */
+        .nav-tabs {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .nav-tab {
+            padding: 0.55rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .nav-tab.active {
+            background: rgba(88,166,255,0.08);
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem 4rem;
+        }
+
+        /* ── KB Entry Card ── */
+        .kb-entry {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .kb-entry:hover {
+            border-color: rgba(88,166,255,0.35);
+        }
+        .kb-entry-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem 1.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .kb-entry-header:hover { background: var(--bg-card-hover); }
+
+        .kb-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .kb-number.break-num {
+            background: rgba(248,81,73,0.12);
+            color: var(--danger-light);
+            border: 1px solid rgba(248,81,73,0.2);
+        }
+        .kb-number.fix-num {
+            background: rgba(63,185,80,0.12);
+            color: var(--success-light);
+            border: 1px solid rgba(63,185,80,0.2);
+        }
+
+        .kb-entry-title-block { flex: 1; }
+        .kb-entry-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+        .kb-entry-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .kb-entry-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(88,166,255,0.08);
+            color: var(--accent-light);
+            border: 1px solid rgba(88,166,255,0.18);
+            font-weight: 500;
+        }
+        .tag-severity-critical { background: rgba(248,81,73,0.08); color: var(--danger-light); border-color: rgba(248,81,73,0.18); }
+        .tag-severity-high { background: rgba(210,153,34,0.08); color: var(--warning-light); border-color: rgba(210,153,34,0.18); }
+        .tag-severity-medium { background: rgba(88,166,255,0.08); color: var(--accent-light); border-color: rgba(88,166,255,0.18); }
+
+        .kb-chevron {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            margin-top: 0.5rem;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        .kb-entry.open .kb-chevron { transform: rotate(180deg); }
+
+        /* ── Expanded Content ── */
+        .kb-entry-body {
+            display: none;
+            padding: 0 1.75rem 1.75rem;
+            border-top: 1px solid var(--border);
+        }
+        .kb-entry.open .kb-entry-body { display: block; }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin: 1.5rem 0 0.75rem;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .kb-entry-body p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-bottom: 0.5rem;
+        }
+        .kb-entry-body ul, .kb-entry-body ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .kb-entry-body li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+        .kb-entry-body li strong { color: var(--text-primary); }
+
+        /* ── Code Blocks ── */
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin: 0.75rem 0;
+            position: relative;
+        }
+        pre code {
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.82rem;
+            color: var(--accent-light);
+            line-height: 1.6;
+        }
+        code.inline {
+            background: var(--code-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { color: var(--accent-light); border-color: var(--accent); }
+
+        /* ── Alert boxes ── */
+        .alert {
+            padding: 0.85rem 1.1rem;
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .alert-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 0.1rem; }
+        .alert-danger {
+            background: rgba(248,81,73,0.06);
+            border: 1px solid rgba(248,81,73,0.2);
+            color: var(--danger-light);
+        }
+        .alert-warning {
+            background: rgba(210,153,34,0.06);
+            border: 1px solid rgba(210,153,34,0.2);
+            color: var(--warning-light);
+        }
+        .alert-success {
+            background: rgba(63,185,80,0.06);
+            border: 1px solid rgba(63,185,80,0.2);
+            color: var(--success-light);
+        }
+        .alert-info {
+            background: rgba(88,166,255,0.06);
+            border: 1px solid rgba(88,166,255,0.2);
+            color: var(--accent-light);
+        }
+
+        /* ── Two-column layout ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin: 0.75rem 0;
+        }
+        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.15rem;
+        }
+        .info-box-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .info-box-title.red { color: var(--danger-light); }
+        .info-box-title.green { color: var(--success-light); }
+        .info-box-title.orange { color: var(--warning-light); }
+        .info-box-title.blue { color: var(--accent-light); }
+
+        /* ── Steps ── */
+        .steps { counter-reset: step; margin: 0.75rem 0; }
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(88,166,255,0.1);
+            border: 1px solid rgba(88,166,255,0.25);
+            color: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step-content { flex: 1; }
+        .step-content p { margin-bottom: 0.3rem; }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-align: center;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; transition: color .15s; }
+        .footer a:hover { color: var(--accent); }
+
+        /* ── Phase Nav ── */
+        .phase-nav {
+            max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0;
+            display: flex; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .phase-nav a {
+            padding: 0.4rem 0.9rem; border-radius: 6px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 0.78rem; font-weight: 500; transition: border-color .15s, color .15s;
+        }
+        .phase-nav a:hover { border-color: rgba(88,166,255,0.35); color: var(--text-primary); }
+        .phase-nav a.active { border-color: var(--accent); background: rgba(88,166,255,0.08); color: var(--accent-light); }
+        .phase-nav a.nav-dashboard { color: var(--text-primary); font-weight: 600; }
+        .phase-nav a.nav-dt { border-color: rgba(244,162,97,0.25); color: var(--warning-light); }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; align-items: flex-start; }
+            .header h1 { font-size: 1.3rem; }
+            .container, .search-bar, .stats-bar, .nav-tabs { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware vSphere <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 8 — Advanced &amp; Extended</span>
+            <span class="badge badge-break">&#9888; Break Scenarios</span>
+            <span class="badge badge-fix">&#10003; Fix Procedures</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="phase8.html" class="active">Phase 8</a>
+    <a href="decision-tree.html" class="nav-dt">Decision Tree</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search vSphere+, encryption, vTPM, vGPU, Auto Deploy, Replication, Tanzu, Linked Mode, coredump, Skyline..." oninput="filterEntries()">
+</div>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--accent-light)">10</div>
+        <div class="stat-label">Advanced Issues</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--danger-light)">5</div>
+        <div class="stat-label">Break Scenarios</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--success-light)">5</div>
+        <div class="stat-label">Fix Procedures</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--warning-light)">Phase 8</div>
+        <div class="stat-label">Current Phase</div>
+    </div>
+</div>
+
+<!-- ═══════════ FILTER TABS ═══════════ -->
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #71: vSphere+ Cloud Gateway — Subscription & Connectivity Issues -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-71" data-type="break" data-severity="high" data-keywords="vsphere+ cloud gateway subscription connectivity saas vmware cloud console proxy dns token registration inventory sync">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">71</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSphere+ Cloud Gateway — Subscription &amp; Connectivity Issues</div>
+            <div class="kb-entry-subtitle">Cloud gateway appliance fails to connect to VMware Cloud, subscription licenses not reflecting, inventory sync stalls</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vSphere+</span>
+                <span class="tag">Cloud Gateway</span>
+                <span class="tag">Subscription</span>
+                <span class="tag">SaaS</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> vSphere+ subscription features unavailable. Cloud-based inventory, lifecycle management, and centralized dashboards in VMware Cloud Console stop receiving data. On-premises workloads continue running but lose cloud management plane visibility.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMware Cloud Console shows gateway as <strong>"Disconnected"</strong> or <strong>"Inactive"</strong></li>
+                    <li>Subscription license not applied — vCenter shows evaluation mode</li>
+                    <li>Inventory count in Cloud Console is stale or zero</li>
+                    <li>Gateway appliance VAMI shows <strong>connectivity check failures</strong></li>
+                    <li>Logs show <code class="inline">Failed to refresh token</code> or <code class="inline">Connection timed out to cloud endpoint</code></li>
+                    <li>vCenter event log: <code class="inline">Cloud Gateway registration failed</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>HTTP/HTTPS proxy not configured or proxy authentication failing on the gateway appliance</li>
+                    <li>DNS cannot resolve VMware Cloud endpoints (<code class="inline">*.vmwarecloud.com</code>, <code class="inline">*.vmware.com</code>)</li>
+                    <li>Firewall blocking outbound HTTPS (443) to VMware Cloud regional endpoints</li>
+                    <li>OAuth refresh token expired — requires re-registration of the gateway</li>
+                    <li>NTP drift between gateway appliance and vCenter causes token validation failures</li>
+                    <li>Gateway appliance disk full — log rotation not configured</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>The vSphere+ Cloud Gateway is a virtual appliance deployed on-premises that establishes a persistent outbound connection to VMware Cloud. It relays inventory, health data, and lifecycle events from your vCenter to the cloud console. When connectivity breaks — due to proxy changes, firewall rule updates, DNS failures, or expired authentication tokens — the gateway can no longer sync. Since vSphere+ licensing is subscription-based and validated through the cloud, loss of connectivity can eventually cause license enforcement warnings on vCenter.</p>
+
+        <div class="section-label">Recovery Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check gateway appliance health and connectivity</strong></p>
+                    <pre><code># SSH into the Cloud Gateway appliance
+# Check connectivity to VMware Cloud endpoints
+curl -v https://console.cloud.vmware.com
+curl -v https://gw.apm.vmware.com
+
+# Check proxy configuration
+cat /etc/environment | grep -i proxy
+cat /opt/vmware/cloudgateway/config/gateway.properties | grep proxy
+
+# Check DNS resolution
+nslookup console.cloud.vmware.com
+nslookup vcsa.vmware.com</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify NTP synchronization and certificate validity</strong></p>
+                    <pre><code># Check NTP status on gateway
+timedatectl status
+ntpq -p
+
+# Verify gateway certificates have not expired
+openssl s_client -connect console.cloud.vmware.com:443 -servername console.cloud.vmware.com &lt; /dev/null 2&gt;/dev/null | openssl x509 -noout -dates
+
+# Check local certificate store
+ls -la /opt/vmware/cloudgateway/ssl/</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Re-register the gateway if token is expired</strong></p>
+                    <pre><code># Check current registration status
+/opt/vmware/cloudgateway/scripts/check-registration.sh
+
+# If token expired, generate a new activation token from VMware Cloud Console:
+# Cloud Console → vSphere+ → Infrastructure → Add Gateway → Copy Token
+
+# Re-register with new token
+/opt/vmware/cloudgateway/scripts/register-gateway.sh --token "&lt;new-activation-token&gt;"</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Fix proxy or firewall if connectivity is blocked</strong></p>
+                    <pre><code># Set proxy on the gateway appliance
+/opt/vmware/cloudgateway/scripts/set-proxy.sh --host proxy.corp.local --port 3128 --user proxyuser --password '***'
+
+# Required outbound endpoints (allow in firewall):
+# *.vmwarecloud.com:443
+# *.vmware.com:443
+# gw.apm.vmware.com:443
+# sddcgw-prod-*.amazonaws.com:443
+
+# Restart gateway services after proxy change
+systemctl restart cloudgateway
+systemctl status cloudgateway</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <p><strong>Validate sync is working and check subscription license</strong></p>
+                    <pre><code># Check gateway sync log
+tail -100 /var/log/vmware/cloudgateway/gateway-sync.log
+
+# Verify subscription license in vCenter
+# vCenter UI → Administration → Licensing → Verify vSphere+ subscription is active
+
+# Force inventory resync
+/opt/vmware/cloudgateway/scripts/force-sync.sh --full</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> VMware Cloud Console shows gateway as "Connected" with a green status, inventory counts match on-premises vCenter, and subscription license is reflected in vCenter licensing page.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #72: VM Encryption & vTPM — Key Provider & Crypto Errors -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-72" data-type="break" data-severity="critical" data-keywords="vm encryption vtpm key provider kms crypto error certificate trust native key provider standard key provider power on failure encrypted disk">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">72</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VM Encryption &amp; vTPM — Key Provider &amp; Crypto Errors</div>
+            <div class="kb-entry-subtitle">Encrypted VMs fail to power on due to KMS/key provider connectivity loss, certificate trust issues, or missing encryption keys</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Encryption</span>
+                <span class="tag">vTPM</span>
+                <span class="tag">KMS</span>
+                <span class="tag">Key Provider</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> All encrypted VMs and vTPM-enabled VMs cannot power on, vMotion, or snapshot. Data at rest remains encrypted and inaccessible. This is a critical outage for environments using VM encryption for compliance (HIPAA, PCI-DSS, GDPR). Loss of encryption keys can mean permanent data loss.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VM power-on fails: <code class="inline">Cannot complete the operation due to a crypto error</code></li>
+                    <li>vCenter alarm: <strong>"Key provider is not accessible"</strong></li>
+                    <li>vTPM-enabled VMs show <code class="inline">Invalid VM configuration</code> on power-on</li>
+                    <li>vMotion of encrypted VMs fails with <code class="inline">Crypto key not found on destination host</code></li>
+                    <li>Encrypted vSAN datastore objects inaccessible</li>
+                    <li>vpxd.log: <code class="inline">CryptoManagerKmip: Failed to get key from KMS server</code></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>External KMS (KMIP server) is unreachable — network, firewall, or service down</li>
+                    <li>KMS client certificate expired on vCenter — trust chain broken</li>
+                    <li>STS certificate expired — SSO token cannot be issued for KMS authentication</li>
+                    <li>Native Key Provider (NKP) backup not taken — key material lost after vCenter rebuild</li>
+                    <li>Key ID referenced by VM no longer exists in KMS (key deleted or rotated incorrectly)</li>
+                    <li>vCenter restored from backup but KMS trust was established after backup date</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>VM Encryption in vSphere relies on a Key Management Server (KMS) — either an external KMIP-compliant server (like HyTrust, Thales, HashiCorp Vault) or the built-in Native Key Provider (NKP). vCenter obtains Key Encryption Keys (KEKs) from the KMS and pushes them to ESXi hosts, which use them to wrap the Data Encryption Keys (DEKs) that encrypt VM files. If vCenter loses contact with the KMS, or if certificates expire, no new crypto operations can be performed. Existing running VMs continue operating (keys are cached in host memory), but any power-on, migration, or snapshot of an encrypted VM will fail.</p>
+
+        <div class="section-label">Recovery Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check KMS connectivity and certificate status</strong></p>
+                    <pre><code># Check KMS server reachability from vCenter (VCSA)
+curl -v --connect-timeout 5 https://kms-server.corp.local:5696
+
+# Check vCenter ↔ KMS trust certificates
+# vCenter UI → Configure → Security → Key Providers → Select provider → Check Status
+
+# View KMS certificates via MOB:
+# https://vcenter.corp.local/mob/?moid=CryptoManager&amp;doPath=kmipServers
+
+# Check STS certificate validity (often the root cause)
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert list --login administrator@vsphere.local</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Re-establish KMS trust if certificates expired</strong></p>
+                    <pre><code># If using external KMS — re-upload vCenter client certificate to KMS:
+# vCenter → Key Providers → Establish Trust → Download CSR
+# Upload CSR to KMS management interface → Get signed certificate → Upload back to vCenter
+
+# If STS certificate is the root issue, renew it first:
+# (See KB #44 for STS certificate renewal steps)
+
+# Verify KMS connection after trust re-establishment
+# vCenter → Key Providers → "Check Status" should show green</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>For Native Key Provider — restore from backup</strong></p>
+                    <pre><code># Native Key Provider requires explicit backup before it can be used
+# If vCenter was rebuilt and NKP backup exists:
+# vCenter → Key Providers → Native Key Provider → Restore from backup file (.p12)
+
+# Check if NKP is active
+Get-KeyProvider | Format-Table Name, Type, Status
+
+# If no backup exists, encrypted VMs are UNRECOVERABLE
+# Prevention: Always backup NKP immediately after creation
+# vCenter → Key Providers → NKP → Back Up → Save .p12 file securely</code></pre>
+                    <div class="alert alert-danger">
+                        <span class="alert-icon">&#9888;</span>
+                        <span><strong>Critical Warning:</strong> If Native Key Provider was never backed up and vCenter is lost, all encrypted VMs and their data are permanently unrecoverable. Always take and secure NKP backups.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Push keys to hosts and validate VM crypto operations</strong></p>
+                    <pre><code># After restoring KMS connectivity, push keys to all hosts:
+# vCenter → Host → Configure → Security Profile → Verify "Crypto State: Safe"
+
+# Check host crypto readiness
+esxcli system settings encryption get
+# Expected: Mode = TPM (or None), Require Secure Boot = true/false
+
+# Try powering on an encrypted VM
+# If successful, repeat for all affected VMs
+
+# Check vpxd logs for crypto resolution
+grep -i "CryptoManager\|crypto\|kmip" /var/log/vmware/vpxd/vpxd.log | tail -30</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> Key Provider shows "Connected" status, all encrypted VMs can power on, vMotion of encrypted VMs succeeds between hosts, and vpxd.log shows no CryptoManager errors.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #73: vGPU & DirectPath I/O — GPU Passthrough Configuration -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-73" data-type="fix" data-severity="high" data-keywords="vgpu directpath io gpu passthrough nvidia amd sriov iommu vt-d pci device reservation profile vmotion disabled graphics acceleration">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">73</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vGPU &amp; DirectPath I/O — GPU Passthrough Configuration</div>
+            <div class="kb-entry-subtitle">Configuring GPU passthrough, vGPU profiles, and troubleshooting device reservation conflicts and driver mismatches</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vGPU</span>
+                <span class="tag">DirectPath I/O</span>
+                <span class="tag">NVIDIA</span>
+                <span class="tag">PCI Passthrough</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs requiring GPU acceleration (VDI desktops, AI/ML workloads, CAD applications) cannot start or experience degraded performance. DirectPath I/O VMs cannot vMotion. Incorrect configuration can cause host PSOD on reboot.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VM fails to power on: <code class="inline">The device is not available on host</code></li>
+                    <li>vGPU profiles not visible in VM settings — only "Shared Direct" or blank</li>
+                    <li>Host reboots after enabling passthrough — <strong>PSOD at vmkernel load</strong></li>
+                    <li>GPU listed in <code class="inline">esxcli hardware pci list</code> but not in passthrough-eligible devices</li>
+                    <li>vMotion grayed out: <code class="inline">VM has a device attached that prevents migration</code></li>
+                    <li>NVIDIA vGPU Manager VIB not loaded or version mismatch with guest driver</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>IOMMU / Intel VT-d / AMD-Vi not enabled in server BIOS</li>
+                    <li>GPU not marked for passthrough in ESXi host configuration</li>
+                    <li>NVIDIA vGPU Manager VIB version incompatible with ESXi version or guest driver</li>
+                    <li>Multiple VMs attempting to reserve the same physical GPU in DirectPath mode</li>
+                    <li>SR-IOV not supported by the specific GPU model or ESXi driver</li>
+                    <li>EFI firmware required but VM set to BIOS boot (vGPU requires EFI)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Configuration Procedure</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Enable IOMMU/VT-d in server BIOS and verify in ESXi</strong></p>
+                    <pre><code># Verify IOMMU is enabled in ESXi
+esxcli hardware pci list | grep -A5 "NVIDIA\|AMD.*Radeon"
+
+# Check passthrough capability
+esxcli hardware pci pcipassthru list | head -20
+
+# Verify VT-d / IOMMU status in boot options
+esxcli system settings kernel list | grep -i iommu
+# Expected: iommu = true / interlIOMMU = true
+
+# If not enabled, reboot into BIOS:
+# Intel: Enable "VT-d" under CPU/Processor settings
+# AMD: Enable "AMD-Vi" / "IOMMU" under CPU settings</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Mark GPU for passthrough and install vGPU Manager VIB</strong></p>
+                    <pre><code># Mark GPU for passthrough via vCenter:
+# Host → Configure → Hardware → PCI Devices → Toggle Passthrough on GPU
+
+# Or via CLI:
+esxcli hardware pci pcipassthru set -d 0000:3b:00.0 -e true
+# Requires host reboot to take effect
+
+# Install NVIDIA vGPU Manager VIB (for shared vGPU, not full passthrough)
+esxcli software vib install -v /tmp/NVIDIA-vGPU-VMware-ESXi-8.0-535.154.02.vib
+
+# Verify installation
+esxcli software vib list | grep -i nvidia
+nvidia-gpu-manager    535.154.02    NVIDIA    VMwareCertified
+
+# Check GPU is recognized by vGPU Manager
+nvidia-smi   # Shows GPU status, temperature, driver version</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Assign vGPU profile to VM</strong></p>
+                    <pre><code># In vCenter → VM → Edit Settings → Add New Device → PCI Device:
+# For DirectPath I/O (full passthrough):
+#   Select the physical GPU → Reserve entire device
+#   Note: This disables vMotion, HA restart, and DRS for this VM
+
+# For Shared vGPU (recommended):
+#   Add New Device → Shared PCI Device → Select vGPU profile
+#   Profiles: grid_a100-4q (4GB), grid_a100-8q (8GB), etc.
+#   vMotion with vGPU suspend-resume IS supported on vSphere 8.x
+
+# Ensure VM is set to EFI firmware (required for vGPU)
+# VM → Edit Settings → VM Options → Boot Options → Firmware: EFI
+
+# Set memory reservation = full (required for GPU passthrough)
+# VM → Edit Settings → Resources → Memory → Reservation: Lock all guest memory</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Install guest driver and validate acceleration</strong></p>
+                    <pre><code># Inside the guest VM:
+
+# Windows:
+# Download NVIDIA vGPU guest driver from NVIDIA Licensing Portal
+# Install matching version (must match host vGPU Manager version branch)
+# nvidia-smi.exe   → Should show vGPU device
+
+# Linux:
+# Install kernel headers: yum install kernel-devel
+# Run: sh NVIDIA-Linux-x86_64-535.154.02-grid.run
+# nvidia-smi   → Verify vGPU device is present
+
+# Verify GPU acceleration in guest
+# Windows: dxdiag → Display → Check "NVIDIA GRID" device
+# Linux: glxinfo | grep "OpenGL renderer"</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> <code class="inline">nvidia-smi</code> shows GPU on host, vGPU profile assignable to VMs, guest driver loads with <code class="inline">nvidia-smi</code> showing vGPU device, and GPU-accelerated applications render correctly.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #74: Auto Deploy & Stateless ESXi — PXE Boot Failures -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-74" data-type="break" data-severity="critical" data-keywords="auto deploy stateless esxi pxe boot tftp dhcp image profile deploy rule host profile network boot ipxe gPXE">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">74</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Auto Deploy &amp; Stateless ESXi — PXE Boot Failures</div>
+            <div class="kb-entry-subtitle">Hosts fail to PXE boot via Auto Deploy — DHCP/TFTP issues, image profile mismatches, host profile application failures</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Auto Deploy</span>
+                <span class="tag">PXE Boot</span>
+                <span class="tag">Stateless</span>
+                <span class="tag">TFTP</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Hosts cannot boot from the network and remain offline. In stateless deployments, hosts have no local ESXi installation — if Auto Deploy fails, the host is completely non-functional. Cluster capacity is reduced by every host that cannot boot. If the Auto Deploy server itself is down, no stateless hosts can reboot.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Host stuck at <strong>"Loading VMware ESXi Hypervisor"</strong> with no progress</li>
+                    <li>PXE boot timeout: <code class="inline">PXE-E18: Server response timeout</code> or <code class="inline">TFTP timeout</code></li>
+                    <li>Host boots to ESXi but enters <strong>"Not configured"</strong> state — no networking, no datastore</li>
+                    <li>vCenter shows host as non-compliant with host profile after boot</li>
+                    <li>Auto Deploy log: <code class="inline">No matching deploy rule for host MAC/UUID</code></li>
+                    <li>After power loss, all stateless hosts simultaneously fail to boot</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>DHCP options 66 (TFTP server) and 67 (boot filename) misconfigured or missing</li>
+                    <li>TFTP service on vCenter appliance stopped or port 69 blocked by firewall</li>
+                    <li>Auto Deploy service (rbd) not running on vCenter</li>
+                    <li>Deploy rule does not match the host's MAC address, UUID, or IP range</li>
+                    <li>Image profile references a depot that is no longer accessible</li>
+                    <li>Host profile contains answers that are missing (IP address, license key)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>Auto Deploy uses a PXE/iPXE boot chain: the host NIC sends a DHCP request, receives a TFTP server address (option 66) and boot filename (option 67 — typically <code class="inline">undionly.kpxe.vmw-hardwired</code>), then downloads the ESXi boot image from the Auto Deploy server on vCenter. Deploy rules determine which image profile and host profile to apply based on host attributes. If any link in this chain breaks — DHCP, TFTP, Auto Deploy service, deploy rules, image depot, or host profile — the host fails to boot or boots in an unconfigured state.</p>
+
+        <div class="section-label">Recovery Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify DHCP options and TFTP reachability</strong></p>
+                    <pre><code># Check DHCP server scope options:
+# Option 66 (Boot Server): IP address of vCenter/Auto Deploy server
+# Option 67 (Bootfile Name): undionly.kpxe.vmw-hardwired
+
+# Test TFTP from another machine
+tftp &lt;vcenter-ip&gt;
+tftp> get undionly.kpxe.vmw-hardwired
+# Should download successfully
+
+# If TFTP times out, check firewall on vCenter:
+iptables -L -n | grep 69
+# Ensure UDP port 69 and TCP port 6501-6502 are open</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check Auto Deploy (rbd) service on vCenter</strong></p>
+                    <pre><code># SSH to VCSA and check service status
+vmon-cli -s rbd --status
+# Should show: Running
+
+# If stopped, start it
+vmon-cli -s rbd --start
+
+# Check Auto Deploy logs
+tail -100 /var/log/vmware/rbd/rbd.log
+# Look for: "Rule evaluation failed" or "Image profile not found"
+
+# Verify deploy rules via PowerCLI
+Connect-VIServer vcenter.corp.local
+Get-DeployRule | Format-Table Name, Pattern, ItemList</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix deploy rules and image profile associations</strong></p>
+                    <pre><code># List current deploy rules and their order
+Get-DeployRule | Select-Object Name, @{N='Pattern';E={$_.PatternList}}, @{N='Items';E={$_.ItemList}}
+
+# Create or fix a deploy rule
+New-DeployRule -Name "DataCenter-Hosts" `
+  -Item (Get-VMHostProfile -Name "Production-Profile"), `
+        (Get-DeployRuleImageProfile -Name "ESXi-8.0U2-standard") `
+  -Pattern "vendor=Dell", "ipv4=10.10.0.0/24"
+
+# Add rule to active ruleset
+Add-DeployRule -DeployRule "DataCenter-Hosts"
+
+# Repair the ruleset (ensures consistency)
+Repair-DeployRuleSetCompliance
+
+# Verify depot is accessible
+Get-DeployRuleImageProfile | Select-Object Name, Vendor, CreationTime</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Fix host profile answer file and reboot host</strong></p>
+                    <pre><code># Check host profile compliance
+Test-VMHostProfileCompliance -VMHost esxi-01.corp.local
+
+# Update answer file with required values (IP, license, etc.)
+$hp = Get-VMHostProfile -Name "Production-Profile"
+Export-VMHostProfile -Profile $hp -FilePath C:\profile-answer.csv
+# Edit CSV with per-host answers, then import:
+Import-VMHostProfile -FilePath C:\profile-answer.csv -Profile $hp
+
+# Reboot the host to trigger Auto Deploy boot
+Restart-VMHost -VMHost esxi-01.corp.local -Confirm:$false
+# Host should PXE boot, download image, apply host profile</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> Host successfully PXE boots from Auto Deploy, appears in vCenter inventory with correct image profile, host profile compliance shows "Compliant", and all VMs can be started on the host.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #75: vLCM Image-Based Updates — Lifecycle Manager Deep Issues -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-75" data-type="fix" data-severity="high" data-keywords="vlcm lifecycle manager image based update depot firmware vendor addon vib compliance remediation patch baseline cluster image esxi update hardware support manager hsm">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">75</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vLCM Image-Based Updates — Lifecycle Manager Deep Issues</div>
+            <div class="kb-entry-subtitle">Cluster image compliance failures, firmware update errors, depot sync issues, and vendor add-on conflicts in vLCM</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vLCM</span>
+                <span class="tag">Image-Based</span>
+                <span class="tag">Firmware</span>
+                <span class="tag">Depot</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Hosts cannot be patched or updated, leaving known vulnerabilities unpatched. Firmware updates stall, hardware support manager (HSM) disconnects prevent driver/firmware alignment. Cluster image compliance shows "Non-Compliant" for all hosts, blocking automated remediation.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Cluster image compliance: <strong>"Non-Compliant — Incompatible"</strong> for hosts</li>
+                    <li>Remediation stuck at a percentage with no progress for hours</li>
+                    <li>Hardware Support Manager shows <strong>"Disconnected"</strong> or <strong>"Unavailable"</strong></li>
+                    <li>Error: <code class="inline">Component conflict: VIB X requires Y but found Z</code></li>
+                    <li>Depot sync fails: <code class="inline">Unable to download metadata from depot URL</code></li>
+                    <li>Host enters maintenance mode but remediation never starts</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Online depot URL unreachable — proxy, DNS, or firewall blocking HTTPS to VMware depot</li>
+                    <li>Vendor add-on (Dell OpenManage, HPE ILO Amplifier) version incompatible with ESXi version</li>
+                    <li>VIB dependency conflict — community or third-party VIBs conflict with desired image</li>
+                    <li>Hardware Support Manager (HSM) from OEM not registered or authentication expired</li>
+                    <li>Insufficient free space on ESXi boot device for staged remediation</li>
+                    <li>VCSA disk partition full — depot cache stored in <code class="inline">/storage/updatemgr/</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Troubleshooting &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify depot accessibility and sync status</strong></p>
+                    <pre><code># Check online depot connectivity from VCSA
+curl -v https://hostupdate.vmware.com/software/VUM/PRODUCTION/main/vmw-depot-index.xml
+
+# Check proxy settings for vLCM
+# vCenter → Lifecycle Manager → Settings → Download Settings → Proxy
+
+# Check local depot cache
+du -sh /storage/updatemgr/
+df -h /storage/
+
+# Force depot resync
+# vCenter → Lifecycle Manager → Settings → Sync Now
+
+# Check sync logs
+tail -100 /var/log/vmware/vmware-updatemgr/vum-server/vmware-vum-server.log</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Resolve VIB conflicts and component incompatibilities</strong></p>
+                    <pre><code># Check current host software profile
+esxcli software profile get
+# Shows: Name, Vendor, VIBs
+
+# List all installed VIBs with acceptance level
+esxcli software vib list | grep -i "community\|partner"
+# Community-level VIBs often cause conflicts
+
+# Remove conflicting VIB
+esxcli software vib remove -n conflicting-vib-name
+
+# Check image compliance detail via PowerCLI
+$cluster = Get-Cluster "Production"
+$compliance = Test-LCMClusterCompliance -Cluster $cluster
+$compliance.HostComplianceResult | Select-Object Host, Status, IncompatibleComponents</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix Hardware Support Manager connectivity</strong></p>
+                    <pre><code># Check HSM registration status
+# vCenter → Lifecycle Manager → Settings → Hardware Support Managers
+
+# For Dell: Verify OpenManage Integration for VMware vCenter (OMIVV) connectivity
+# For HPE: Verify HPE OneView or ILO Amplifier Pack connectivity
+# For Lenovo: Verify XClarity Integration
+
+# Re-register HSM if expired
+# HSM Admin UI → vCenter Connection → Re-authenticate with vCenter credentials
+
+# Verify firmware compliance after HSM reconnection
+$cluster = Get-Cluster "Production"
+$image = Get-LCMClusterImage -Cluster $cluster
+$image.FirmwareAddOn  # Should show vendor firmware bundle</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Stage and execute remediation</strong></p>
+                    <pre><code># Check boot device free space (min ~4GB needed for staging)
+esxcli storage filesystem list | grep -i boot
+
+# Pre-check remediation (dry run)
+# vCenter → Cluster → Updates → Check Compliance → Review impact
+
+# Stage the image (downloads to hosts first)
+# vCenter → Cluster → Updates → Stage
+
+# Remediate with sequential mode for safety
+# vCenter → Cluster → Updates → Remediate → Sequential → Max parallel: 1
+
+# Monitor remediation progress
+tail -f /var/log/vmware/vmware-updatemgr/vum-server/vmware-vum-server.log
+
+# If stuck, check host-side logs during remediation
+esxcli software sources profile list -d /var/tmp/update-staging/</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> All hosts show "Compliant" in cluster image compliance, <code class="inline">esxcli software profile get</code> matches the desired image on each host, and Hardware Support Manager shows "Connected" with firmware aligned.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #76: vSphere Replication — RPO Violations & Sync Failures -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-76" data-type="break" data-severity="high" data-keywords="vsphere replication rpo violation sync failure vr appliance srm site recovery manager cbt changed block tracking full sync bandwidth resync">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">76</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">vSphere Replication — RPO Violations &amp; Sync Failures</div>
+            <div class="kb-entry-subtitle">Replication status shows RPO violations, full syncs triggered repeatedly, VR appliance disconnects from vCenter</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">vSphere Replication</span>
+                <span class="tag">RPO</span>
+                <span class="tag">SRM</span>
+                <span class="tag">DR</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Disaster recovery readiness compromised. VMs are not replicated to the target site within the agreed RPO window. In the event of a site failure, recovery point may be hours or days old, resulting in significant data loss. SRM recovery plans may fail if replication is in an error state.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>vSphere Replication status: <strong>"RPO Violation"</strong> with red exclamation</li>
+                    <li>Full sync repeatedly triggered instead of incremental (delta) sync</li>
+                    <li>VR appliance shows <strong>"Disconnected"</strong> in vCenter plugin</li>
+                    <li>Replication error: <code class="inline">Could not create a disk on the target datastore</code></li>
+                    <li>SRM recovery plan test: <code class="inline">Replication not in sync — cannot recover</code></li>
+                    <li>Bandwidth utilization between sites at 100% during replication windows</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>WAN bandwidth insufficient for the configured RPO and VM change rate</li>
+                    <li>Network latency spikes between source and target sites</li>
+                    <li>VR appliance memory or disk exhausted — OVA undersized for workload</li>
+                    <li>Changed Block Tracking (CBT) reset on VM — forces full initial sync</li>
+                    <li>Target datastore full — no space to write replica disks</li>
+                    <li>VR appliance certificate expired — mutual TLS between source/target fails</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vSphere Replication works by tracking changed blocks (CBT) on source VM disks and asynchronously replicating deltas to a target VR appliance. The RPO (Recovery Point Objective) defines the maximum data loss window. If the replication engine cannot complete a sync cycle within the RPO window — due to bandwidth constraints, appliance overload, storage issues, or CBT resets — the RPO is violated. Repeated CBT resets (from snapshots, storage vMotion, or VM stunts) cause expensive full re-syncs that consume massive bandwidth and extend the violation window further.</p>
+
+        <div class="section-label">Recovery Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check VR appliance health and connectivity</strong></p>
+                    <pre><code># Access VR appliance VAMI
+# https://vr-appliance.corp.local:5480 → Dashboard
+
+# Check VR appliance disk usage
+ssh root@vr-appliance.corp.local
+df -h
+# Critical partitions: /opt/vmware/hms (replication data), /var/log
+
+# Check VR appliance memory
+free -m
+# If &lt;2GB free, appliance is undersized — deploy larger OVA
+
+# Check connectivity to partner site VR appliance
+curl -v https://vr-target.corp.local:8043/health
+# Should return 200 OK</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Diagnose RPO violation root cause</strong></p>
+                    <pre><code># Check replication status via VR plugin in vCenter
+# vCenter → vSphere Replication → Monitor → Outgoing Replications
+# Sort by "RPO Status" to find violating VMs
+
+# Check VR server logs for specific errors
+tail -200 /opt/vmware/hms/logs/hms.log
+# Look for: "RPO violation", "Full sync required", "CBT reset"
+
+# Calculate required bandwidth:
+# Required BW = (Daily Change Rate * RPO safety factor) / RPO window
+# Example: 50GB daily change, 1hr RPO = 50GB/24hrs * 2 = ~4.2 Gbps
+
+# Check if CBT was reset (forces full sync)
+grep -i "cbt\|changedBlockTracking" /opt/vmware/hms/logs/hms.log | tail -20</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix bandwidth, storage, and CBT issues</strong></p>
+                    <pre><code># If bandwidth limited, adjust RPO to realistic value:
+# vCenter → vSphere Replication → Select VM → Configure Recovery → Increase RPO
+
+# If target datastore is full, extend or migrate replicas
+# Check target datastore: vCenter → Target → Datastores → Usage
+
+# If CBT keeps resetting, check for snapshots or consolidation:
+vim-cmd vmsvc/snapshot.get &lt;vmid&gt;
+# Remove unnecessary snapshots to stabilize CBT
+
+# Enable CBT if disabled
+vim-cmd vmsvc/power.off &lt;vmid&gt;  # only if maintenance window
+# VM → Edit Settings → Advanced → ctkEnabled = TRUE
+# VM → Edit Settings → Advanced → scsix:y.ctkEnabled = TRUE
+
+# Configure traffic shaping to prioritize replication
+# Network policy on replication port group → Traffic Shaping → Reserve bandwidth</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Force resync and validate SRM recovery plan</strong></p>
+                    <pre><code># Force a full resync to re-baseline (schedule during off-peak)
+# vCenter → vSphere Replication → Select VM → "Sync Now" → Force Full Sync
+
+# Monitor sync progress
+# vCenter → vSphere Replication → Monitor → Shows % complete and ETA
+
+# After sync completes, validate SRM recovery plan
+# SRM → Recovery Plans → Select Plan → Test → Run test recovery
+# Verify VMs boot at target site with acceptable data state
+
+# Set up RPO violation alarms
+# vCenter → Alarms → vSphere Replication → RPO Violation → Email notification</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> All replicated VMs show "OK" RPO status in green, incremental syncs complete within RPO window, SRM recovery plan test succeeds, and VR appliance health is "Normal".</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #77: Tanzu / Workload Management — Supervisor Cluster Issues -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-77" data-type="break" data-severity="critical" data-keywords="tanzu workload management supervisor cluster tkc tkgs kubernetes namespace wcp control plane vm nsx alb haproxy kubectl pod">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">77</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Tanzu / Workload Management — Supervisor Cluster Issues</div>
+            <div class="kb-entry-subtitle">Workload management enablement fails, supervisor control plane VMs not deploying, TKC clusters stuck in "Creating"</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Tanzu</span>
+                <span class="tag">Workload Mgmt</span>
+                <span class="tag">Kubernetes</span>
+                <span class="tag">Supervisor</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Kubernetes workloads on vSphere cannot be deployed or managed. Developer namespaces are unavailable. TKC (Tanzu Kubernetes Cluster) provisioning stalls. Existing running workloads may continue but cannot scale or self-heal. CI/CD pipelines targeting Tanzu break.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>"Enable Workload Management" wizard fails at <strong>"Configuring"</strong> step for hours</li>
+                    <li>Supervisor control plane VMs (3x) not deploying or stuck in <strong>"Powered Off"</strong></li>
+                    <li>TKC cluster: <code class="inline">kubectl get tkc -A</code> shows <strong>"Creating"</strong> indefinitely</li>
+                    <li><code class="inline">kubectl</code> commands timeout connecting to Supervisor API</li>
+                    <li>vCenter → Workload Management shows <strong>"Config Status: Error"</strong></li>
+                    <li>Supervisor namespace shows <code class="inline">Phase: Terminating</code> and never completes</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NSX-T networking prerequisites not met (missing T1 gateway, segments, or load balancer)</li>
+                    <li>For vDS+HAProxy: HAProxy load balancer not responding or misconfigured data plane</li>
+                    <li>Insufficient cluster resources — supervisor VMs require 4 vCPU / 16 GB RAM each (3 VMs)</li>
+                    <li>Content Library sync failed — TKR (Tanzu Kubernetes Release) OVA images not downloaded</li>
+                    <li>Storage policy not compatible — must be vSAN, VMFS, or NFS policy with required capabilities</li>
+                    <li>WCP service crashed on vCenter — <code class="inline">wcp</code> process in restart loop</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Break — How It Happens</div>
+        <p>vSphere with Tanzu deploys a "Supervisor Cluster" — three control plane VMs running Kubernetes, integrated with vSphere infrastructure. These VMs are deployed by the WCP (Workload Control Plane) service on vCenter, which orchestrates NSX-T or vDS networking, load balancer configuration, storage policies, and content library image downloads. If any prerequisite is unmet — networking misconfigured, resources insufficient, images not synced, or WCP itself crashes — the enablement stalls. Since the Supervisor is the foundation for all Tanzu Kubernetes Clusters, its failure cascades to all developer workloads.</p>
+
+        <div class="section-label">Recovery Steps</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check WCP service status and logs</strong></p>
+                    <pre><code># SSH to VCSA
+# Check WCP service
+vmon-cli -s wcp --status
+# If not Running:
+vmon-cli -s wcp --restart
+
+# Check WCP logs for errors
+tail -200 /var/log/vmware/wcp/wcpsvc.log
+# Common errors:
+#   "Failed to deploy supervisor control plane VM"
+#   "Network configuration validation failed"
+#   "Insufficient resources in cluster"
+
+# Check all Tanzu-related services
+vmon-cli -s wcp --status
+vmon-cli -s wcpguestcluster --status</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Validate networking prerequisites</strong></p>
+                    <pre><code># For NSX-T networking:
+# Verify T0/T1 gateways are configured and connected
+# NSX Manager → Networking → Tier-1 Gateways → Check status
+# Ensure edge cluster is deployed and healthy
+
+# For vDS + HAProxy:
+# Verify HAProxy load balancer is reachable
+curl -v https://haproxy-ip:5556/v2/info
+# Check HAProxy data plane API endpoint
+# Ensure HAProxy CA certificate matches what was provided during enablement
+
+# For NSX Advanced Load Balancer (Avi):
+# Verify Avi Controller is connected
+# vCenter → Workload Management → Networking → Check Load Balancer status
+
+# Verify management, workload, and egress networks are properly segmented</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix content library and TKR image sync</strong></p>
+                    <pre><code># Check content library for TKR images
+# vCenter → Content Libraries → Subscribed library for Tanzu
+
+# Verify subscription URL is reachable:
+curl -v https://wp-content.vmware.com/v2/latest/lib.json
+
+# Force sync
+# Content Library → Sync Now
+
+# Check available TKR versions
+kubectl get tkr
+# If no TKRs available, content library sync is the issue
+
+# Verify storage policy used for content library
+# Must have sufficient space for OVA images (~5GB each)</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Check supervisor control plane VMs and resources</strong></p>
+                    <pre><code># Find supervisor control plane VMs
+# vCenter → VMs → Filter by "SupervisorControlPlane"
+# Should be 3 VMs, all Powered On
+
+# If VMs are not deployed, check resource availability:
+# Cluster needs: 3 x (4 vCPU + 16GB RAM) = 12 vCPU + 48 GB minimum
+# Plus resource overhead for workload VMs
+
+# Check events on the cluster
+# vCenter → Cluster → Monitor → Events → Filter for "wcp" or "supervisor"
+
+# If stuck in "Configuring", try disable + re-enable:
+# vCenter → Workload Management → Cluster → Disable (wait 15min) → Re-enable
+
+# Check supervisor cluster health via kubectl
+kubectl --kubeconfig=/etc/kubernetes/admin.conf get nodes
+kubectl --kubeconfig=/etc/kubernetes/admin.conf get pods -n kube-system</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <p><strong>Fix TKC clusters stuck in "Creating"</strong></p>
+                    <pre><code># Check TKC status
+kubectl get tanzukubernetescluster -A
+kubectl describe tanzukubernetescluster &lt;name&gt; -n &lt;namespace&gt;
+# Look at Events and Conditions sections
+
+# Common fixes:
+# 1. TKR image not available → sync content library
+# 2. Network not ready → check supervisor networking
+# 3. Storage not ready → verify storage policy binding to namespace
+
+# Check cluster API objects
+kubectl get cluster,machine,machinedeployment -A
+# Machines stuck in "Provisioning" = VM creation issue
+# Machines stuck in "Provisioned" = cloud-init/network issue
+
+# Delete and recreate stuck TKC as last resort
+kubectl delete tanzukubernetescluster &lt;name&gt; -n &lt;namespace&gt;
+# Wait for cleanup, then re-apply YAML</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> Workload Management shows "Running" config status, 3 supervisor VMs are powered on and healthy, <code class="inline">kubectl get tkc</code> shows clusters in "Running" state, and developer workloads can be deployed to namespaces.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #78: Enhanced Linked Mode — Multi-vCenter Replication Issues -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-78" data-type="fix" data-severity="high" data-keywords="enhanced linked mode multi vcenter replication vmdir psc platform services controller sso domain lookup service cross-vc inventory partner embedded linked">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">78</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Enhanced Linked Mode — Multi-vCenter Replication Issues</div>
+            <div class="kb-entry-subtitle">Linked vCenter not visible in inventory, cross-vCenter operations fail, vmdir replication lag, SSO domain conflicts</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Enhanced Linked Mode</span>
+                <span class="tag">Multi-vCenter</span>
+                <span class="tag">vmdir</span>
+                <span class="tag">SSO</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Unified management view across vCenter instances is broken. Administrators cannot see or manage resources across linked vCenters from a single pane. Cross-vCenter vMotion fails. Global permissions and tags are not replicated. Single sign-on between linked nodes may break.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Linked vCenter not visible in the vSphere Client inventory tree</li>
+                    <li>Cross-vCenter vMotion fails: <code class="inline">Cannot complete operation across linked vCenters</code></li>
+                    <li>Global permissions applied on one vCenter not propagating to partner</li>
+                    <li>SSO login fails on one node: <code class="inline">Unable to authenticate with the identity source</code></li>
+                    <li>vmdir replication status: <code class="inline">Partner unreachable</code> or <code class="inline">Replication lag &gt; threshold</code></li>
+                    <li>Lookup service entries stale — services registered on old/decommissioned node</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>vmdir replication partner unreachable — network/firewall blocking port 389/636 between vCenters</li>
+                    <li>vmdir database corruption or replication lag exceeding threshold</li>
+                    <li>DNS resolution failure between vCenter FQDNs (forward and reverse)</li>
+                    <li>Certificate trust chain broken — partner vCenter certificates not in trusted store</li>
+                    <li>NTP drift between vCenter nodes causes Kerberos/SAML token validation failures</li>
+                    <li>Stale lookup service entries from decommissioned or rebuilt vCenter</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Diagnosis &amp; Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check vmdir replication status between nodes</strong></p>
+                    <pre><code># SSH to VCSA (primary node)
+# Check vmdir replication partner status
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showpartnerstatus \
+  -h localhost -u administrator -w '&lt;password&gt;'
+
+# Expected output for healthy replication:
+# Partner: vcsa-02.corp.local
+# Status: Available
+# Replication Lag: 0 seconds
+
+# Check vmdir service health
+/usr/lib/vmware-vmdir/bin/vdcrepadmin -f showpartners \
+  -h localhost -u administrator -w '&lt;password&gt;'
+
+# Verify network connectivity to partner (LDAP ports)
+curl -v telnet://vcsa-02.corp.local:389
+curl -v telnet://vcsa-02.corp.local:636</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify DNS and NTP between vCenter nodes</strong></p>
+                    <pre><code># Forward and reverse DNS must work for ALL linked vCenters
+nslookup vcsa-01.corp.local
+nslookup vcsa-02.corp.local
+nslookup &lt;ip-of-vcsa-01&gt;   # Reverse lookup
+nslookup &lt;ip-of-vcsa-02&gt;
+
+# Check NTP synchronization on both nodes
+# Node 1:
+timedatectl status
+# Node 2:
+ssh root@vcsa-02.corp.local timedatectl status
+
+# Time difference must be &lt; 5 seconds
+# If NTP drift detected:
+/usr/lib/vmware-applmgmt/support/scripts/timesync.py get
+/usr/lib/vmware-applmgmt/support/scripts/timesync.py ntp --servers pool.ntp.org</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Clean up stale lookup service entries</strong></p>
+                    <pre><code># List all registered services in lookup service
+python /usr/lib/vmidentity/tools/scripts/lstool.py list \
+  --url https://vcsa-01.corp.local/lookupservice/sdk \
+  --type cs.identity --no-check-cert
+
+# Identify stale entries (referencing decommissioned/rebuilt vCenter)
+# Note the service ID of stale entries
+
+# Unregister stale entries
+python /usr/lib/vmidentity/tools/scripts/lstool.py unregister \
+  --url https://vcsa-01.corp.local/lookupservice/sdk \
+  --id &lt;stale-service-id&gt; \
+  --user administrator@vsphere.local --password '&lt;password&gt;' \
+  --no-check-cert
+
+# After cleanup, restart all services on both nodes
+service-control --stop --all
+service-control --start --all</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Re-establish certificate trust if broken</strong></p>
+                    <pre><code># Check trusted certificates on each node
+/usr/lib/vmware-vmafd/bin/vecs-cli entry list --store TRUSTED_ROOTS
+
+# If partner certificates are missing, add them:
+# 1. Download partner root CA certificate
+wget --no-check-certificate https://vcsa-02.corp.local/certs/download.zip
+unzip download.zip -d /tmp/partner-certs/
+
+# 2. Add to trusted store
+/usr/lib/vmware-vmafd/bin/dir-cli trustedcert publish \
+  --cert /tmp/partner-certs/certs/lin/root.cer \
+  --login administrator@vsphere.local --password '&lt;password&gt;'
+
+# 3. Refresh registration
+# vCenter → Administration → System Configuration → Nodes → Repoint/Refresh
+
+# 4. Verify linked mode
+# vSphere Client → Should now show both vCenter inventories</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> Both vCenters are visible in vSphere Client inventory, <code class="inline">vdcrepadmin</code> shows all partners "Available" with zero lag, global permissions propagate across nodes, and cross-vCenter vMotion succeeds.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #79: ESXi Coredump & Crashdump — PSOD Analysis & Configuration -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-79" data-type="fix" data-severity="high" data-keywords="esxi coredump crashdump psod purple screen of death vmkdump partition network dump collector analysis vm-support diagnostic backtrace crash kernel panic">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">79</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">ESXi Coredump &amp; Crashdump — PSOD Analysis &amp; Configuration</div>
+            <div class="kb-entry-subtitle">Configuring coredump destinations, setting up network dump collectors, and analyzing PSOD crash data for root cause</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Coredump</span>
+                <span class="tag">PSOD</span>
+                <span class="tag">Crashdump</span>
+                <span class="tag">Diagnostics</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#9432;</span>
+            <span><strong>Purpose:</strong> Proper coredump configuration ensures that when a PSOD (Purple Screen of Death) occurs, the crash data is captured for VMware GSS analysis. Without a configured dump destination, the crash data is lost after reboot, making root cause analysis impossible. This KB covers configuration, collection, and initial analysis of crash dumps.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms (When Misconfigured)</div>
+                <ul>
+                    <li>After PSOD recovery: <code class="inline">No coredump data found on host</code></li>
+                    <li>VMware GSS requests crash dump but <strong>none was saved</strong></li>
+                    <li><code class="inline">esxcli system coredump partition get</code> returns "No partition configured"</li>
+                    <li>Network dump collector shows no received dumps after host crash</li>
+                    <li>Repeated PSODs with no root cause — cannot open support ticket without dump</li>
+                    <li>USB/SD boot devices: no local partition available for dump storage</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Common PSOD Causes</div>
+                <ul>
+                    <li>Hardware failure: failed memory DIMM, PCIe card, NIC firmware bug</li>
+                    <li>Driver incompatibility with ESXi version (common after upgrade)</li>
+                    <li>Storage timeout — HBA driver panic on prolonged APD/PDL</li>
+                    <li>VMkernel assertion failure — software bug in ESXi kernel module</li>
+                    <li>NMI (Non-Maskable Interrupt) from hardware watchdog or management board</li>
+                    <li>Heap exhaustion — kernel heap memory fully consumed</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Configuration &amp; Analysis</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Configure local coredump partition</strong></p>
+                    <pre><code># Check current coredump configuration
+esxcli system coredump partition list
+esxcli system coredump partition get
+
+# If no partition configured, scan for available diagnostic partitions
+esxcli system coredump partition set --enable true --smart
+
+# Manually set a specific partition
+esxcli system coredump partition set -p "naa.xxx:7" --enable true
+
+# For hosts booting from USB/SD (no local disk):
+# Use a coredump FILE on a VMFS datastore instead
+esxcli system coredump file add -d datastore1 -f coredump-esxi01
+esxcli system coredump file set -p /vmfs/volumes/datastore1/coredump-esxi01
+esxcli system coredump file set --enable true
+
+# Verify configuration
+esxcli system coredump partition get
+# Active: true, Configured: naa.xxx:7 (or file path)</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Configure network dump collector (recommended for large environments)</strong></p>
+                    <pre><code># Deploy ESXi Dump Collector on a Linux server or VCSA
+# The VCSA has a built-in dump collector (netdumper service)
+# On VCSA:
+vmon-cli -s netdumper --status
+vmon-cli -s netdumper --start
+
+# On each ESXi host, configure network dump target:
+esxcli system coredump network set \
+  --interface-name vmk0 \
+  --server-ipv4 10.10.1.100 \
+  --server-port 6500
+esxcli system coredump network set --enable true
+
+# Verify network dump configuration
+esxcli system coredump network get
+# Enabled: true
+# Network Server IP: 10.10.1.100
+# Network Server Port: 6500
+# VMKernel Interface: vmk0
+
+# Test the dump collector (does NOT crash the host)
+esxcli system coredump network check</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Collect and extract crash dump after PSOD</strong></p>
+                    <pre><code># After host reboots from PSOD, collect the dump:
+
+# Option A: Extract from local partition
+vmkdump -l   # List dumps on the coredump partition
+vmkdump -d /dev/disks/naa.xxx:7 -o /tmp/esxi-crash.dump
+
+# Option B: Collect via vm-support bundle
+vm-support --include-core-dump
+# Creates a .tgz bundle with all logs + crash dump
+
+# Option C: Network dump — check collector server
+# On dump collector server:
+ls -la /var/core/netdump/
+# Files: vmkernel-zdump-* (compressed crash dump)
+
+# Extract crash dump information
+vmkdump_extract /tmp/esxi-crash.dump -o /tmp/crash-analysis/
+
+# Quick analysis of the PSOD backtrace
+cat /tmp/crash-analysis/vmkernel-log.txt | grep -A20 "PCPU\|backtrace\|panic"</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Initial PSOD analysis (before contacting VMware GSS)</strong></p>
+                    <pre><code># Read the PSOD screen (photograph it during the crash):
+# Line 1: "#PF Exception 14 in world xxxxx:vmkernel" → type of crash
+# Line 2: Module name and function → which driver/module crashed
+# Line 3: Backtrace addresses → code execution path at time of crash
+
+# Decode backtrace from the PSOD screen
+# Match module name to known issues:
+# - "nmlx5_core" → Mellanox NIC driver issue
+# - "lpfc" → Emulex HBA driver issue
+# - "nvme_pcie" → NVMe driver issue
+# - "vmkernel" → Core kernel bug
+
+# Check if the PSOD matches a known VMware KB:
+# Search: https://kb.vmware.com with the error string
+
+# Check /var/log/vmkernel.log for events leading to crash
+grep -B50 "PSOD\|panic\|Assert\|coredump" /var/log/vmkernel.log
+
+# Collect for VMware SR:
+# 1. vm-support bundle with core dump
+# 2. PSOD screenshot
+# 3. Hardware event logs (iLO/iDRAC/IMM)</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> <code class="inline">esxcli system coredump partition get</code> shows Active: true with a configured destination, <code class="inline">esxcli system coredump network check</code> succeeds for network dump, and vm-support bundle generation completes with core dump included.</span>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #80: VMware Skyline Health — Proactive Findings & Recommendations -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-80" data-type="fix" data-severity="medium" data-keywords="skyline health advisor collector proactive findings recommendations upload connectivity support vCenter telemetry analytics ceip customer experience">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">80</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VMware Skyline Health — Proactive Findings &amp; Recommendations</div>
+            <div class="kb-entry-subtitle">Skyline collector not uploading data, findings not appearing in Skyline Advisor, stale health status, collector appliance issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-medium">Medium</span>
+                <span class="tag">Skyline</span>
+                <span class="tag">Health</span>
+                <span class="tag">Proactive</span>
+                <span class="tag">Analytics</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#9432;</span>
+            <span><strong>Purpose:</strong> VMware Skyline is a proactive support technology that analyzes telemetry from your vSphere environment, identifies potential issues before they cause outages, and provides automated recommendations. Keeping Skyline healthy ensures you get early warnings about security vulnerabilities, configuration drift, and known product defects.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Skyline Advisor portal shows <strong>"No recent data"</strong> or last upload &gt; 48 hours ago</li>
+                    <li>Skyline Collector VAMI: <strong>"Upload Status: Failed"</strong></li>
+                    <li>Collector health shows <strong>"vCenter connection lost"</strong></li>
+                    <li>Findings in Skyline Advisor are stale — don't reflect recent changes</li>
+                    <li>Collector appliance unreachable on port 443 (VAMI UI)</li>
+                    <li>Email notifications from Skyline stopped arriving</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Outbound HTTPS connectivity blocked to <code class="inline">*.vmware.com</code> cloud endpoints</li>
+                    <li>Collector appliance certificate expired — cannot authenticate to VMware cloud</li>
+                    <li>vCenter credentials rotated — collector using old <code class="inline">administrator@vsphere.local</code> password</li>
+                    <li>Proxy configuration changed — collector not updated with new proxy details</li>
+                    <li>Collector appliance disk full — /var/log or /opt consuming all space</li>
+                    <li>CEIP (Customer Experience Improvement Program) disabled in vCenter — required for Skyline</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Fix — Troubleshooting &amp; Configuration</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check collector appliance health and connectivity</strong></p>
+                    <pre><code># Access Skyline Collector admin UI
+# https://skyline-collector.corp.local:443 → Admin Dashboard
+
+# Check overall health status:
+# - Collection Status: Should be "Active"
+# - Upload Status: Should be "Successful"  
+# - Last Upload: Should be within last 24 hours
+
+# SSH to collector and check connectivity
+ssh root@skyline-collector.corp.local
+
+# Test outbound connectivity to Skyline cloud
+curl -v https://vcsa.vmware.com
+curl -v https://skyline.vmware.com
+curl -v https://vapp-updates.vmware.com
+
+# Check collector logs
+tail -100 /var/log/vmware/skyline/collector.log
+# Look for: "Upload failed", "Connection refused", "Certificate error"</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Update vCenter credentials and proxy settings</strong></p>
+                    <pre><code># If vCenter password was rotated:
+# Collector Admin UI → vCenter Connections → Edit → Update password
+# Or via CLI:
+skyline-collector-cli vcenter update \
+  --hostname vcenter.corp.local \
+  --username administrator@vsphere.local \
+  --password '&lt;new-password&gt;'
+
+# If proxy changed:
+# Collector Admin UI → Proxy Settings → Update
+# Or via CLI:
+skyline-collector-cli proxy set \
+  --host proxy.corp.local \
+  --port 3128 \
+  --username proxyuser \
+  --password '***'
+
+# Verify CEIP is enabled on vCenter (required)
+# vCenter → Administration → CEIP → Must be "Joined"
+# Or via API:
+curl -k -u administrator@vsphere.local:'&lt;password&gt;' \
+  https://vcenter.corp.local/api/appliance/telemetry</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix collector disk space and certificate issues</strong></p>
+                    <pre><code># Check disk usage
+df -h
+# If /var/log is full:
+du -sh /var/log/vmware/skyline/*
+# Rotate logs
+logrotate -f /etc/logrotate.d/skyline
+
+# If /opt is full (collected data waiting to upload):
+du -sh /opt/vmware/skyline/data/*
+# Force upload retry
+skyline-collector-cli upload --force
+
+# If certificate expired:
+# Collector Admin UI → Certificate → Regenerate
+# Or reregister collector with VMware Cloud:
+skyline-collector-cli register --token "&lt;cloud-org-token&gt;"
+
+# Restart collector services
+systemctl restart skyline-collector
+systemctl status skyline-collector</code></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Verify data flow and review findings in Skyline Advisor</strong></p>
+                    <pre><code># Force a collection cycle
+skyline-collector-cli collect --now
+
+# Monitor upload progress
+tail -f /var/log/vmware/skyline/collector.log | grep -i "upload\|success\|fail"
+
+# After successful upload, check Skyline Advisor portal:
+# https://skyline.vmware.com → Log in with VMware Cloud account
+# 
+# Review:
+# - Active Findings: Issues detected in your environment
+# - Recommendations: Suggested patches, configuration fixes
+# - Security Advisories: CVEs affecting your ESXi/vCenter versions
+# - Upgrade Paths: Recommended upgrade sequences
+
+# Configure email notifications
+# Skyline Advisor → Settings → Notifications → Add email recipients
+# Set severity threshold: Critical, Important, or All</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <div class="alert alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <span><strong>Verified when:</strong> Collector admin UI shows "Collection: Active" and "Upload: Successful" with timestamp within last 24 hours, Skyline Advisor portal displays current findings for your environment, and proactive email notifications resume.</span>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer">
+    <p>VMware vSphere Cluster Troubleshooting KB — Phase 8: Advanced Features &amp; Extended Platform &nbsp;|&nbsp; <a href="index.html">Dashboard</a> &nbsp;|&nbsp; <a href="decision-tree.html">Decision Tree</a></p>
+</footer>
+
+<script>
+    function toggleEntry(el) {
+        el.closest('.kb-entry').classList.toggle('open');
+    }
+
+    function filterByType(type, tabEl) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tabEl.classList.add('active');
+
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') {
+                entry.style.display = '';
+            } else if (type === 'break' || type === 'fix') {
+                entry.style.display = entryType === type ? '' : 'none';
+            } else if (type === 'critical' || type === 'high') {
+                entry.style.display = severity === type ? '' : 'none';
+            }
+        });
+    }
+
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) {
+                entry.style.display = '';
+                return;
+            }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab').classList.add('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterEntries();
+            input.blur();
+        }
+    });
+
+    (function() {
+        var hash = window.location.hash;
+        if (hash && hash.match(/^#kb-\d+$/)) {
+            var el = document.querySelector(hash);
+            if (el && el.classList.contains('kb-entry')) {
+                el.classList.add('open');
+                setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+            }
+        }
+    })();
+</script>
+<script src="kb-crossref.js"></script>
+<script src="kb-refs.js"></script>
+<script src="kb-timeline.js"></script>
+<script src="kb-version.js"></script>
+<script src="kb-verify.js"></script>
+<script src="kb-ux.js"></script>
+</body>
+</html>
