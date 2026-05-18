@@ -359,6 +359,11 @@
 
         /* Enhancement #3: Glassmorphism cards */
         /* Enhancement #4: Card hover glow */
+        @property --card-angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
         .product-card {
             background: var(--bg-card);
             backdrop-filter: blur(16px);
@@ -378,13 +383,19 @@
         .product-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            inset: -1px;
             border-radius: 20px;
+            background: conic-gradient(from var(--card-angle, 0deg), transparent 0%, var(--accent) 10%, var(--purple) 20%, var(--cyan) 30%, transparent 40%);
             opacity: 0;
             transition: opacity 0.4s;
             pointer-events: none;
-            z-index: 0;
+            z-index: -1;
         }
+        .product-card:hover::before {
+            opacity: 1;
+            animation: card-border-spin 3s linear infinite;
+        }
+        @keyframes card-border-spin { to { --card-angle: 360deg; } }
         /* Shimmer sweep overlay */
         .product-card::after {
             content: '';
@@ -402,13 +413,15 @@
         .product-card:hover {
             transform: translateY(-8px);
             border-color: transparent;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.35), 0 0 0 1px rgba(59,130,246,0.08);
         }
-        .product-card:hover::before { opacity: 1; }
 
-        /* Inner spotlight (mouse-following via JS) */
+        /* Mouse-following glow */
         .card-spotlight {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(59,130,246,0.07) 0%, transparent 50%);
             border-radius: 20px;
             pointer-events: none;
             z-index: 0;
@@ -418,14 +431,10 @@
         .product-card:hover .card-spotlight { opacity: 1; }
 
         /* Per-theme hover glow */
-        .product-card.vsan::before { box-shadow: 0 0 40px rgba(99,102,241,0.2), 0 8px 32px rgba(99,102,241,0.15); }
-        .product-card.vsan:hover { border-color: rgba(99,102,241,0.4); }
-        .product-card.nsx::before { box-shadow: 0 0 40px rgba(6,182,212,0.2), 0 8px 32px rgba(6,182,212,0.15); }
-        .product-card.nsx:hover { border-color: rgba(6,182,212,0.3); }
-        .product-card.vsphere::before { box-shadow: 0 0 40px rgba(167,139,250,0.2), 0 8px 32px rgba(167,139,250,0.15); }
-        .product-card.vsphere:hover { border-color: rgba(167,139,250,0.3); }
-        .product-card.vcf::before { box-shadow: 0 0 40px rgba(245,158,11,0.2), 0 8px 32px rgba(245,158,11,0.15); }
-        .product-card.vcf:hover { border-color: rgba(245,158,11,0.3); }
+        .product-card.vsan:hover { box-shadow: 0 30px 70px rgba(59,130,246,0.12), 0 0 0 1px rgba(59,130,246,0.15); }
+        .product-card.nsx:hover { box-shadow: 0 30px 70px rgba(6,182,212,0.12), 0 0 0 1px rgba(6,182,212,0.15); }
+        .product-card.vsphere:hover { box-shadow: 0 30px 70px rgba(139,92,246,0.12), 0 0 0 1px rgba(139,92,246,0.15); }
+        .product-card.vcf:hover { box-shadow: 0 30px 70px rgba(245,158,11,0.12), 0 0 0 1px rgba(245,158,11,0.15); }
 
         .card-accent-bar {
             height: 3px; width: 100%;
@@ -654,14 +663,19 @@
             top: 16px; right: 16px;
             z-index: 2;
             font-size: 0.62rem;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
             color: #fff;
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            background: linear-gradient(135deg, var(--accent), var(--purple));
             padding: 0.3rem 0.8rem;
             border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+            box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+            animation: ribbon-pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes ribbon-pulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+            50% { box-shadow: 0 4px 25px rgba(59,130,246,0.6); }
         }
 
         /* ── CTA Section ── */
@@ -1078,7 +1092,7 @@
                     <span class="card-tag">Edge</span>
                     <span class="card-tag">BGP</span>
                 </div>
-                <span class="explore-label">Explore →</span>
+                <span class="status-live">Live</span>
             </div>
         </a>
 
@@ -1260,6 +1274,10 @@
                 var rotateX = ((y - cy) / cy) * -4;
                 var rotateY = ((x - cx) / cx) * 4;
                 card.style.transform = 'translateY(-8px) perspective(800px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
+                var pctX = (x / rect.width * 100).toFixed(1);
+                var pctY = (y / rect.height * 100).toFixed(1);
+                card.style.setProperty('--mx', pctX + '%');
+                card.style.setProperty('--my', pctY + '%');
                 if (spotlight) {
                     spotlight.style.background = 'radial-gradient(circle at ' + x + 'px ' + y + 'px, rgba(255,255,255,0.06) 0%, transparent 60%)';
                 }
