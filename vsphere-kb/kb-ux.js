@@ -67,7 +67,7 @@
 
             var metas = [
                 { property: 'og:title', content: document.title },
-                { property: 'og:description', content: 'VMware vSphere Knowledge Base — 70 troubleshooting scenarios for cluster, HA, DRS, vCenter, storage, and networking' },
+                { property: 'og:description', content: 'VMware vSphere Knowledge Base — 80 troubleshooting scenarios for cluster, HA, DRS, vCenter, storage, and networking' },
                 { property: 'og:type', content: 'website' },
                 { name: 'theme-color', content: '#0d1117' }
             ];

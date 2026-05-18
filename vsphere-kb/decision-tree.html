@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive vSphere cluster troubleshooting decision tree — diagnose HA, DRS, vMotion, vCenter, storage, and networking issues across 70 KB entries.">
+    <meta name="description" content="Interactive vSphere cluster troubleshooting decision tree — diagnose HA, DRS, vMotion, vCenter, storage, and networking issues across 80 KB entries.">
     <title>VMware vSphere KB — Interactive Troubleshooting Decision Tree</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,7 +105,7 @@
         <h1>vSphere Troubleshooting <span>Decision Tree</span></h1>
         <div class="header-badges">
             <span class="badge badge-tree">Interactive Diagnosis</span>
-            <span class="badge badge-phase">70 KB Entries</span>
+            <span class="badge badge-phase">80 KB Entries</span>
         </div>
     </div>
 </header>
@@ -211,7 +211,25 @@ const tree = {
             { id: "storage",       icon: "&#128190;", title: "Storage / Datastores",       desc: "VMFS, NFS, multipathing, APD/PDL, iSCSI, VAAI",                count: 10 },
             { id: "networking",    icon: "&#127760;", title: "Networking / vDS",           desc: "Distributed switches, port groups, VLAN, MTU, NIOC, teaming",   count: 10 },
             { id: "esxi_host",     icon: "&#128421;", title: "ESXi Host",                  desc: "PSOD, maintenance mode, SSH, NTP, patching, profiles",          count: 7  },
-            { id: "monitoring",    icon: "&#128202;", title: "Monitoring / Operations",    desc: "esxtop, alarms, logging, backup, performance",                  count: 6  }
+            { id: "monitoring",    icon: "&#128202;", title: "Monitoring / Operations",    desc: "esxtop, alarms, logging, backup, performance",                  count: 6  },
+            { id: "advanced",      icon: "&#128300;", title: "Advanced / Specialized",    desc: "vSphere+, encryption, vGPU, Auto Deploy, Replication, Tanzu, Skyline",  count: 10 }
+        ]
+    },
+
+    advanced: {
+        question: "What advanced / specialized topic?",
+        stepNum: 2,
+        choices: [
+            { id: "vsphere_plus",    icon: "&#128308;", title: "vSphere+ Cloud Gateway issues",     desc: "Subscription, connectivity, SaaS console registration",     result: true },
+            { id: "vm_encryption",   icon: "&#128308;", title: "VM Encryption & vTPM errors",       desc: "Key provider, crypto errors, encrypted VM power-on",        result: true },
+            { id: "vgpu_passthru",   icon: "&#128993;", title: "vGPU & DirectPath I/O setup",       desc: "GPU passthrough, NVIDIA profiles, IOMMU configuration",     result: true },
+            { id: "auto_deploy",     icon: "&#128308;", title: "Auto Deploy / stateless ESXi",      desc: "PXE boot failures, TFTP, DHCP, image profiles",             result: true },
+            { id: "vlcm_image",      icon: "&#128993;", title: "vLCM image-based updates",          desc: "Depot, firmware, vendor addons, HSM integration",           result: true },
+            { id: "vsphere_repl",    icon: "&#128308;", title: "vSphere Replication RPO issues",    desc: "RPO violations, sync failures, VR appliance health",        result: true },
+            { id: "tanzu_wkld",      icon: "&#128308;", title: "Tanzu / Workload Management",       desc: "Supervisor cluster, TKC, namespace, WCP services",          result: true },
+            { id: "linked_mode",     icon: "&#128993;", title: "Enhanced Linked Mode issues",       desc: "Multi-vCenter replication, vmdir, SSO domain trust",         result: true },
+            { id: "coredump_psod",   icon: "&#128993;", title: "ESXi Coredump & PSOD analysis",     desc: "Coredump config, crash analysis, network dump collector",    result: true },
+            { id: "skyline_health",  icon: "&#128993;", title: "Skyline Health diagnostics",        desc: "Proactive findings, collector, recommendations",             result: true }
         ]
     },
 
@@ -430,7 +448,18 @@ const results = {
     log_bundle:       { kbs: [{ n:14, t:"Log Bundle Collection & Analysis",                 ty:"fix",   f:"phase2.html", sum:"ESXi: vm-support. vCenter: /var/log/vmware/. Key logs: vpxd.log, hostd.log, vmkernel.log, fdm.log." }] },
     syslog:           { kbs: [{ n:18, t:"Syslog & Log Forwarding Setup",                    ty:"fix",   f:"phase2.html", sum:"esxcli system syslog config set --loghost=udp://syslog:514. Configure VCSA forwarding in VAMI." }] },
     backup_restore:   { kbs: [{ n:13, t:"vCenter Backup & Restore (VAMI)",                  ty:"fix",   f:"phase2.html", sum:"File-based backup via VAMI port 5480. Schedule daily. Restore: deploy new VCSA, select Restore in installer." }] },
-    vc_perf:          { kbs: [{ n:50, t:"vCenter Performance & Sizing Guidelines",          ty:"fix",   f:"phase5.html", sum:"VCSA sizing by inventory size. Tune vpxd.cfg parameters. Monitor task count and concurrent connections." }] }
+    vc_perf:          { kbs: [{ n:50, t:"vCenter Performance & Sizing Guidelines",          ty:"fix",   f:"phase5.html", sum:"VCSA sizing by inventory size. Tune vpxd.cfg parameters. Monitor task count and concurrent connections." }] },
+
+    vsphere_plus:     { kbs: [{ n:71, t:"vSphere+ Cloud Gateway — Subscription & Connectivity Issues",  ty:"break", f:"phase8.html", sum:"Cloud Gateway registration fails. Check DNS, proxy, firewall (port 443 to VMware Cloud). Verify token, re-pair gateway." }] },
+    vm_encryption:    { kbs: [{ n:72, t:"VM Encryption & vTPM — Key Provider & Crypto Errors",           ty:"break", f:"phase8.html", sum:"VM won't power on with crypto error. Check KMS/NKP trust, certificate chain, key provider connectivity." }] },
+    vgpu_passthru:    { kbs: [{ n:73, t:"vGPU & DirectPath I/O — GPU Passthrough Configuration",         ty:"fix",   f:"phase8.html", sum:"Configure GPU passthrough: enable IOMMU/VT-d, assign PCI device, install vGPU driver. No vMotion with DirectPath." }] },
+    auto_deploy:      { kbs: [{ n:74, t:"Auto Deploy & Stateless ESXi — PXE Boot Failures",              ty:"break", f:"phase8.html", sum:"PXE boot fails. Check DHCP options 66/67, TFTP connectivity, deploy rules, image profile. Verify host profile." }] },
+    vlcm_image:       { kbs: [{ n:75, t:"vLCM Image-Based Updates — Lifecycle Manager Deep Issues",       ty:"fix",   f:"phase8.html", sum:"Image-based cluster management. Configure depot, vendor addons, firmware updates via HSM. Compliance check and remediate." }] },
+    vsphere_repl:     { kbs: [{ n:76, t:"vSphere Replication — RPO Violations & Sync Failures",           ty:"break", f:"phase8.html", sum:"RPO missed, full sync triggered. Check VR appliance health, network bandwidth, CBT status. Reset replication." }] },
+    tanzu_wkld:       { kbs: [{ n:77, t:"Tanzu / Workload Management — Supervisor Cluster Issues",        ty:"break", f:"phase8.html", sum:"Supervisor cluster not ready. Check WCP service, control plane VMs, networking (NSX/HAProxy/ALB), kubectl access." }] },
+    linked_mode:      { kbs: [{ n:78, t:"Enhanced Linked Mode — Multi-vCenter Replication Issues",         ty:"fix",   f:"phase8.html", sum:"Cross-vCenter inventory not syncing. Check vmdir replication, SSO domain trust, Lookup Service partners." }] },
+    coredump_psod:    { kbs: [{ n:79, t:"ESXi Coredump & Crashdump — PSOD Analysis & Configuration",      ty:"fix",   f:"phase8.html", sum:"Configure coredump partition or network dump collector. Analyze PSOD backtrace, collect vm-support bundle." }] },
+    skyline_health:   { kbs: [{ n:80, t:"VMware Skyline Health — Proactive Findings & Recommendations",    ty:"fix",   f:"phase8.html", sum:"Configure Skyline Collector, review findings in Skyline Advisor. Proactive issue detection and remediation guidance." }] }
 };
 
 let path = [];
