@@ -46,7 +46,7 @@
 
         /* ── Hero Header ── */
         .hero {
-            background: linear-gradient(180deg, #0d1117 0%, #111820 100%);
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             border-bottom: 1px solid var(--border);
             padding: 4rem 2rem 3rem;
             text-align: center;
@@ -69,10 +69,10 @@
             padding: 0.3rem 0.85rem; border-radius: 6px;
             font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2px;
         }
-        .badge-total { background: rgba(88,166,255,0.15); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.3); }
-        .badge-break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.3); }
-        .badge-fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.3); }
-        .badge-phase { background: rgba(210,153,34,0.15); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.3); }
+        .badge-total { background: rgba(59,130,246,0.15); color: var(--accent-light); border: 1px solid rgba(59,130,246,0.3); }
+        .badge-break { background: rgba(244,63,94,0.15); color: var(--danger-light); border: 1px solid rgba(244,63,94,0.3); }
+        .badge-fix { background: rgba(16,185,129,0.15); color: var(--success-light); border: 1px solid rgba(16,185,129,0.3); }
+        .badge-phase { background: rgba(245,158,11,0.15); color: var(--warning-light); border: 1px solid rgba(245,158,11,0.3); }
 
         /* ── Global Search ── */
         .search-section {
@@ -147,7 +147,7 @@
         .section-title {
             font-size: 0.75rem; font-weight: 600; margin-bottom: 1.25rem;
             display: flex; align-items: center; gap: 0.75rem;
-            text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary);
         }
         .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
         .phases-grid {
@@ -159,7 +159,7 @@
             transition: border-color .2s, box-shadow .2s, transform .2s;
             text-decoration: none; color: inherit; display: block; position: relative;
         }
-        .phase-card:hover { border-color: rgba(88,166,255,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
+        .phase-card:hover { border-color: rgba(59,130,246,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
         .phase-card-bar { height: 3px; width: 100%; }
         .phase-card-header {
             padding: 1.25rem 1.5rem 0.75rem;
@@ -211,7 +211,7 @@
             font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
         }
         .filter-tab:hover { border-color: var(--accent); color: var(--text-primary); }
-        .filter-tab.active { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent-light); }
+        .filter-tab.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--accent-light); }
 
         /* ── Full KB Index ── */
         .kb-index { margin-top: 0.5rem; }
@@ -230,23 +230,33 @@
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 0.95rem;
         }
-        .kb-idx-num.break { background: rgba(248,81,73,0.12); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
-        .kb-idx-num.fix { background: rgba(63,185,80,0.12); color: var(--success-light); border: 1px solid rgba(63,185,80,0.2); }
+        .kb-idx-num.break { background: rgba(244,63,94,0.12); color: var(--danger-light); border: 1px solid rgba(244,63,94,0.2); }
+        .kb-idx-num.fix { background: rgba(16,185,129,0.12); color: var(--success-light); border: 1px solid rgba(16,185,129,0.2); }
         .kb-idx-info { flex: 1; min-width: 0; }
         .kb-idx-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .kb-idx-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; margin-top: 0.15rem; }
         .kb-idx-tags { display: flex; gap: 0.3rem; flex-shrink: 0; }
         .idx-tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
-        .idx-tag.critical { background: rgba(248,81,73,0.1); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
-        .idx-tag.high { background: rgba(210,153,34,0.1); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.2); }
-        .idx-tag.medium { background: rgba(88,166,255,0.1); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.2); }
+        .idx-tag.critical { background: rgba(244,63,94,0.1); color: var(--danger-light); border: 1px solid rgba(244,63,94,0.2); }
+        .idx-tag.high { background: rgba(245,158,11,0.1); color: var(--warning-light); border: 1px solid rgba(245,158,11,0.2); }
+        .idx-tag.medium { background: rgba(59,130,246,0.1); color: var(--accent-light); border: 1px solid rgba(59,130,246,0.2); }
+
+        /* Show All button for lazy KB Index */
+        .show-all-btn {
+            display: block; width: 100%; margin-top: 1rem; padding: 0.75rem;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--accent-light); font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            text-align: center;
+        }
+        .show-all-btn:hover { background: var(--bg-card-hover); border-color: var(--accent); }
 
         /* ── Reveal animations ── */
         .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); }
         .reveal.visible { opacity: 1; transform: translateY(0); }
 
         /* ── Sticky Nav ── */
-        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(13,17,23,.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
+        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(9,13,26,.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
         .sticky-nav.visible { transform:translateY(0); }
         .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:600; font-size:.8rem; }
         .sticky-nav-brand .sn-logo { width:24px; height:24px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.5rem; color:#fff; }
@@ -665,6 +675,7 @@
         <button class="filter-tab" onclick="filterIndex('medium', this)">Medium</button>
     </div>
     <div class="kb-index" id="kbIndex"></div>
+    <button class="show-all-btn" id="showAllBtn" style="display:none;" onclick="showAllEntries()">Show All Entries</button>
 </section>
 
 <!-- ── Footer ── -->
@@ -804,12 +815,48 @@ const phaseNames = {
 };
 
 // ── Render KB Index ──
+var KB_INITIAL_COUNT = 20;
+var currentFilter = 'all';
+
 function renderIndex(entries) {
     const container = document.getElementById('kbIndex');
+    const showBtn = document.getElementById('showAllBtn');
     if (entries.length === 0) {
         container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:2rem;">No entries match the filter.</div>';
+        if (showBtn) showBtn.style.display = 'none';
         return;
     }
+    var displayEntries = entries.length > KB_INITIAL_COUNT ? entries.slice(0, KB_INITIAL_COUNT) : entries;
+    container.innerHTML = displayEntries.map(e => `
+        <a href="${e.file}" class="kb-index-item" data-type="${e.type}" data-severity="${e.severity}">
+            <div class="kb-idx-num ${e.type === 'break' ? 'break' : 'fix'}">${e.id}</div>
+            <div class="kb-idx-info">
+                <div class="kb-idx-title">${e.title}</div>
+                <div class="kb-idx-meta">
+                    <span>${phaseNames[e.phase]}</span>
+                    <span>${e.type === 'break' ? '⚠ Break' : '✓ Fix'}</span>
+                </div>
+            </div>
+            <div class="kb-idx-tags">
+                <span class="idx-tag ${e.severity}">${e.severity.charAt(0).toUpperCase() + e.severity.slice(1)}</span>
+            </div>
+        </a>
+    `).join('');
+    if (showBtn) {
+        if (entries.length > KB_INITIAL_COUNT) {
+            showBtn.style.display = 'block';
+            showBtn.textContent = 'Show All ' + entries.length + ' Entries';
+        } else {
+            showBtn.style.display = 'none';
+        }
+    }
+}
+
+function showAllEntries() {
+    var entries = kbEntries;
+    if (currentFilter === 'break' || currentFilter === 'fix') entries = kbEntries.filter(e => e.type === currentFilter);
+    else if (currentFilter === 'critical' || currentFilter === 'high' || currentFilter === 'medium') entries = kbEntries.filter(e => e.severity === currentFilter);
+    var container = document.getElementById('kbIndex');
     container.innerHTML = entries.map(e => `
         <a href="${e.file}" class="kb-index-item" data-type="${e.type}" data-severity="${e.severity}">
             <div class="kb-idx-num ${e.type === 'break' ? 'break' : 'fix'}">${e.id}</div>
@@ -825,9 +872,11 @@ function renderIndex(entries) {
             </div>
         </a>
     `).join('');
+    document.getElementById('showAllBtn').style.display = 'none';
 }
 
 function filterIndex(filter, btn) {
+    currentFilter = filter;
     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     let filtered = kbEntries;
