@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 9: Advanced Security</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117;--shadow:0 4px 12px rgba(0,0,0,0.25)}
+        *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}
+        .scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}
+        .header{background:linear-gradient(180deg,#0d1117 0%,#111820 50%,#0d1117 100%);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+        .header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .header h1{font-size:1.5rem;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px}.header h1 span{font-weight:400;color:var(--text-secondary)}
+        .header-badges{display:flex;gap:0.75rem;flex-wrap:wrap}
+        .badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500;letter-spacing:0.2px}
+        .badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}
+        .badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}
+        .badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}
+        .search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}
+        .search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;transition:border-color 0.2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}
+        .search-bar input:focus{border-color:var(--accent)}.search-bar input::placeholder{color:var(--text-muted)}
+        .nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}
+        .nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}
+        .nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}
+        .container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}
+        .kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}
+        .kb-entry:hover{border-color:rgba(88,166,255,0.35)}
+        .kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer;user-select:none}
+        .kb-entry-header:hover{background:var(--bg-card-hover)}
+        .kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}
+        .kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}
+        .kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}
+        .kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}
+        .kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}
+        .kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}
+        .tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}
+        .tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}
+        .tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}
+        .tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}
+        .tag-recovery{background:rgba(163,113,247,0.08);color:#c4b5fd;border-color:rgba(163,113,247,0.18)}
+        .kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}
+        .kb-entry.open .kb-chevron{transform:rotate(180deg)}
+        .kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}
+        .kb-entry.open .kb-entry-body{display:block}
+        .section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}
+        .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+        .kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}
+        .kb-entry-body ul,.kb-entry-body ol{padding-left:1.5rem;margin-bottom:0.75rem}
+        .kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}
+        .kb-entry-body li strong{color:var(--text-primary)}
+        pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}
+        pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}
+        .copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem;transition:all 0.2s}
+        .copy-btn:hover{color:var(--accent-light);border-color:var(--accent)}
+        .alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}
+        .alert-icon{flex-shrink:0;font-size:1.1rem;margin-top:0.1rem}
+        .alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}
+        .alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}
+        .alert-success{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2);color:var(--success-light)}
+        .alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin:0.75rem 0}
+        @media(max-width:768px){.two-col{grid-template-columns:1fr}}
+        .info-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem}
+        .info-box-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem}
+        .info-box-title.red{color:var(--danger-light)}.info-box-title.green{color:var(--success-light)}.info-box-title.orange{color:var(--warning-light)}.info-box-title.blue{color:var(--accent-light)}
+        .steps{margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem}.step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}.step-content{flex:1}
+        .cross-ref{margin:1rem 0;padding:0.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px}
+        .cross-ref-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:0.4rem}
+        .cross-ref a{display:inline-block;font-size:0.8rem;color:var(--accent-light);text-decoration:none;margin-right:1rem;padding:0.2rem 0;transition:color 0.2s}
+        .cross-ref a:hover{color:var(--accent)}
+        .footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}.footer a{color:var(--text-secondary);text-decoration:none}.phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}.phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}.phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}.phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}
+        @media(max-width:600px){.header-inner{flex-direction:column;align-items:flex-start}.header h1{font-size:1.3rem}.container,.search-bar,.nav-tabs{padding-left:1rem;padding-right:1rem}}
+    </style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware NSX-T <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 9 — Advanced Security</span>
+            <span class="badge badge-break">&#9888; 5 Break</span>
+            <span class="badge badge-fix">&#10003; 5 Fix</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="phase8.html">Phase 8</a>
+    <a href="phase9.html" class="active">Phase 9</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search IDS/IPS, malware, FQDN, service insertion, NDR, URL filtering..." oninput="filterEntries()">
+</div>
+
+<div class="nav-tabs">
+    <span class="nav-tab active" onclick="filterByType('all',this)">All (10)</span>
+    <span class="nav-tab" onclick="filterByType('break',this)">&#9888; Break (5)</span>
+    <span class="nav-tab" onclick="filterByType('fix',this)">&#10003; Fix (5)</span>
+    <span class="nav-tab" onclick="filterByType('critical',this)">Critical</span>
+    <span class="nav-tab" onclick="filterByType('high',this)">High</span>
+</div>
+
+<div class="container">
+
+<!-- KB #81 -->
+<div class="kb-entry" id="kb-81" data-type="break" data-severity="critical" data-keywords="ids ips intrusion detection prevention signature distributed dids alert false positive">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number break-num">81</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX Distributed IDS/IPS — Signature Updates & False Positives</div>
+<div class="kb-entry-subtitle">IDS/IPS not detecting threats, excessive false positives, or signature update failures blocking legitimate traffic</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">IDS/IPS</span><span class="tag">Signatures</span><span class="tag">Security</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> NSX Distributed IDS/IPS runs in-kernel on every hypervisor, inspecting east-west traffic. Misconfigured signatures or failed updates leave the environment blind to lateral movement attacks or block production traffic.</span></div>
+<div class="section-label">Symptoms</div>
+<ul>
+<li>IDS events tab shows no alerts despite known malicious traffic</li>
+<li>Signature auto-update shows "Failed" status in NSX Manager</li>
+<li>False positive alerts flooding — legitimate application traffic flagged</li>
+<li>IPS in "Detect & Prevent" mode dropping valid connections</li>
+</ul>
+<div class="section-label">Root Cause Analysis</div>
+<div class="two-col">
+<div class="info-box"><div class="info-box-title red">Common Causes</div>
+<ul>
+<li>NSX Manager cannot reach cloud signature service (internet access)</li>
+<li>IDS profile not applied to correct groups/segments</li>
+<li>Signature set too broad — detecting non-applicable protocols</li>
+<li>IPS action set to DROP without proper tuning period</li>
+</ul></div>
+<div class="info-box"><div class="info-box-title green">Resolution Approach</div>
+<ul>
+<li>Verify outbound HTTPS from manager to NSX Threat Intelligence Cloud</li>
+<li>Start with DETECT mode, tune for 2-4 weeks before enabling PREVENT</li>
+<li>Create custom IDS profiles targeting specific application tiers</li>
+<li>Use exclusion lists for known-good traffic patterns</li>
+</ul></div>
+</div>
+<div class="section-label">Resolution Steps</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check IDS signature update status and connectivity</strong></p>
+<pre><code># Check IDS service status on NSX Manager:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services
+
+# Check signature version and last update:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services/signatures
+
+# Verify internet connectivity from manager for signature downloads:
+# NSX Manager must reach: nsx.licensing.broadcom.com (port 443)
+# Proxy configuration in /etc/environment if behind proxy
+
+# Force manual signature update:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services/signatures?action=update_signatures</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Configure IDS profiles with targeted scope</strong></p>
+<pre><code># Best practice: Create application-specific IDS profiles
+# Example: Web-tier profile (only HTTP/TLS signatures)
+{
+  "display_name": "Web-Tier-IDS-Profile",
+  "ids_signatures": {
+    "severity": ["CRITICAL", "HIGH"],
+    "product_affected": ["Web_Server", "Web_Application"],
+    "attack_types": ["SQL_Injection", "XSS", "Remote_Code_Execution"]
+  },
+  "overridden_signatures": [
+    {
+      "signature_id": "2024897",
+      "action": "ALERT"  // Override specific noisy sig to alert-only
+    }
+  ]
+}
+
+# Apply to web-tier group only:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/intrusion-service-policies/web-tier-policy/rules/rule-1
+{
+  "action": "DETECT",
+  "ids_profiles": ["/infra/settings/firewall/security/intrusion-services/profiles/Web-Tier-IDS-Profile"],
+  "source_groups": ["ANY"],
+  "destination_groups": ["/infra/domains/default/groups/web-servers"],
+  "scope": ["/infra/domains/default/groups/web-servers"]
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Tune false positives and transition to prevent mode</strong></p>
+<pre><code># 1. Export current IDS events for analysis:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services/affected-vms
+
+# 2. Review top triggered signatures:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services/stats
+
+# 3. For confirmed false positives — add to exclusion:
+# Option A: Suppress specific signature for specific VMs
+# Option B: Change signature action to ALERT (not DROP)
+# Option C: Add source IP to IDS exclusion list
+
+# 4. After tuning (2-4 weeks with zero false positives):
+# Change rule action from DETECT to DETECT_PREVENT
+PUT .../rules/rule-1
+{
+  "action": "DETECT_PREVENT"
+}
+
+# Monitor for 48 hours after enabling prevent mode</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="phase3.html#kb-21">KB #21 — DFW Hit Count</a><a href="phase3.html#kb-22">KB #22 — Microsegmentation</a><a href="#kb-82">KB #82 — Malware Prevention</a></div>
+</div></div>
+
+<!-- KB #82 -->
+<div class="kb-entry" id="kb-82" data-type="break" data-severity="critical" data-keywords="malware prevention distributed file inspection cloud connector sandbox nsx atp">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number break-num">82</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX Distributed Malware Prevention — Cloud Connector & File Inspection</div>
+<div class="kb-entry-subtitle">Malware Prevention service not scanning files, cloud analysis failing, or excessive latency on file transfers</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Malware Prevention</span><span class="tag">ATP</span><span class="tag">Cloud Connector</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> NSX Distributed Malware Prevention inspects files in east-west traffic via the NSX Application Platform. When the cloud connector fails, zero-day malware traverses the network undetected or file transfers stall waiting for verdicts.</span></div>
+<div class="section-label">Symptoms</div>
+<ul>
+<li>Malware Prevention dashboard shows "Service Degraded" or no file events</li>
+<li>Cloud analysis connector status: DISCONNECTED</li>
+<li>File transfers between VMs experiencing 5-30 second delays</li>
+<li>NSX Application Platform pods in CrashLoopBackOff</li>
+</ul>
+<div class="section-label">Root Cause Analysis</div>
+<div class="two-col">
+<div class="info-box"><div class="info-box-title red">Common Causes</div>
+<ul>
+<li>NSX Application Platform (NAPP) not deployed or unhealthy</li>
+<li>Cloud connector cannot reach Lastline/VMware cloud sandbox</li>
+<li>File size exceeds inspection threshold (default 64MB)</li>
+<li>Insufficient resources on K8s cluster running NAPP</li>
+</ul></div>
+<div class="info-box"><div class="info-box-title green">Prerequisites</div>
+<ul>
+<li>NSX 3.2+ with NSX Application Platform deployed</li>
+<li>Internet access to cloud analysis service (port 443)</li>
+<li>Minimum 4-node K8s cluster for NAPP (16 vCPU, 64GB RAM per node)</li>
+<li>Malware Prevention license (NSX Firewall with ATP add-on)</li>
+</ul></div>
+</div>
+<div class="section-label">Resolution Steps</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify NSX Application Platform health</strong></p>
+<pre><code># Check NAPP deployment status:
+GET https://&lt;nsx-manager&gt;/napp/api/v1/platform/monitor/category/health
+
+# Check individual pods (SSH to NAPP K8s cluster):
+kubectl get pods -n nsxi-platform
+kubectl get pods -n vmware-system-nsx
+
+# Look for pods not in Running state:
+kubectl describe pod &lt;unhealthy-pod&gt; -n nsxi-platform
+# Common: ImagePullBackOff (registry access), OOMKilled (resource limits)
+
+# Verify cloud connector specifically:
+kubectl logs -n nsxi-platform -l app=cloud-connector --tail=100
+# Look for: "connection refused", "TLS handshake failed", "timeout"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Configure malware prevention policy</strong></p>
+<pre><code># Create malware prevention profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/malware-prevention-profiles/prod-mp-profile
+{
+  "display_name": "Production-Malware-Prevention",
+  "file_types_to_analyze": ["PE", "PDF", "OFFICE", "SCRIPT", "ARCHIVE"],
+  "cloud_file_analysis": true,
+  "local_file_analysis": true,
+  "file_size_limit_mb": 64
+}
+
+# Apply to security policy:
+# scope to workload groups — do NOT apply to infrastructure VMs
+PUT .../security-policies/mp-policy/rules/rule-1
+{
+  "action": "DETECT",
+  "direction": "IN_OUT",
+  "source_groups": ["ANY"],
+  "destination_groups": ["/infra/domains/default/groups/production-workloads"],
+  "scope": ["/infra/domains/default/groups/production-workloads"],
+  "profiles": ["/infra/malware-prevention-profiles/prod-mp-profile"]
+}
+
+# Monitor file analysis results:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/sha-256-indicators
+# Returns list of known malicious file hashes detected</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="#kb-81">KB #81 — IDS/IPS</a><a href="#kb-85">KB #85 — NDR</a><a href="phase3.html#kb-22">KB #22 — Microsegmentation</a></div>
+</div></div>
+
+<!-- KB #83 -->
+<div class="kb-entry" id="kb-83" data-type="fix" data-severity="high" data-keywords="url analysis fqdn filtering layer7 tls inspection category web filter dns">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number fix-num">83</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">URL Analysis & FQDN Filtering — L7 Context-Aware Rules</div>
+<div class="kb-entry-subtitle">Configure FQDN-based DFW rules, URL category filtering, and TLS inspection for east-west web traffic control</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">URL Filtering</span><span class="tag">FQDN</span><span class="tag">L7</span><span class="tag">TLS Inspection</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Context:</strong> NSX URL Analysis provides category-based URL filtering and FQDN allowlisting in DFW rules. This enables policy decisions based on domain names rather than IP addresses — critical for cloud-native workloads accessing SaaS services.</span></div>
+<div class="section-label">Use Cases</div>
+<ul>
+<li><strong>FQDN allowlist:</strong> Allow workloads to reach only approved external services (e.g., *.azure.com, api.github.com)</li>
+<li><strong>Category blocking:</strong> Block access to malware, phishing, gambling, or social media categories</li>
+<li><strong>TLS inspection:</strong> Decrypt and inspect encrypted east-west traffic for threats</li>
+<li><strong>Compliance:</strong> Enforce data exfiltration prevention by blocking unauthorized cloud storage domains</li>
+</ul>
+<div class="section-label">Configuration</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure FQDN-based DFW rules</strong></p>
+<pre><code># Step 1: Enable DNS Snooping on the relevant segments
+# NSX uses DNS snooping to map FQDNs to IPs in real-time
+# Ensure DNS traffic (port 53) flows through NSX-managed segments
+
+# Step 2: Create FQDN context profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/context-profiles/approved-saas
+{
+  "display_name": "Approved-SaaS-Endpoints",
+  "attributes": [
+    {
+      "key": "DOMAIN_NAME",
+      "attribute_type": "FQDN",
+      "value": [
+        "*.microsoft.com",
+        "*.azure.com",
+        "login.microsoftonline.com",
+        "api.github.com",
+        "*.amazonaws.com"
+      ]
+    }
+  ]
+}
+
+# Step 3: Create DFW rule using context profile:
+PUT .../security-policies/fqdn-policy/rules/allow-saas
+{
+  "action": "ALLOW",
+  "source_groups": ["/infra/domains/default/groups/app-tier"],
+  "destination_groups": ["ANY"],
+  "profiles": ["/infra/context-profiles/approved-saas"],
+  "services": ["/infra/services/HTTPS"],
+  "logged": true
+}
+
+# Step 4: Default deny for non-approved FQDNs:
+PUT .../security-policies/fqdn-policy/rules/deny-other
+{
+  "action": "DROP",
+  "source_groups": ["/infra/domains/default/groups/app-tier"],
+  "destination_groups": ["ANY"],
+  "services": ["/infra/services/HTTPS"],
+  "logged": true
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>URL category filtering</strong></p>
+<pre><code># Enable URL Analysis (requires NSX Application Platform):
+# Categories available: Malware, Phishing, Botnet, Gambling,
+# Social Media, Streaming, Cloud Storage, Uncategorized, etc.
+
+# Create URL category context profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/context-profiles/block-risky-categories
+{
+  "display_name": "Block-Risky-URL-Categories",
+  "attributes": [
+    {
+      "key": "URL_CATEGORY",
+      "attribute_type": "URL_CATEGORY",
+      "value": [
+        "MALWARE",
+        "PHISHING",
+        "BOTNET_COMMAND_AND_CONTROL",
+        "SPAM",
+        "UNAUTHORIZED_CLOUD_STORAGE"
+      ]
+    }
+  ]
+}
+
+# Apply in DFW rule — blocks access to risky URL categories:
+PUT .../rules/block-risky-urls
+{
+  "action": "REJECT",
+  "source_groups": ["/infra/domains/default/groups/all-workloads"],
+  "destination_groups": ["ANY"],
+  "profiles": ["/infra/context-profiles/block-risky-categories"],
+  "logged": true
+}
+
+# Key limitation: URL categorization requires the first DNS
+# query to be visible to NSX. Encrypted DNS (DoH) bypasses this.</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="phase3.html#kb-21">KB #21 — DFW Hit Count</a><a href="phase5.html#kb-46">KB #46 — DNS Forwarder</a><a href="#kb-81">KB #81 — IDS/IPS</a></div>
+</div></div>
+
+<!-- KB #84 -->
+<div class="kb-entry" id="kb-84" data-type="break" data-severity="critical" data-keywords="service insertion guest introspection partner svm east west third party antivirus endpoint">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number break-num">84</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">Service Insertion & Guest Introspection — Partner SVM Integration</div>
+<div class="kb-entry-subtitle">Third-party security SVMs not receiving traffic, Guest Introspection agent communication failure, or service chain broken</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Service Insertion</span><span class="tag">Guest Introspection</span><span class="tag">Partner SVM</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Service Insertion redirects east-west traffic to third-party security appliances (e.g., Palo Alto, Check Point, Trend Micro SVMs) for deep inspection. When the service chain breaks, traffic is either blackholed or bypasses inspection entirely.</span></div>
+<div class="section-label">Symptoms</div>
+<ul>
+<li>Partner SVM shows "DOWN" in Service Deployments</li>
+<li>Guest Introspection (GI) agent not communicating — thin agent on VM shows disconnected</li>
+<li>Traffic not being redirected to service chain — bypassing inspection</li>
+<li>Service VM health check failing repeatedly</li>
+<li>VMs protected by GI losing anti-malware real-time protection</li>
+</ul>
+<div class="section-label">Resolution Steps</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify Service Deployment and SVM health</strong></p>
+<pre><code># Check Service Deployment status:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/service-references
+GET https://&lt;nsx-manager&gt;/api/v1/serviceinsertion/services
+
+# Check individual SVM instance health:
+GET https://&lt;nsx-manager&gt;/api/v1/serviceinsertion/services/&lt;service-id&gt;/service-instances
+
+# On ESXi host — verify Guest Introspection components:
+/etc/init.d/vShield-Endpoint-Mux status
+# Should return: "running"
+
+# Check MUX connectivity to NSX Manager:
+esxcli network ip connection list | grep 1235
+# Should see ESTABLISHED connections to all 3 manager IPs
+
+# Verify GI thin agent inside the guest VM (Windows):
+sc query vsepflt    # vShield Endpoint filter driver
+sc query MfEEPTSvc  # Example: Trend Micro, McAfee, etc.
+# Both should show "RUNNING"
+
+# Linux VMs:
+systemctl status vmware-tools-vgauth
+ls /var/run/vmware/guestIntro*</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Fix broken service chain</strong></p>
+<pre><code># If SVM is DOWN — redeploy:
+# 1. In NSX Manager UI: System > Service Deployments
+# 2. Select failed deployment > Actions > Retry/Redeploy
+
+# If GI MUX is down on host:
+/etc/init.d/vShield-Endpoint-Mux restart
+
+# Verify service chain redirect rules on host:
+nsxcli -c "get service-insertion rules"
+# Should show redirect rules for the configured service chain
+
+# If traffic bypassing — check service chain failover action:
+GET .../service-chains/&lt;chain-id&gt;
+# "failure_policy": "ALLOW" = bypass on SVM failure (unsafe)
+# "failure_policy": "BLOCK" = drop traffic on SVM failure (safer)
+
+# Recommended for production: BLOCK with HA SVM pair
+# to prevent unprotected traffic during SVM maintenance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="#kb-81">KB #81 — IDS/IPS</a><a href="#kb-82">KB #82 — Malware Prevention</a><a href="phase3.html#kb-25">KB #25 — IDFW</a></div>
+</div></div>
+
+<!-- KB #85 -->
+<div class="kb-entry" id="kb-85" data-type="fix" data-severity="high" data-keywords="ndr network detection response correlation campaign lateral movement threat intelligence">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number fix-num">85</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX Network Detection & Response (NDR) — Threat Campaign Correlation</div>
+<div class="kb-entry-subtitle">Configure NDR for multi-signal threat detection, campaign correlation, and automated response across IDS/IPS, malware, and anomaly signals</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">NDR</span><span class="tag">Threat Intelligence</span><span class="tag">Campaign Detection</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Context:</strong> NSX NDR correlates signals from IDS/IPS, Malware Prevention, and network anomaly detection into unified threat campaigns. It provides kill-chain visualization and automated containment recommendations.</span></div>
+<div class="section-label">Architecture</div>
+<ul>
+<li><strong>Signal Sources:</strong> Distributed IDS/IPS, Malware Prevention, Network Traffic Analysis (NTA)</li>
+<li><strong>Correlation Engine:</strong> Runs on NSX Application Platform (NAPP)</li>
+<li><strong>Output:</strong> Campaigns with MITRE ATT&CK mapping, confidence scores, affected VMs</li>
+<li><strong>Response:</strong> Manual quarantine or integration with vSphere/DFW for automated isolation</li>
+</ul>
+<div class="section-label">Configuration</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Enable NDR and configure signal sources</strong></p>
+<pre><code># Prerequisites:
+# 1. NSX Application Platform (NAPP) deployed and healthy
+# 2. NSX IDS/IPS enabled (KB #81)
+# 3. NSX Malware Prevention enabled (KB #82)
+# 4. NSX Intelligence data collection active
+
+# Enable NDR via API:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services/ids-settings
+{
+  "ids_enabled": true,
+  "ndr_enabled": true,
+  "auto_update": true
+}
+
+# Verify NDR correlation engine status:
+GET https://&lt;nsx-manager&gt;/napp/api/v1/platform/monitor/feature/ndr
+# Expected: "status": "ACTIVE"
+
+# View detected campaigns:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/intrusion-services/campaigns
+# Returns: campaign list with severity, affected VMs, kill-chain stage
+
+# Each campaign includes:
+# - Intrusion events (IDS alerts)
+# - Malware file detections
+# - Anomalous lateral movement patterns
+# - MITRE ATT&CK technique mapping
+# - Confidence score (0-100)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Automated quarantine response</strong></p>
+<pre><code># When NDR detects a high-confidence campaign:
+# Option 1: Manual quarantine via DFW tag
+# Apply "QUARANTINE" tag to affected VM:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/tags
+{
+  "tags": [{"tag": "QUARANTINE", "scope": "security-action"}]
+}
+# Pre-configured DFW rule blocks all traffic for QUARANTINE-tagged VMs
+
+# Option 2: Automated response (NSX 4.1+)
+# Configure auto-quarantine policy for high-severity campaigns:
+PUT .../intrusion-services/ids-settings/auto-response
+{
+  "enabled": true,
+  "min_campaign_severity": "HIGH",
+  "action": "QUARANTINE",
+  "quarantine_group": "/infra/domains/default/groups/quarantined-vms",
+  "notification_email": "soc@company.com"
+}
+
+# DFW quarantine rule (should already exist):
+# Source: quarantined-vms | Dest: ANY | Action: DROP
+# Source: ANY | Dest: quarantined-vms | Action: DROP
+# Exception: Allow SOC forensic subnet for investigation</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="#kb-81">KB #81 — IDS/IPS</a><a href="#kb-82">KB #82 — Malware Prevention</a><a href="phase8.html#kb-73">KB #73 — NSX Intelligence</a></div>
+</div></div>
+
+<!-- KB #86 -->
+<div class="kb-entry" id="kb-86" data-type="break" data-severity="high" data-keywords="tls inspection decryption ssl certificate east west encrypted traffic visibility">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number break-num">86</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">TLS Inspection — East-West Encrypted Traffic Decryption</div>
+<div class="kb-entry-subtitle">TLS decryption breaking applications, certificate trust failures, or incomplete traffic visibility for encrypted east-west flows</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">TLS Inspection</span><span class="tag">Decryption</span><span class="tag">Certificate</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Caution:</strong> TLS Inspection decrypts encrypted east-west traffic for IDS/IPS and malware inspection. Improper configuration causes application failures, certificate validation errors, and potential compliance issues with certificate pinning.</span></div>
+<div class="section-label">Symptoms</div>
+<ul>
+<li>Applications failing with TLS handshake errors after enabling inspection</li>
+<li>Certificate pinned applications (mutual TLS) completely broken</li>
+<li>IDS/IPS still not seeing content of encrypted sessions</li>
+<li>Performance degradation due to decryption overhead</li>
+</ul>
+<div class="section-label">Resolution Steps</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure TLS Inspection with proper CA and bypass rules</strong></p>
+<pre><code># Step 1: Generate internal CA for TLS inspection
+# NSX will re-sign decrypted traffic with this CA
+# Import the CA into all workload VM trust stores
+
+# Upload CA certificate to NSX:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/tls-inspection-ca-certificates
+{
+  "display_name": "NSX-TLS-Inspection-CA",
+  "pem_encoded": "&lt;base64-CA-cert&gt;",
+  "private_key": "&lt;base64-private-key&gt;"
+}
+
+# Step 2: Create TLS inspection profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/tls-inspection-profiles/east-west-inspect
+{
+  "display_name": "East-West-TLS-Inspection",
+  "ca_certificate": "/infra/tls-inspection-ca-certificates/NSX-TLS-Inspection-CA",
+  "tls_protocols": ["TLS_V1_2", "TLS_V1_3"],
+  "failure_action": "BYPASS",  // Don't break traffic if decryption fails
+  "crl_check": false           // Disable CRL for internal traffic
+}
+
+# Step 3: CRITICAL — Create bypass rules FIRST:
+# Bypass certificate-pinned apps, health checks, infrastructure
+PUT .../tls-inspection-policies/bypass-rules/rules/bypass-pinned
+{
+  "action": "BYPASS",
+  "destination_groups": ["/infra/domains/default/groups/cert-pinned-apps"],
+  "notes": "mTLS apps, health monitors, infrastructure services"
+}
+
+# Step 4: Apply inspection to target segments:
+PUT .../tls-inspection-policies/inspect-east-west/rules/inspect-all
+{
+  "action": "DECRYPT",
+  "source_groups": ["/infra/domains/default/groups/standard-workloads"],
+  "destination_groups": ["/infra/domains/default/groups/standard-workloads"],
+  "tls_inspection_profile": "/infra/tls-inspection-profiles/east-west-inspect"
+}
+
+# Applications that MUST be bypassed:
+# - Mutual TLS / certificate-pinned services
+# - Financial/healthcare data with compliance requirements
+# - Infrastructure: vCenter, NSX Manager, AD/LDAP, backup agents</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="#kb-81">KB #81 — IDS/IPS</a><a href="#kb-83">KB #83 — URL/FQDN Filtering</a><a href="phase2.html#kb-11">KB #11 — Certificate Rotation</a></div>
+</div></div>
+
+<!-- KB #87 -->
+<div class="kb-entry" id="kb-87" data-type="fix" data-severity="high" data-keywords="nsx intelligence flow visualization recommendation micro segmentation east west traffic analysis">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number fix-num">87</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX Intelligence — Advanced Flow Analysis & Rule Recommendations</div>
+<div class="kb-entry-subtitle">Leverage NSX Intelligence for traffic flow visualization, automated microsegmentation rule recommendations, and compliance posture analysis</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">NSX Intelligence</span><span class="tag">Flow Analysis</span><span class="tag">Automation</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Context:</strong> NSX Intelligence collects and analyzes all east-west traffic flows, providing visual topology maps, automated DFW rule recommendations, and security posture scoring. This is the foundation for data-driven microsegmentation.</span></div>
+<div class="section-label">Capabilities</div>
+<ul>
+<li><strong>Flow Visualization:</strong> See all VM-to-VM communication flows in real-time topology</li>
+<li><strong>Rule Recommendations:</strong> AI-generated DFW rules based on observed traffic patterns</li>
+<li><strong>Suspicious Flow Detection:</strong> Identify unusual lateral movement or data exfiltration</li>
+<li><strong>Compliance Mapping:</strong> PCI-DSS, HIPAA scope identification via traffic analysis</li>
+</ul>
+<div class="section-label">Configuration</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Enable and configure NSX Intelligence data collection</strong></p>
+<pre><code># NSX Intelligence runs on NSX Application Platform (NAPP)
+# Verify Intelligence feature activation:
+GET https://&lt;nsx-manager&gt;/napp/api/v1/platform/monitor/feature/intelligence
+# Expected: "status": "ACTIVE"
+
+# Configure flow data collection scope:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/intelligence
+{
+  "data_collection_enabled": true,
+  "flow_data_collection": {
+    "enabled": true,
+    "scope": "ALL_TRANSPORT_NODES",   // or specific TN groups
+    "retention_days": 30              // How long to keep flow data
+  }
+}
+
+# After 24-48 hours of collection, view flow topology:
+# NSX Manager UI > Plan & Troubleshoot > Discover & Take Action
+
+# Generate microsegmentation recommendations:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/intelligence/recommendations
+{
+  "scope_group": "/infra/domains/default/groups/app-tier-vms",
+  "recommendation_type": "MICROSEGMENTATION",
+  "observation_period_days": 14
+}
+
+# Review and apply recommended rules:
+GET .../recommendations/&lt;recommendation-id&gt;/rules
+# Returns suggested DFW rules based on observed flows
+# Review each rule before applying — verify no missed flows</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Identify unprotected flows and compliance gaps</strong></p>
+<pre><code># Query for flows NOT covered by any DFW rule:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/intelligence/unprotected-flows
+{
+  "group": "/infra/domains/default/groups/pci-scope",
+  "time_range": "LAST_7_DAYS"
+}
+
+# Returns: list of VM pairs communicating without DFW enforcement
+# Priority: flows crossing security zones (e.g., PCI to non-PCI)
+
+# Suspicious flow detection — anomaly baseline:
+GET .../intelligence/suspicious-traffic
+# Flags:
+# - New flows never seen before (potential lateral movement)
+# - Unusual ports (non-standard application behavior)
+# - High-volume transfers (potential exfiltration)
+# - Connections to known-bad IPs (threat intelligence match)
+
+# Export flow data for SIEM integration:
+# Configure syslog export of Intelligence events to Splunk/QRadar
+PUT .../intelligence/export-config
+{
+  "syslog_server": "siem.company.com",
+  "port": 6514,
+  "protocol": "TLS"
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="phase8.html#kb-73">KB #73 — NSX Intelligence Basics</a><a href="phase3.html#kb-22">KB #22 — Microsegmentation</a><a href="#kb-85">KB #85 — NDR</a></div>
+</div></div>
+
+<!-- KB #88 -->
+<div class="kb-entry" id="kb-88" data-type="break" data-severity="high" data-keywords="endpoint protection nsx guest introspection thin agent agentless anti malware vm tools">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number break-num">88</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX Guest Introspection — Agentless Endpoint Protection</div>
+<div class="kb-entry-subtitle">Guest Introspection framework failures causing loss of agentless antivirus, file integrity monitoring, or vulnerability scanning on VMs</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Guest Introspection</span><span class="tag">Endpoint Protection</span><span class="tag">Agentless</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Guest Introspection (GI) enables agentless security — antivirus, file integrity, and vulnerability scanning run on a dedicated SVM per host rather than agents inside every VM. When GI breaks, all VMs on that host lose protection silently.</span></div>
+<div class="section-label">Symptoms</div>
+<ul>
+<li>GI SVM shows "Not Running" in Service Deployments</li>
+<li>VM security status shows "Unprotected" in partner console (Trend Micro, McAfee, etc.)</li>
+<li>vShield Endpoint MUX service down on ESXi host</li>
+<li>Guest VM thin agent (vsepflt) driver not loaded</li>
+<li>High latency on file I/O when GI SVM is overloaded</li>
+</ul>
+<div class="section-label">Resolution Steps</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Diagnose Guest Introspection framework health</strong></p>
+<pre><code># On ESXi host — check GI MUX service:
+/etc/init.d/vShield-Endpoint-Mux status
+# If stopped:
+/etc/init.d/vShield-Endpoint-Mux start
+
+# Check MUX logs for errors:
+cat /var/log/vShield-Endpoint-Mux.log | tail -50
+# Common errors:
+# "Failed to connect to Context MUX" — network issue to SVM
+# "EPSec registration timeout" — SVM not responding
+
+# Verify GI SVM is powered on and on correct port group:
+# In vSphere: Check service VM (e.g., Trend Micro DSVA) is running
+# SVM must be on the same host as the VMs it protects
+
+# Check SVM health from NSX Manager:
+GET https://&lt;nsx-manager&gt;/api/v1/serviceinsertion/services/&lt;svc-id&gt;/service-instances/&lt;instance-id&gt;/status
+
+# Inside guest VM (Windows) — check thin agent:
+fltmc | findstr vsepflt
+# Should show: vsepflt - loaded
+# If not loaded:
+fltmc load vsepflt
+
+# Verify VMware Tools GI component:
+# Control Panel > Programs > VMware Tools > Modify
+# Ensure "Guest Introspection" component is installed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Recover and validate GI service</strong></p>
+<pre><code># If SVM crashed — redeploy from NSX Manager:
+# System > Service Deployments > Select partner service
+# Actions > Redeploy on affected host
+
+# Performance tuning for GI SVM:
+# - Allocate minimum 4 vCPU, 8GB RAM per SVM
+# - Use SSD-backed datastore for scan cache
+# - Configure scan exclusions for known-good files:
+#   *.vmdk, *.log, database data files, backup files
+
+# Validate protection after recovery:
+# 1. Check NSX Manager: Inventory > Groups > Security status
+# 2. Check partner console: All VMs showing "Protected"
+# 3. Test: Create EICAR test file on a VM
+#    Download: https://www.eicar.org/download-anti-malware-testfile/
+#    If GI working: file should be quarantined immediately
+
+# High availability design:
+# - GI SVM is per-host (auto-deployed via service deployment)
+# - If SVM fails, configure "failure_policy": "BLOCK" for security
+# - Monitor SVM health with vRealize/Aria Operations alerts
+# - DRS anti-affinity: SVM must follow protected VMs</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="#kb-84">KB #84 — Service Insertion</a><a href="#kb-82">KB #82 — Malware Prevention</a><a href="phase3.html#kb-25">KB #25 — IDFW</a></div>
+</div></div>
+
+<!-- KB #89 -->
+<div class="kb-entry" id="kb-89" data-type="fix" data-severity="medium" data-keywords="nsx plus saas cloud management multi site centralized policy compliance posture">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number fix-num">89</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX+ (SaaS) — Cloud-Managed NSX Operations</div>
+<div class="kb-entry-subtitle">Configure NSX+ cloud service for centralized multi-site management, SaaS-based policy, and compliance posture reporting</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">NSX+</span><span class="tag">SaaS</span><span class="tag">Cloud Management</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Context:</strong> NSX+ is VMware's SaaS offering for centralized NSX management across multiple on-premises sites. It provides cloud-based policy management, security posture dashboards, and simplified multi-site networking without deploying Global Manager on-prem.</span></div>
+<div class="section-label">Capabilities</div>
+<ul>
+<li><strong>Centralized Policy:</strong> Manage DFW, routing, and segments across all sites from one cloud console</li>
+<li><strong>Security Posture:</strong> Compliance scoring, drift detection, and remediation recommendations</li>
+<li><strong>Multi-Site Networking:</strong> Stretch networks across sites without on-prem Global Manager</li>
+<li><strong>Intelligence-as-a-Service:</strong> Flow analytics and recommendations without NAPP deployment</li>
+</ul>
+<div class="section-label">Configuration</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Connect on-prem NSX to NSX+ cloud service</strong></p>
+<pre><code># Prerequisites:
+# - NSX 4.0+ on-premises deployment
+# - VMware Cloud Services Portal (CSP) organization
+# - Outbound HTTPS (443) from NSX Manager to VMware cloud
+
+# Step 1: Register NSX Manager with CSP
+# In NSX Manager UI: System > NSX+ > Connect to Cloud
+# Enter CSP organization ID and API token
+
+# Step 2: Verify connectivity:
+GET https://&lt;nsx-manager&gt;/api/v1/nsx-plus/status
+# Expected: "connection_status": "CONNECTED"
+# "sync_status": "IN_SYNC"
+
+# Step 3: Access NSX+ console:
+# URL: https://nsx.cloud.vmware.com
+# Login with CSP credentials
+# All connected sites appear in unified dashboard
+
+# Data synced to cloud:
+# - Inventory (VMs, segments, groups, policies)
+# - Security rules and posture metrics
+# - Flow metadata (no payload data leaves on-prem)
+# - Alarms and health status
+
+# Data that stays on-prem:
+# - Actual packet data and workload traffic
+# - Credentials and certificates
+# - Full API access remains local</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Security posture and compliance reporting</strong></p>
+<pre><code># NSX+ provides automated security posture scoring:
+# Factors:
+# - % of workloads covered by DFW rules
+# - % of segments with microsegmentation
+# - IDS/IPS coverage percentage
+# - Certificate expiration status
+# - Unprotected east-west flows count
+
+# Access posture dashboard:
+# NSX+ Console > Security > Posture
+# Score: 0-100 (higher = more secure)
+
+# Drift detection:
+# NSX+ compares current config against baseline
+# Alerts on: new unprotected VMs, rule deletions,
+# permission changes, TZ modifications
+
+# Compliance frameworks:
+# Map NSX security controls to:
+# - PCI-DSS (Requirement 1: Firewall, Req 6: Patching)
+# - HIPAA (Access Controls, Audit)  
+# - NIST 800-53 (SC-7: Boundary Protection)
+# Export compliance reports as PDF for auditors</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="phase7.html#kb-61">KB #61 — Federation GM/LM</a><a href="#kb-87">KB #87 — NSX Intelligence</a><a href="phase7.html#kb-63">KB #63 — VCF Lifecycle</a></div>
+</div></div>
+
+<!-- KB #90 -->
+<div class="kb-entry" id="kb-90" data-type="fix" data-severity="high" data-keywords="ncp antrea container kubernetes pod network policy calico tanzu nsx container plugin cni">
+<div class="kb-entry-header" onclick="toggleEntry(this)">
+<div class="kb-number fix-num">90</div>
+<div class="kb-entry-title-block">
+<div class="kb-entry-title">NSX Container Networking (NCP/Antrea) — Kubernetes Integration</div>
+<div class="kb-entry-subtitle">Configure NSX Container Plugin (NCP) or Antrea CNI for Kubernetes pod networking, network policies, and DFW-to-pod microsegmentation</div>
+<div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">NCP</span><span class="tag">Antrea</span><span class="tag">Kubernetes</span><span class="tag">Container Networking</span></div>
+</div>
+<svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+</div>
+<div class="kb-entry-body">
+<div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Context:</strong> NSX provides container networking via two approaches: NCP (NSX Container Plugin) for full NSX integration with per-pod logical ports, or Antrea CNI with NSX management plane integration for Tanzu Kubernetes clusters. Both enable DFW microsegmentation at the pod/namespace level.</span></div>
+<div class="section-label">Architecture Options</div>
+<div class="two-col">
+<div class="info-box"><div class="info-box-title blue">NSX Container Plugin (NCP)</div>
+<ul>
+<li>Full NSX integration — each pod gets NSX logical port</li>
+<li>DFW rules applied directly to pod vNICs</li>
+<li>NSX segments mapped to K8s namespaces</li>
+<li>T1 gateway per namespace for routing isolation</li>
+<li>Best for: Tanzu on vSphere, full NSX investment</li>
+</ul></div>
+<div class="info-box"><div class="info-box-title green">Antrea CNI + NSX</div>
+<ul>
+<li>Antrea handles in-cluster networking (OVS-based)</li>
+<li>NSX manages multi-cluster policies and observability</li>
+<li>K8s NetworkPolicy enforced locally by Antrea</li>
+<li>NSX provides cross-cluster security and Intelligence</li>
+<li>Best for: Multi-cluster, cloud-native approach</li>
+</ul></div>
+</div>
+<div class="section-label">Configuration</div>
+<div class="steps">
+<div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>NCP deployment and troubleshooting</strong></p>
+<pre><code># NCP runs as a pod in the K8s cluster (nsx-system namespace)
+kubectl get pods -n nsx-system
+# Expected: nsx-ncp-xxxx (Running), nsx-node-agent-xxxx (Running on each node)
+
+# Check NCP health:
+kubectl logs -n nsx-system -l component=nsx-ncp --tail=50
+# Common errors:
+# "Failed to create logical port" — IP pool exhausted
+# "NSX Manager unreachable" — check connectivity on port 443
+# "Stale port" — pod deleted but NSX port not cleaned up
+
+# NCP configuration (ConfigMap):
+kubectl get configmap nsx-ncp-config -n nsx-system -o yaml
+# Key settings:
+# nsx_api_managers = &lt;manager-ip-1&gt;,&lt;manager-ip-2&gt;,&lt;manager-ip-3&gt;
+# top_tier_router = /infra/tier-0s/&lt;t0-id&gt;
+# overlay_tz = /infra/sites/default/enforcement-points/default/transport-zones/&lt;tz-id&gt;
+
+# IP pool for pods:
+# Each namespace gets a subnet from the configured IP block
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/ip-blocks
+# Ensure sufficient /24 subnets available for namespace growth
+
+# Troubleshoot pod connectivity:
+# 1. Check pod's NSX logical port:
+kubectl describe pod &lt;pod-name&gt; | grep nsx
+# 2. Verify segment exists in NSX for the namespace
+# 3. Check T1 router has correct static routes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+<div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>DFW microsegmentation for containers</strong></p>
+<pre><code># NSX DFW can target pods using:
+# - Namespace labels (mapped to NSX tags)
+# - Pod labels (mapped to NSX segment port tags)
+# - K8s NetworkPolicy (translated to DFW rules by NCP)
+
+# Example: K8s NetworkPolicy (NCP translates to DFW):
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: production
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  ingress: []  # Empty = deny all ingress
+
+# NSX-native DFW rule targeting pods:
+# Use NSX Manager UI or API to create rules with scope:
+# Source: Tag = "k8s-namespace:production"
+# Dest: Tag = "k8s-app:database"
+# Service: TCP/5432
+# Action: ALLOW
+
+# Antrea ClusterNetworkPolicy (multi-cluster enforcement):
+apiVersion: crd.antrea.io/v1beta1
+kind: ClusterNetworkPolicy
+metadata:
+  name: restrict-db-access
+spec:
+  priority: 5
+  tier: securityops
+  appliedTo:
+  - podSelector:
+      matchLabels:
+        app: postgres
+  ingress:
+  - action: Allow
+    from:
+    - podSelector:
+        matchLabels:
+          role: backend
+    ports:
+    - protocol: TCP
+      port: 5432
+  - action: Drop</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+</div>
+<div class="cross-ref"><div class="cross-ref-title">Related KBs</div><a href="phase3.html#kb-22">KB #22 — Microsegmentation</a><a href="phase6.html#kb-51">KB #51 — Segment Ports</a><a href="phase7.html#kb-66">KB #66 — Workload Domain Isolation</a></div>
+</div></div>
+
+</div>
+
+<footer class="footer"><p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p><p style="margin-top:0.5rem">&copy; 2026 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p></footer>
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+(function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>

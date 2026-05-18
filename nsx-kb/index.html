@@ -306,10 +306,10 @@
     <h1>VMware NSX-T <span>Knowledge Base</span></h1>
     <p class="subtitle">Professional NSX-T Data Center troubleshooting — Transport Nodes, DFW, Routing, Edge Services &amp; Federation</p>
     <div class="hero-badges">
-        <span class="badge badge-total">80 KB Entries</span>
-        <span class="badge badge-break">&#9888; 40 Break</span>
-        <span class="badge badge-fix">&#10003; 40 Fix</span>
-        <span class="badge badge-phase">8 Phases</span>
+        <span class="badge badge-total">90 KB Entries</span>
+        <span class="badge badge-break">&#9888; 45 Break</span>
+        <span class="badge badge-fix">&#10003; 45 Fix</span>
+        <span class="badge badge-phase">9 Phases</span>
         <a href="decision-tree.html" class="badge" style="background:rgba(210,153,34,0.12);color:#e3b341;border:1px solid rgba(210,153,34,0.25);text-decoration:none">&#9878; Decision Tree</a>
     </div>
 </section>
@@ -317,7 +317,7 @@
 <!-- ── Global Search ── -->
 <div class="search-section">
     <div class="search-box" id="searchBox">
-        <input type="text" id="globalSearch" placeholder="Search all 80 KB entries — DFW, BGP, Edge, Transport Node, VTEP, Federation..." oninput="performSearch()" autocomplete="off">
+        <input type="text" id="globalSearch" placeholder="Search all 90 KB entries — DFW, BGP, Edge, Transport Node, VTEP, IDS/IPS, Malware..." oninput="performSearch()" autocomplete="off">
         <div class="search-hint">
             <span class="search-chip" onclick="quickSearch('DFW')">DFW</span>
             <span class="search-chip" onclick="quickSearch('BGP')">BGP</span>
@@ -336,10 +336,10 @@
 
 <!-- ── Stats ── -->
 <div class="stats-section reveal" id="stats">
-    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="80">0</div><div class="stat-label">Total KB Entries</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="40">0</div><div class="stat-label">Break Scenarios</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="40">0</div><div class="stat-label">Fix Procedures</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="8">0</div><div class="stat-label">Phases</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="90">0</div><div class="stat-label">Total KB Entries</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="45">0</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="45">0</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="9">0</div><div class="stat-label">Phases</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
 </div>
 
@@ -590,6 +590,36 @@
             </div>
         </a>
 
+        <!-- Phase 9 -->
+        <a href="phase9.html" class="phase-card">
+            <div class="phase-card-bar" style="background:#a855f7"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.25);color:#c4b5fd">9</div>
+                <div>
+                    <div class="phase-card-title">Advanced Security</div>
+                    <div class="phase-card-sub">IDS/IPS, Malware Prevention, NDR, TLS Inspection &amp; Container Networking</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#81</span> Distributed IDS/IPS</li>
+                    <li><span class="kb-num-small b">#82</span> Malware Prevention</li>
+                    <li><span class="kb-num-small f">#83</span> URL/FQDN Filtering</li>
+                    <li><span class="kb-num-small b">#84</span> Service Insertion &amp; GI</li>
+                    <li><span class="kb-num-small f">#85</span> Network Detection &amp; Response</li>
+                    <li><span class="kb-num-small b">#86</span> TLS Inspection</li>
+                    <li><span class="kb-num-small f">#87</span> Intelligence Advanced</li>
+                    <li><span class="kb-num-small b">#88</span> Guest Introspection</li>
+                    <li><span class="kb-num-small f">#89</span> NSX+ (SaaS)</li>
+                    <li><span class="kb-num-small f">#90</span> Container Networking</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #81–90</span>
+                <span class="link-text">Open Phase 9 →</span>
+            </div>
+        </a>
+
     </div>
 </section>
 
@@ -599,9 +629,9 @@
 <section class="filter-section reveal" id="kbindex">
     <div class="section-title">Complete KB Index</div>
     <div class="filter-tabs">
-        <button class="filter-tab active" onclick="filterIndex('all', this)">All (80)</button>
-        <button class="filter-tab" onclick="filterIndex('break', this)">Break (40)</button>
-        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (40)</button>
+        <button class="filter-tab active" onclick="filterIndex('all', this)">All (90)</button>
+        <button class="filter-tab" onclick="filterIndex('break', this)">Break (45)</button>
+        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (45)</button>
         <button class="filter-tab" onclick="filterIndex('critical', this)">Critical</button>
         <button class="filter-tab" onclick="filterIndex('high', this)">High</button>
         <button class="filter-tab" onclick="filterIndex('medium', this)">Medium</button>
@@ -629,6 +659,7 @@
             <a href="phase6.html">Phase 6 — Segments &amp; Overlays</a>
             <a href="phase7.html">Phase 7 — VCF &amp; Federation</a>
             <a href="phase8.html">Phase 8 — Troubleshooting &amp; CLI</a>
+            <a href="phase9.html">Phase 9 — Advanced Security</a>
         </div>
         <div class="footer-col">
             <h4>Resources</h4>
@@ -726,7 +757,17 @@ const kbEntries = [
     { id:77, title:"NSX API Rate Limiting & Throttling", type:"break", severity:"high", phase:8, file:"phase8.html#kb-77", keywords:"NSX API rate limiting throttling 429 too many requests" },
     { id:78, title:"Proactive Transport Node Health Checks", type:"fix", severity:"high", phase:8, file:"phase8.html#kb-78", keywords:"proactive transport node health checks status readiness" },
     { id:79, title:"Host Transport Node Troubleshooting Workflow", type:"fix", severity:"critical", phase:8, file:"phase8.html#kb-79", keywords:"host transport node troubleshooting workflow install configure connectivity" },
-    { id:80, title:"NSX Metrics & Monitoring (Prometheus/SNMP)", type:"fix", severity:"medium", phase:8, file:"phase8.html#kb-80", keywords:"NSX metrics monitoring Prometheus SNMP trap MIB export" }
+    { id:80, title:"NSX Metrics & Monitoring (Prometheus/SNMP)", type:"fix", severity:"medium", phase:8, file:"phase8.html#kb-80", keywords:"NSX metrics monitoring Prometheus SNMP trap MIB export" },
+    { id:81, title:"NSX Distributed IDS/IPS — Signatures & Tuning", type:"break", severity:"critical", phase:9, file:"phase9.html#kb-81", keywords:"IDS IPS intrusion detection prevention signature distributed false positive" },
+    { id:82, title:"Distributed Malware Prevention — Cloud Connector", type:"break", severity:"critical", phase:9, file:"phase9.html#kb-82", keywords:"malware prevention distributed file inspection cloud connector sandbox ATP" },
+    { id:83, title:"URL Analysis & FQDN Filtering — L7 Rules", type:"fix", severity:"high", phase:9, file:"phase9.html#kb-83", keywords:"URL analysis FQDN filtering layer7 TLS inspection category web" },
+    { id:84, title:"Service Insertion & Guest Introspection — Partner SVM", type:"break", severity:"critical", phase:9, file:"phase9.html#kb-84", keywords:"service insertion guest introspection partner SVM east west third party" },
+    { id:85, title:"NSX Network Detection & Response (NDR)", type:"fix", severity:"high", phase:9, file:"phase9.html#kb-85", keywords:"NDR network detection response correlation campaign lateral movement threat" },
+    { id:86, title:"TLS Inspection — East-West Decryption", type:"break", severity:"high", phase:9, file:"phase9.html#kb-86", keywords:"TLS inspection decryption SSL certificate east west encrypted traffic" },
+    { id:87, title:"NSX Intelligence — Advanced Flow Analysis", type:"fix", severity:"high", phase:9, file:"phase9.html#kb-87", keywords:"NSX intelligence flow visualization recommendation microsegmentation analysis" },
+    { id:88, title:"Guest Introspection — Agentless Endpoint Protection", type:"break", severity:"high", phase:9, file:"phase9.html#kb-88", keywords:"endpoint protection guest introspection thin agent agentless anti malware" },
+    { id:89, title:"NSX+ (SaaS) — Cloud-Managed Operations", type:"fix", severity:"medium", phase:9, file:"phase9.html#kb-89", keywords:"NSX+ SaaS cloud management multi site centralized policy compliance" },
+    { id:90, title:"NSX Container Networking (NCP/Antrea)", type:"fix", severity:"high", phase:9, file:"phase9.html#kb-90", keywords:"NCP Antrea container kubernetes pod network policy CNI Tanzu" }
 ];
 
 const phaseNames = {
@@ -737,7 +778,8 @@ const phaseNames = {
     5: "Phase 5 — Edge Services",
     6: "Phase 6 — Segments & Overlays",
     7: "Phase 7 — VCF & Federation",
-    8: "Phase 8 — Troubleshooting & CLI"
+    8: "Phase 8 — Troubleshooting & CLI",
+    9: "Phase 9 — Advanced Security"
 };
 
 // ── Render KB Index ──

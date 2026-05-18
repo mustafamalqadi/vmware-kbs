@@ -115,7 +115,7 @@
         <h1>NSX-T KB <span>— Decision Tree</span></h1>
         <div class="header-badges">
             <span class="badge badge-tree">&#9878; Interactive Troubleshooting</span>
-            <span class="badge badge-phase">80 KB Entries</span>
+            <span class="badge badge-phase">90 KB Entries</span>
         </div>
     </div>
 </header>
@@ -131,6 +131,7 @@
     <a href="phase6.html">P6 Segments</a>
     <a href="phase7.html">P7 VCF</a>
     <a href="phase8.html">P8 CLI</a>
+    <a href="phase9.html">P9 Security</a>
     <a href="https://mustafamalqadi.github.io/vmware-kbs/" target="_blank" rel="noopener">&#8593; Portal</a>
 </nav>
 
@@ -221,7 +222,8 @@ const tree = {
             { id: "segments", icon: "&#128268;", title: "Segments & Overlays", desc: "GENEVE, MTU, MAC learning, VLAN trunks, TEP pools, segment connectivity", count: 10 },
             { id: "manager", icon: "&#128187;", title: "NSX Manager & Platform", desc: "Cluster health, split-brain, certificates, backup/restore, upgrades", count: 12 },
             { id: "federation", icon: "&#127758;", title: "VCF & Federation", desc: "Global Manager, stretched segments, VCF lifecycle, cross-location", count: 10 },
-            { id: "troubleshoot", icon: "&#128295;", title: "CLI & Diagnostics", desc: "central-cli, packet capture, API issues, support bundles, monitoring", count: 10 }
+            { id: "troubleshoot", icon: "&#128295;", title: "CLI & Diagnostics", desc: "central-cli, packet capture, API issues, support bundles, monitoring", count: 10 },
+            { id: "security", icon: "&#128737;", title: "Advanced Security", desc: "IDS/IPS, malware prevention, NDR, TLS inspection, service insertion, containers", count: 10 }
         ]
     },
 
@@ -352,6 +354,22 @@ const tree = {
             { id: "metrics_mon", icon: "&#128993;", title: "NSX metrics & monitoring", desc: "Prometheus, SNMP, and built-in monitoring tools", result: true },
             { id: "proactive_health", icon: "&#128993;", title: "Proactive transport node health checks", desc: "Automated health verification scripts", result: true }
         ]
+    },
+
+    security: {
+        question: "What advanced security issue?",
+        choices: [
+            { id: "ids_ips", icon: "&#128308;", title: "IDS/IPS signature & detection issues", desc: "Signature updates failing, false positives, no alerts", result: true },
+            { id: "malware_prev", icon: "&#128308;", title: "Distributed Malware Prevention failure", desc: "Cloud connector down, file scanning not working", result: true },
+            { id: "url_fqdn", icon: "&#128993;", title: "URL/FQDN filtering configuration", desc: "FQDN-based DFW rules, URL categories, DNS snooping", result: true },
+            { id: "svc_insertion", icon: "&#128308;", title: "Service Insertion / Guest Introspection", desc: "Partner SVM down, service chain broken", result: true },
+            { id: "ndr_campaign", icon: "&#128993;", title: "NDR campaign detection & response", desc: "Threat correlation, automated quarantine", result: true },
+            { id: "tls_inspect", icon: "&#128308;", title: "TLS Inspection breaking applications", desc: "Certificate trust errors, decryption failures", result: true },
+            { id: "intel_advanced", icon: "&#128993;", title: "NSX Intelligence advanced analysis", desc: "Rule recommendations, unprotected flow detection", result: true },
+            { id: "gi_endpoint", icon: "&#128308;", title: "Guest Introspection endpoint protection", desc: "Agentless AV down, thin agent not loaded", result: true },
+            { id: "nsx_plus", icon: "&#128993;", title: "NSX+ SaaS management", desc: "Cloud-managed multi-site operations", result: true },
+            { id: "container_net", icon: "&#128993;", title: "Container networking (NCP/Antrea)", desc: "Kubernetes pod networking, network policies", result: true }
+        ]
     }
 };
 
@@ -453,7 +471,19 @@ const results = {
     edge_dp_cli: { kb: 76, title: "Edge Datapath CLI Deep Dive", type: "fix", phase: 8, summary: "On edge VM: 'get datapath', 'get interface', 'get arp-table', 'get nat statistics'. Use dp-cli for low-level debugging of edge forwarding plane." },
     tn_workflow: { kb: 79, title: "Host Transport Node Troubleshooting", type: "fix", phase: 8, summary: "Step-by-step: 1) Check nsx-proxy status, 2) Verify tunnel status, 3) Check TEP ping, 4) Review nsxa.log, 5) Verify controller channel, 6) Check VIB version." },
     metrics_mon: { kb: 80, title: "NSX Metrics & Monitoring", type: "fix", phase: 8, summary: "Configure Prometheus endpoint on NSX Manager (/monitoring/v1/metrics). SNMP traps for alerts. Built-in monitoring dashboard for edge throughput, DFW hit counts." },
-    proactive_health: { kb: 78, title: "Proactive Transport Node Health Checks", type: "fix", phase: 8, summary: "Automated checks: tunnel status, TEP reachability, VIB consistency, controller connectivity. Use GET /api/v1/transport-nodes/<id>/status for each node." }
+    proactive_health: { kb: 78, title: "Proactive Transport Node Health Checks", type: "fix", phase: 8, summary: "Automated checks: tunnel status, TEP reachability, VIB consistency, controller connectivity. Use GET /api/v1/transport-nodes/<id>/status for each node." },
+
+    // Advanced Security
+    ids_ips: { kb: 81, title: "NSX Distributed IDS/IPS — Signatures & Tuning", type: "break", phase: 9, summary: "IDS not detecting or false positives. Check signature update connectivity, start in DETECT mode, tune for 2-4 weeks before enabling PREVENT. Create targeted profiles per application tier." },
+    malware_prev: { kb: 82, title: "Distributed Malware Prevention — Cloud Connector", type: "break", phase: 9, summary: "Malware Prevention service degraded. Verify NSX Application Platform health, check cloud connector pod status, ensure internet access for sandbox analysis." },
+    url_fqdn: { kb: 83, title: "URL Analysis & FQDN Filtering", type: "fix", phase: 9, summary: "Configure FQDN-based DFW rules using DNS snooping. Create context profiles with domain allowlists, apply URL category blocking for malware/phishing sites." },
+    svc_insertion: { kb: 84, title: "Service Insertion & Guest Introspection", type: "break", phase: 9, summary: "Partner SVM down or service chain broken. Check vShield-Endpoint-Mux on host, verify SVM health, check failure_policy setting (ALLOW vs BLOCK on SVM failure)." },
+    ndr_campaign: { kb: 85, title: "NSX Network Detection & Response (NDR)", type: "fix", phase: 9, summary: "Configure NDR for multi-signal threat campaign correlation. Combines IDS/IPS + Malware + anomaly signals into MITRE ATT&CK-mapped campaigns with auto-quarantine." },
+    tls_inspect: { kb: 86, title: "TLS Inspection — East-West Decryption", type: "break", phase: 9, summary: "TLS decryption breaking apps. Create bypass rules FIRST for cert-pinned/mTLS apps. Deploy internal CA to workload trust stores. Set failure_action to BYPASS." },
+    intel_advanced: { kb: 87, title: "NSX Intelligence — Advanced Flow Analysis", type: "fix", phase: 9, summary: "Use Intelligence for automated microsegmentation recommendations based on observed flows. Identify unprotected flows, suspicious lateral movement, compliance gaps." },
+    gi_endpoint: { kb: 88, title: "Guest Introspection — Agentless Endpoint Protection", type: "break", phase: 9, summary: "GI SVM down = all VMs on that host lose protection silently. Check MUX service, verify thin agent (vsepflt) loaded in VMs, redeploy SVM if crashed." },
+    nsx_plus: { kb: 89, title: "NSX+ (SaaS) — Cloud-Managed Operations", type: "fix", phase: 9, summary: "Connect on-prem NSX to VMware Cloud Services for centralized multi-site management. Provides security posture scoring, drift detection, compliance reporting." },
+    container_net: { kb: 90, title: "NSX Container Networking (NCP/Antrea)", type: "fix", phase: 9, summary: "NCP gives each pod an NSX logical port with full DFW. Antrea CNI handles in-cluster networking with NSX providing cross-cluster policy. Check nsx-ncp pod health." }
 };
 
 // ===== APP STATE =====
