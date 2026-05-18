@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 8: Troubleshooting &amp; CLI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}.scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}.header{background:linear-gradient(180deg,#0d1117,#111820,#0d1117);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}.header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}.header h1{font-size:1.5rem;font-weight:700}.header h1 span{font-weight:400;color:var(--text-secondary)}.badge{display:inline-flex;align-items:center;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500}.badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}.badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}.badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}.search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}.search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}.search-bar input:focus{border-color:var(--accent)}.stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}.stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase}.nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}.nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}.nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}.container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}.kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}.kb-entry:hover{border-color:rgba(88,166,255,0.35)}.kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer}.kb-entry-header:hover{background:var(--bg-card-hover)}.kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}.kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}.kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}.kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}.kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}.kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}.tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}.tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}.tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}.tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}.kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}.kb-entry.open .kb-chevron{transform:rotate(180deg)}.kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}.kb-entry.open .kb-entry-body{display:block}.section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}.section-label::after{content:'';flex:1;height:1px;background:var(--border)}.kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}.kb-entry-body ul{padding-left:1.5rem;margin-bottom:0.75rem}.kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}.kb-entry-body li strong{color:var(--text-primary)}pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}.copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem}.alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}.alert-icon{flex-shrink:0;font-size:1.1rem}.alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}.alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}.alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}.steps{margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem}.step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}.step-content{flex:1}.footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}.footer a{color:var(--text-secondary);text-decoration:none}.phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}.phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}.phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}.phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<header class="header"><div class="header-inner"><h1>VMware NSX-T <span>Knowledge Base</span></h1><div style="display:flex;gap:0.75rem"><span class="badge badge-phase">Phase 8 — Troubleshooting &amp; CLI</span><span class="badge badge-break">&#9888; 1 Break</span><span class="badge badge-fix">&#10003; 9 Fix</span></div></div></header>
+<nav class="phase-nav"><a href="index.html" class="nav-dashboard">&larr; Dashboard</a><a href="phase1.html">Phase 1</a><a href="phase2.html">Phase 2</a><a href="phase3.html">Phase 3</a><a href="phase4.html">Phase 4</a><a href="phase5.html">Phase 5</a><a href="phase6.html">Phase 6</a><a href="phase7.html">Phase 7</a><a href="phase8.html" class="active">Phase 8</a></nav>
+<div class="search-bar"><input type="text" id="searchInput" placeholder="Search CLI, packet capture, support bundle, central-cli, nsxcli, API, troubleshooting..." oninput="filterEntries()"></div>
+<div class="stats-bar"><div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div><div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">1</div><div class="stat-label">Break Scenarios</div></div><div class="stat-card"><div class="stat-value" style="color:var(--success-light)">9</div><div class="stat-label">Fix Procedures</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 8</div><div class="stat-label">Current Phase</div></div></div>
+<div class="nav-tabs"><button class="nav-tab active" onclick="filterByType('all',this)">All Issues</button><button class="nav-tab" onclick="filterByType('break',this)">Break / Failure</button><button class="nav-tab" onclick="filterByType('fix',this)">Fix / Resolution</button><button class="nav-tab" onclick="filterByType('critical',this)">Critical</button><button class="nav-tab" onclick="filterByType('high',this)">High</button></div>
+<div class="container" id="kbContainer">
+
+<div class="kb-entry" id="kb-71" data-type="fix" data-severity="medium" data-keywords="central-cli nsxcli reference remote commands manager host edge"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">71</div><div class="kb-entry-title-block"><div class="kb-entry-title">Central CLI Reference Guide</div><div class="kb-entry-subtitle">NSX Manager central-cli commands for remote troubleshooting of hosts and edges without SSH</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">CLI</span><span class="tag">central-cli</span><span class="tag">Reference</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Purpose:</strong> Central CLI allows running commands on remote transport nodes directly from NSX Manager without SSH access. Essential for environments where host SSH is disabled.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Essential central-cli commands</strong></p><pre><code># From NSX Manager CLI — run commands on remote hosts:
+
+# List all transport nodes:
+get transport-nodes
+
+# Run command on specific transport node:
+get transport-node &lt;tn-uuid&gt; interfaces
+get transport-node &lt;tn-uuid&gt; tunnels
+get transport-node &lt;tn-uuid&gt; logical-switches
+
+# Edge-specific commands:
+get edge-cluster &lt;ec-uuid&gt; status
+get edge-node &lt;en-uuid&gt; interfaces
+get edge-node &lt;en-uuid&gt; route-table
+get edge-node &lt;en-uuid&gt; bgp neighbors
+get edge-node &lt;en-uuid&gt; firewall rules
+
+# Host-specific commands:
+get host-node &lt;hn-uuid&gt; firewall rules
+get host-node &lt;hn-uuid&gt; logical-switch &lt;ls-uuid&gt; mac-table
+get host-node &lt;hn-uuid&gt; vtep-table
+
+# Useful debug commands:
+get transport-node &lt;tn-uuid&gt; tunnel-status
+get transport-node &lt;tn-uuid&gt; controller-connection</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-72" data-type="fix" data-severity="high" data-keywords="packet capture traceflow pktcap-uw tcpdump debug traffic flow"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">72</div><div class="kb-entry-title-block"><div class="kb-entry-title">Packet Capture &amp; Traceflow</div><div class="kb-entry-subtitle">Capture packets and trace traffic flow through NSX-T overlay for connectivity troubleshooting</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Packet Capture</span><span class="tag">Traceflow</span><span class="tag">Debug</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>NSX Traceflow (non-intrusive)</strong></p><pre><code># Traceflow injects a tagged packet and reports each hop:
+# NSX Manager UI → Plan &amp; Troubleshoot → Traceflow
+
+# API — Start traceflow:
+POST https://&lt;nsx-manager&gt;/api/v1/traceflow
+{
+  "timeout": 15000,
+  "packet": {
+    "resource_type": "FieldsPacketData",
+    "frame_size": 128,
+    "ip_header": {
+      "src_ip": "10.1.1.10",
+      "dst_ip": "10.2.2.20",
+      "protocol": 6
+    },
+    "transport_header": {
+      "src_port": 12345,
+      "dst_port": 443
+    }
+  },
+  "source_id": "&lt;source-port-uuid&gt;"
+}
+
+# Get traceflow results:
+GET https://&lt;nsx-manager&gt;/api/v1/traceflow/&lt;traceflow-id&gt;/observations
+# Shows: Delivered, Dropped (with reason), Forwarded at each hop</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Live packet capture on ESXi host</strong></p><pre><code># On ESXi — capture overlay traffic:
+pktcap-uw --switchport &lt;vm-port-id&gt; --dir 0 -o /tmp/capture.pcap
+# --dir 0 = ingress, --dir 1 = egress, --dir 2 = both
+
+# Capture on VTEP interface (encapsulated GENEVE):
+pktcap-uw --uplink vmnic0 --vni &lt;vni-id&gt; -o /tmp/overlay.pcap
+
+# Capture with filter:
+pktcap-uw --switchport &lt;port-id&gt; --ip &lt;target-ip&gt; --proto 0x06 -o /tmp/tcp.pcap
+
+# On Edge — packet capture:
+start capture interface &lt;interface-name&gt; file pcap1
+# Wait for traffic
+stop capture interface &lt;interface-name&gt;
+# Copy capture: copy file pcap1 url scp://user@server:/path/</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-73" data-type="fix" data-severity="medium" data-keywords="NSX Intelligence network topology visualization flow analysis"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">73</div><div class="kb-entry-title-block"><div class="kb-entry-title">NSX Intelligence Flow Analysis</div><div class="kb-entry-subtitle">Use NSX Intelligence for network flow visualization, security recommendations, and anomaly detection</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Intelligence</span><span class="tag">Flow</span><span class="tag">Visualization</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Leverage NSX Intelligence for troubleshooting</strong></p><pre><code># NSX Intelligence provides:
+# 1. Real-time flow visualization
+# 2. Security policy recommendations
+# 3. Microsegmentation planning assistance
+# 4. Suspicious traffic detection
+
+# Access: NSX Manager → Plan &amp; Troubleshoot → Discover &amp; Take Action
+
+# View flow topology:
+# Shows all VM-to-VM communication flows
+# Identifies: allowed flows, blocked flows, unprotected flows
+
+# Get security recommendations:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/recommendations
+
+# Use for DFW rule planning:
+# 1. Enable flow collection on target groups
+# 2. Wait 7-14 days for representative traffic patterns
+# 3. Review recommended rules
+# 4. Apply recommended security policies
+
+# Troubleshooting use:
+# "Why can't VM-A reach VM-B?"
+# → Check flow analysis for blocked/dropped flows
+# → Identify which DFW rule is dropping traffic</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-74" data-type="fix" data-severity="medium" data-keywords="get logical-switches nsxcli commands switch VNI status host"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">74</div><div class="kb-entry-title-block"><div class="kb-entry-title">Logical Switch Diagnostics</div><div class="kb-entry-subtitle">CLI commands for diagnosing logical switch state, VNI mapping, and port status</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Logical Switch</span><span class="tag">Diagnostics</span><span class="tag">CLI</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Logical switch diagnostic commands</strong></p><pre><code># On ESXi host — nsxcli commands:
+
+# List all logical switches on this host:
+nsxcli -c "get logical-switches"
+
+# Get details of specific logical switch:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt;"
+
+# View VNI to UUID mapping:
+nsxcli -c "get logical-switch vni &lt;vni-number&gt;"
+
+# List ports on a logical switch:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; ports"
+
+# View MAC table for a switch:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; mac-table"
+
+# View ARP table:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; arp-table"
+
+# View VTEP table (which remote hosts have VMs on this switch):
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; vtep-table"
+
+# Check replication mode:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; replication-mode"
+# Modes: MTEP (unicast), Source (head-end replication)
+
+# Statistics:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; stats"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-75" data-type="fix" data-severity="high" data-keywords="support bundle log collection debug VMware GSS SR technical support"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">75</div><div class="kb-entry-title-block"><div class="kb-entry-title">Support Bundle Collection</div><div class="kb-entry-subtitle">Collect comprehensive NSX-T support bundles for VMware GSS troubleshooting</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Support Bundle</span><span class="tag">Logs</span><span class="tag">GSS</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Collect support bundle via API and CLI</strong></p><pre><code># Via API — collect from all nodes:
+POST https://&lt;nsx-manager&gt;/api/v1/administration/support-bundles?action=collect
+{
+  "nodes": ["&lt;manager-node-id&gt;", "&lt;edge-node-id&gt;"],
+  "log_age_limit": 48,
+  "core_limit": 2
+}
+
+# Check collection status:
+GET https://&lt;nsx-manager&gt;/api/v1/administration/support-bundles
+
+# Download completed bundle:
+GET https://&lt;nsx-manager&gt;/api/v1/administration/support-bundles/&lt;bundle-id&gt;/&lt;filename&gt;
+
+# Via CLI on NSX Manager:
+get support-bundle file support-bundle.tgz
+
+# Via CLI on Edge:
+copy support-bundle scp://admin@10.1.1.100:/tmp/edge-bundle.tgz
+
+# On ESXi host:
+vm-support -w /tmp/
+# Or for NSX-specific logs:
+nsxcli -c "get support-bundle file /tmp/nsx-host-bundle.tgz"
+
+# What's included:
+# - All NSX service logs
+# - Configuration database dump
+# - System state (CPU, memory, disk)
+# - Network state (routes, interfaces, tunnels)
+# - Core dumps (if any crashes)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-76" data-type="fix" data-severity="high" data-keywords="edge datapath CLI debug forwarding table route lookup interface"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">76</div><div class="kb-entry-title-block"><div class="kb-entry-title">Edge Datapath CLI Commands</div><div class="kb-entry-subtitle">Essential Edge CLI commands for debugging routing, NAT, firewall, and interface issues</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Edge CLI</span><span class="tag">Datapath</span><span class="tag">Debug</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Essential Edge datapath commands</strong></p><pre><code># SSH to Edge node:
+
+# View all logical routers (VRFs) on this Edge:
+get logical-routers
+# Lists SR and DR instances with VRF IDs
+
+# Enter a specific VRF:
+vrf &lt;vrf-id&gt;
+
+# Inside VRF — routing:
+get route-table          # Full routing table
+get route &lt;ip-prefix&gt;   # Lookup specific route
+get bgp neighbors       # BGP peer status
+get bgp neighbor &lt;ip&gt; received-routes
+get bgp neighbor &lt;ip&gt; advertised-routes
+
+# Interfaces:
+get interfaces           # All interfaces in this VRF
+get interface &lt;name&gt; stats  # Per-interface counters
+
+# NAT:
+get nat rules            # Active NAT rules
+get nat sessions         # Active NAT translations
+get nat sessions count   # Total session count
+get nat statistics       # NAT hit counters
+
+# Firewall (Gateway FW):
+get firewall rules       # GFW rules on Edge
+get firewall stats       # Rule hit counts
+
+# IPSec:
+get ipsec-vpn session    # VPN tunnel status
+get ipsec-vpn tunnel     # Tunnel details with SAs
+
+# Exit VRF:
+exit</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-77" data-type="break" data-severity="high" data-keywords="API rate limiting 429 throttle concurrent requests batch"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">77</div><div class="kb-entry-title-block"><div class="kb-entry-title">API Rate Limiting &amp; Throttling</div><div class="kb-entry-subtitle">NSX-T API returning 429 errors — automation scripts hitting rate limits, blocking legitimate operations</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">API</span><span class="tag">Rate Limit</span><span class="tag">429</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Automation tools (Terraform, Ansible, custom scripts) fail with 429 Too Many Requests. NSX Manager UI may become slow. Other API consumers blocked.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Identify and resolve API throttling</strong></p><pre><code># Check current rate limit settings:
+GET https://&lt;nsx-manager&gt;/api/v1/node/services/http?show_sensitive_data=true
+# Look for "client_api_rate_limit" and "client_api_concurrency_limit"
+
+# Default limits:
+# - 100 requests/second per client
+# - 40 concurrent requests per client
+
+# Identify which client is hitting limits:
+# Check /var/log/proton/nsxapi.log for 429 responses:
+get log-file nsxapi.log | grep "429\|rate_limit"
+
+# Solutions:
+# 1. Add retry logic with exponential backoff to automation:
+#    Sleep: 1s → 2s → 4s → 8s on 429
+
+# 2. Increase rate limits (temporary, during bulk operations):
+PUT https://&lt;nsx-manager&gt;/api/v1/node/services/http
+{
+  "client_api_rate_limit": 200,
+  "client_api_concurrency_limit": 80
+}
+
+# 3. Use batch APIs where available:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra
+# Hierarchical API — apply many changes in single request
+
+# 4. Distribute requests across all 3 manager nodes (not just VIP)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-78" data-type="fix" data-severity="high" data-keywords="proactive health check alarm monitoring status NSX cluster node"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">78</div><div class="kb-entry-title-block"><div class="kb-entry-title">Proactive Health Monitoring</div><div class="kb-entry-subtitle">Set up proactive health checks and alarm monitoring for NSX-T environment</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Health Check</span><span class="tag">Monitoring</span><span class="tag">Proactive</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Essential health check APIs to monitor</strong></p><pre><code># 1. NSX Manager cluster health:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/status
+# Check: "mgmt_cluster_status": "STABLE"
+# All nodes: "status": "CONNECTED"
+
+# 2. All transport node status:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/status
+# UP count should equal total transport node count
+
+# 3. Edge cluster status:
+GET https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;id&gt;/status
+# All members should be UP
+
+# 4. Active alarms:
+GET https://&lt;nsx-manager&gt;/api/v1/alarms?status=OPEN&amp;severity=CRITICAL,HIGH
+
+# 5. Controller connectivity:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/status?source=controller
+# All controllers should be CONNECTED
+
+# 6. Certificate expiration:
+GET https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates
+# Check expiry_date — alert if < 30 days
+
+# 7. Backup status:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/backups/history
+# Verify last successful backup < 24 hours ago
+
+# Automation: Run these checks every 5 minutes
+# Alert on any non-healthy response</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-79" data-type="fix" data-severity="critical" data-keywords="host transport node troubleshoot workflow preparation install fail config"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">79</div><div class="kb-entry-title-block"><div class="kb-entry-title">Host Transport Node Troubleshooting Workflow</div><div class="kb-entry-subtitle">Systematic approach to diagnosing host transport node configuration and connectivity issues</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Transport Node</span><span class="tag">Workflow</span><span class="tag">Troubleshooting</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Purpose:</strong> Systematic workflow for diagnosing host TN issues. Follow these steps in order to quickly identify the root cause of host connectivity or preparation failures.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Transport Node diagnostic workflow</strong></p><pre><code># Step 1: Check TN status from Manager:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/status
+# Expected: "node_deployment_state": "success"
+# Expected: "host_node_deployment_status": "INSTALL_SUCCESSFUL"
+
+# Step 2: Check controller connectivity (on host):
+nsxcli -c "get controllers"
+# All controllers should show "connected: true"
+
+# Step 3: Check tunnel status:
+nsxcli -c "get tunnels"
+# Should show tunnels to other hosts — status "Up"
+
+# Step 4: Check TEP interface:
+nsxcli -c "get vteps"
+# TEP should have IP, link should be UP
+# Verify TEP can reach other TEPs:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep&gt;
+
+# Step 5: Check NSX agent services:
+/etc/init.d/nsx-cfgagent status
+/etc/init.d/nsx-proxy status
+
+# Step 6: If agent failed — restart:
+/etc/init.d/nsx-cfgagent restart
+/etc/init.d/nsx-proxy restart
+
+# Step 7: Check MPA (Message Bus) connectivity:
+nsxcli -c "get node-connection status"
+# Should show connected to management plane
+
+# Step 8: If all above pass but issues persist:
+# Collect support bundle and escalate to VMware GSS</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-80" data-type="fix" data-severity="medium" data-keywords="metrics monitoring SNMP syslog vRNI vROps integration dashboards"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">80</div><div class="kb-entry-title-block"><div class="kb-entry-title">NSX-T Metrics &amp; External Monitoring</div><div class="kb-entry-subtitle">Integrate NSX-T with external monitoring (vROps, vRNI, SNMP, Syslog) for operational visibility</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Monitoring</span><span class="tag">Metrics</span><span class="tag">Integration</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure external monitoring integrations</strong></p><pre><code># 1. Syslog export:
+PUT https://&lt;nsx-manager&gt;/api/v1/node/services/syslog/exporters
+{
+  "exporter_name": "SIEM",
+  "server": "10.1.1.200",
+  "port": 514,
+  "protocol": "TCP",
+  "level": "INFO",
+  "facilities": ["DAEMON", "USER"]
+}
+
+# 2. SNMP configuration:
+PUT https://&lt;nsx-manager&gt;/api/v1/node/services/snmp
+{
+  "v3_targets": [{
+    "server": "10.1.1.201",
+    "port": 162,
+    "user": "nsxmon"
+  }]
+}
+
+# 3. vRealize Network Insight (vRNI / Aria Operations for Networks):
+# Add NSX Manager as data source in vRNI
+# Provides: flow analysis, path visualization, intent verification
+
+# 4. vRealize Operations (vROps / Aria Operations):
+# Install NSX-T management pack
+# Provides: capacity planning, alerting, dashboards
+
+# 5. Custom API polling (Prometheus/Grafana):
+# Poll key health endpoints every 60 seconds:
+# /api/v1/cluster/status
+# /api/v1/transport-nodes/status
+# /api/v1/edge-clusters/{id}/status
+# /api/v1/alarms?status=OPEN</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+</div>
+<footer class="footer"><p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p><p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p></footer>
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+(function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>

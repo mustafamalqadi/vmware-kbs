@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 5: Edge Services</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}.scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}.header{background:linear-gradient(180deg,#0d1117,#111820,#0d1117);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}.header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}.header h1{font-size:1.5rem;font-weight:700}.header h1 span{font-weight:400;color:var(--text-secondary)}.badge{display:inline-flex;align-items:center;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500}.badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}.badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}.badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}.search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}.search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}.search-bar input:focus{border-color:var(--accent)}.stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}.stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase}.nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}.nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}.nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}.container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}.kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}.kb-entry:hover{border-color:rgba(88,166,255,0.35)}.kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer}.kb-entry-header:hover{background:var(--bg-card-hover)}.kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}.kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}.kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}.kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}.kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}.kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}.tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}.tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}.tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}.tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}.kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}.kb-entry.open .kb-chevron{transform:rotate(180deg)}.kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}.kb-entry.open .kb-entry-body{display:block}.section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}.section-label::after{content:'';flex:1;height:1px;background:var(--border)}.kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}.kb-entry-body ul{padding-left:1.5rem;margin-bottom:0.75rem}.kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}.kb-entry-body li strong{color:var(--text-primary)}pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}.copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem}.alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}.alert-icon{flex-shrink:0;font-size:1.1rem}.alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}.alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}.alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}.steps{margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem}.step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}.step-content{flex:1}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin:0.75rem 0}@media(max-width:768px){.two-col{grid-template-columns:1fr}}.info-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem}.info-box-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem}.info-box-title.red{color:var(--danger-light)}.info-box-title.orange{color:var(--warning-light)}.info-box-title.blue{color:var(--accent-light)}.footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}.footer a{color:var(--text-secondary);text-decoration:none}.phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}.phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}.phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}.phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<header class="header"><div class="header-inner"><h1>VMware NSX-T <span>Knowledge Base</span></h1><div style="display:flex;gap:0.75rem"><span class="badge badge-phase">Phase 5 — Edge Services</span><span class="badge badge-break">&#9888; 5 Break</span><span class="badge badge-fix">&#10003; 5 Fix</span></div></div></header>
+<nav class="phase-nav"><a href="index.html" class="nav-dashboard">&larr; Dashboard</a><a href="phase1.html">Phase 1</a><a href="phase2.html">Phase 2</a><a href="phase3.html">Phase 3</a><a href="phase4.html">Phase 4</a><a href="phase5.html" class="active">Phase 5</a><a href="phase6.html">Phase 6</a><a href="phase7.html">Phase 7</a><a href="phase8.html">Phase 8</a></nav>
+<div class="search-bar"><input type="text" id="searchInput" placeholder="Search load balancer, IPSec VPN, edge CPU, DHCP relay, DNS forwarder..." oninput="filterEntries()"></div>
+<div class="stats-bar"><div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div><div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div><div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 5</div><div class="stat-label">Current Phase</div></div></div>
+<div class="nav-tabs"><button class="nav-tab active" onclick="filterByType('all',this)">All Issues</button><button class="nav-tab" onclick="filterByType('break',this)">Break / Failure</button><button class="nav-tab" onclick="filterByType('fix',this)">Fix / Resolution</button><button class="nav-tab" onclick="filterByType('critical',this)">Critical</button><button class="nav-tab" onclick="filterByType('high',this)">High</button></div>
+<div class="container" id="kbContainer">
+
+<div class="kb-entry" id="kb-41" data-type="break" data-severity="high" data-keywords="load balancer health monitor pool member server down check fail"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">41</div><div class="kb-entry-title-block"><div class="kb-entry-title">Load Balancer Health Monitor Failure</div><div class="kb-entry-subtitle">LB pool members marked DOWN — health monitors failing due to misconfigured checks or network issues</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Load Balancer</span><span class="tag">Health Monitor</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> All pool members marked DOWN causes load balancer to return errors to clients. Application appears offline even though backend servers are healthy.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check pool member status and health monitor configuration</strong></p><pre><code># Check LB pool status:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-1s/&lt;t1-id&gt;/lb-services/&lt;lb-id&gt;/pools/&lt;pool-id&gt;/status
+
+# Check individual member health:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-1s/&lt;t1-id&gt;/lb-services/&lt;lb-id&gt;/pools/&lt;pool-id&gt;/status/detail
+
+# Verify monitor config:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/lb-monitor-profiles/&lt;monitor-id&gt;
+
+# Common health monitor issues:
+# 1. HTTP monitor expects 200 but app returns 301/302
+# 2. Monitor URL path incorrect
+# 3. TCP monitor port mismatch with actual service port
+# 4. Monitor timeout too short for slow backends
+
+# Fix: Update expected status codes
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/lb-monitor-profiles/&lt;monitor-id&gt;
+{
+  "response_status_codes": [200, 301, 302]
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-42" data-type="fix" data-severity="high" data-keywords="L7 LB SSL TLS certificate binding virtual server HTTPS offload"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">42</div><div class="kb-entry-title-block"><div class="kb-entry-title">L7 Load Balancer SSL Certificate Binding</div><div class="kb-entry-subtitle">Configure SSL certificate binding for HTTPS virtual servers on NSX-T LB</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">SSL</span><span class="tag">Certificate</span><span class="tag">L7 LB</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Import certificate and bind to virtual server</strong></p><pre><code># Import certificate:
+POST https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates?action=import
+{
+  "pem_encoded": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+}
+
+# Create SSL profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/lb-client-ssl-profiles/WebApp-SSL
+{
+  "display_name": "WebApp-SSL",
+  "default_certificate_path": "/infra/certificates/&lt;cert-id&gt;",
+  "ssl_suite": "BALANCED"
+}
+
+# Attach to Virtual Server:
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-1s/&lt;t1-id&gt;/lb-services/&lt;lb-id&gt;/virtual-servers/&lt;vs-id&gt;
+{
+  "client_ssl_profile_binding": {
+    "ssl_profile_path": "/infra/lb-client-ssl-profiles/WebApp-SSL",
+    "default_certificate_path": "/infra/certificates/&lt;cert-id&gt;"
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-43" data-type="break" data-severity="critical" data-keywords="IPSec VPN tunnel flapping IKE SA proposal mismatch phase1 phase2"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">43</div><div class="kb-entry-title-block"><div class="kb-entry-title">IPSec VPN Tunnel Flapping</div><div class="kb-entry-subtitle">IPSec VPN constantly renegotiating — IKE phase failures, proposal mismatches, DPD timeouts</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">IPSec</span><span class="tag">VPN</span><span class="tag">Flapping</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Site-to-site connectivity drops intermittently. Users experience random disconnections. Data replication between sites fails.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Debug IKE negotiation failures</strong></p><pre><code># Check IPSec tunnel status:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/ipsec-vpn-services/&lt;svc-id&gt;/sessions/&lt;session-id&gt;/statistics
+
+# On Edge — check IKE status:
+get ipsec-vpn session
+get ipsec-vpn tunnel
+
+# Common flapping causes:
+# 1. IKE proposal mismatch (encryption/hash/DH group)
+# 2. Pre-shared key mismatch
+# 3. DPD (Dead Peer Detection) timeout too aggressive
+# 4. NAT-T issues (UDP 4500 blocked)
+# 5. Certificate expiration
+
+# Verify proposals match remote peer:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/ipsec-vpn-ike-profiles/&lt;profile-id&gt;
+# Check: ike_version, encryption_algorithms, digest_algorithms, dh_groups
+
+# Adjust DPD to be less aggressive:
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/ipsec-vpn-dpd-profiles/&lt;dpd-id&gt;
+{
+  "dpd_probe_interval": 60,
+  "retry_count": 5
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-44" data-type="break" data-severity="critical" data-keywords="edge CPU memory exhaustion high utilization OOM process crash overload"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">44</div><div class="kb-entry-title-block"><div class="kb-entry-title">Edge Node CPU/Memory Exhaustion</div><div class="kb-entry-subtitle">Edge node running out of resources — services degrading, control plane disconnections</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Edge</span><span class="tag">CPU</span><span class="tag">Memory</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> North-south traffic degradation or complete failure. BGP sessions drop due to keepalive misses. NAT table overflow. Edge services unresponsive.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Identify resource consumption on Edge</strong></p><pre><code># SSH to Edge node:
+get edge-cluster status
+
+# Check CPU:
+get system stats
+# Look for high CPU percentage
+
+# Check memory:
+get system memory
+# If used memory &gt; 90% — critical
+
+# Identify top processes:
+get processes
+# Look for edge-datapath, edge-routing, nginx
+
+# Check NAT session count (common resource hog):
+get nat sessions count
+# If &gt; 500K sessions — need larger Edge or split load
+
+# Check IPSec tunnel count
+# Check number of LB connections
+
+# Emergency: Restart specific service without full Edge reboot:
+restart service &lt;service-name&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-45" data-type="break" data-severity="critical" data-keywords="edge datapath failure packet forwarding crash dp recovery"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">45</div><div class="kb-entry-title-block"><div class="kb-entry-title">Edge Datapath Failure</div><div class="kb-entry-subtitle">Edge datapath process crash — all traffic forwarding stops on the affected Edge node</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Edge</span><span class="tag">Datapath</span><span class="tag">Crash</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Complete north-south traffic failure for all SRs hosted on the affected Edge. HA failover should trigger to standby Edge within seconds if configured.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify HA failover and recover datapath</strong></p><pre><code># Check if HA failover occurred:
+GET https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;/status
+# Look for member status — ACTIVE vs STANDBY roles may have swapped
+
+# On Edge — check datapath status:
+get datapath
+# If datapath process is DOWN:
+
+# Try restart:
+restart service dataplane
+
+# If restart fails — check logs:
+get log-file syslog | grep datapath
+get log-file syslog | grep "fatal\|panic\|segfault"
+
+# If persistent crash — may need Edge redeployment
+# Collect support bundle first:
+copy support-bundle scp://user@server:/path/
+
+# Force failover to partner Edge:
+# This is automatic with HA — confirm standby took over</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-46" data-type="break" data-severity="medium" data-keywords="DNS forwarder cache stale TTL conditional zone upstream timeout"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">46</div><div class="kb-entry-title-block"><div class="kb-entry-title">DNS Forwarder Cache Issues</div><div class="kb-entry-subtitle">DNS forwarder on T0/T1 serving stale records or failing to forward to upstream resolvers</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">DNS</span><span class="tag">Forwarder</span><span class="tag">Cache</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Clear DNS cache and verify upstream connectivity</strong></p><pre><code># Check DNS forwarder statistics:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-1s/&lt;t1-id&gt;/dns-forwarder/statistics
+
+# Clear the DNS cache:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-1s/&lt;t1-id&gt;/dns-forwarder?action=clear_cache
+
+# Verify upstream DNS resolver reachability from Edge:
+# On Edge:
+nslookup google.com &lt;upstream-dns-ip&gt;
+
+# Check conditional forwarder zones:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/dns-forwarder-zones
+
+# Verify zone configuration points to correct upstream servers</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-47" data-type="fix" data-severity="high" data-keywords="DHCP relay configuration helper address segment T1 gateway"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">47</div><div class="kb-entry-title-block"><div class="kb-entry-title">DHCP Relay Configuration</div><div class="kb-entry-subtitle">Configure DHCP relay on T1 gateways for segments that use external DHCP servers</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">DHCP</span><span class="tag">Relay</span><span class="tag">T1 Gateway</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure DHCP relay on T1 gateway</strong></p><pre><code># Create DHCP relay profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/dhcp-relay-configs/External-DHCP
+{
+  "display_name": "External-DHCP-Relay",
+  "server_addresses": ["10.1.1.50", "10.1.1.51"]
+}
+
+# Attach to T1 segment:
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-1s/&lt;t1-id&gt;/segments/&lt;segment-id&gt;
+{
+  "dhcp_config_path": "/infra/dhcp-relay-configs/External-DHCP"
+}
+
+# Verify DHCP is working:
+# VM should get IP from external DHCP server
+# Check that DHCP traffic can route from Edge to DHCP server
+# Verify no DFW rules blocking UDP 67/68</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-48" data-type="fix" data-severity="high" data-keywords="edge anti-affinity rule DRS HA separate host placement cluster"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">48</div><div class="kb-entry-title-block"><div class="kb-entry-title">Edge VM Anti-Affinity Rules</div><div class="kb-entry-subtitle">Ensure Edge cluster members run on separate physical hosts for HA</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Edge</span><span class="tag">Anti-Affinity</span><span class="tag">DRS</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure DRS anti-affinity for Edge VMs</strong></p><pre><code># In vCenter — create DRS anti-affinity rule:
+# Cluster → Configure → VM/Host Rules → Add Rule
+# Type: "Separate Virtual Machines"
+# Members: Edge-01, Edge-02 (all Edge cluster members)
+
+# Verify Edge VMs are on different hosts:
+# vCenter → Edge-01 → Summary → Host
+# vCenter → Edge-02 → Summary → Host
+# Must be different physical ESXi hosts
+
+# If using 4-node Edge cluster:
+# Create rule: Edge-01, Edge-02, Edge-03, Edge-04 must separate
+# Minimum 4 ESXi hosts required in the cluster
+
+# Also consider:
+# 1. Edge VMs on dedicated Edge cluster (best practice)
+# 2. Resource reservation for Edge VMs (CPU/Memory)
+# 3. Latency-sensitive mode for Edge datastore (optional)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-49" data-type="fix" data-severity="medium" data-keywords="gateway firewall GFW vs DFW precedence order processing rules"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">49</div><div class="kb-entry-title-block"><div class="kb-entry-title">Gateway Firewall vs DFW Precedence</div><div class="kb-entry-subtitle">Understanding and configuring the interaction between Gateway Firewall (GFW) and Distributed Firewall (DFW)</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">GFW</span><span class="tag">DFW</span><span class="tag">Precedence</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Understand traffic flow through both firewalls</strong></p><pre><code># Packet processing order for north-south traffic:
+# 1. Packet arrives at T0 SR (Edge)
+# 2. Gateway Firewall (GFW) processes on Edge — first checkpoint
+# 3. Packet routed through overlay to destination host
+# 4. DFW processes on destination host vNIC — second checkpoint
+
+# Both must ALLOW for traffic to succeed
+# GFW ALLOW + DFW DROP = traffic dropped at host
+# GFW DROP + DFW ALLOW = traffic dropped at Edge (never reaches host)
+
+# East-west traffic (same host):
+# Only DFW applies (no Edge involvement)
+
+# East-west traffic (different hosts):
+# Only DFW applies on source and destination hosts
+# GFW only applies for T0/T1 gateway-routed traffic
+
+# Best practice:
+# Use GFW for zone-level (N-S) enforcement
+# Use DFW for microsegmentation (E-W) enforcement
+# Avoid duplicating rules in both — creates confusion</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-50" data-type="fix" data-severity="high" data-keywords="edge redeploy replacement failed recover node reinstall"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">50</div><div class="kb-entry-title-block"><div class="kb-entry-title">Edge Node Redeployment</div><div class="kb-entry-subtitle">Safely redeploy a failed Edge node without disrupting active services</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Edge</span><span class="tag">Redeploy</span><span class="tag">Recovery</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Redeploy Edge node procedure</strong></p><pre><code># Step 1: Ensure HA is healthy — standby Edge is active
+GET https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;/status
+# Confirm partner Edge has taken over all SRs
+
+# Step 2: Remove failed Edge from cluster
+POST https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;?action=replace_transport_node
+{
+  "transport_node_id": "&lt;failed-edge-tn-id&gt;",
+  "new_transport_node_id": "&lt;new-edge-tn-id&gt;"
+}
+
+# Alternative: Deploy fresh Edge VM
+# System → Fabric → Nodes → Edge Transport Nodes → Add Edge VM
+# Configure same form factor, uplinks, TEP IP pool
+
+# Step 3: Add new Edge to cluster
+# The new Edge automatically receives SR configuration
+# HA rebalances SRs between the two Edge members
+
+# Step 4: Verify health
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;new-edge-tn-id&gt;/status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+</div>
+<footer class="footer"><p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p><p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p></footer>
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+(function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>

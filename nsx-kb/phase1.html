@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 1: Top 10 Common Issues</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117;--shadow:0 4px 12px rgba(0,0,0,0.25)}
+        *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}
+        .scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}
+        .header{background:linear-gradient(180deg,#0d1117 0%,#111820 50%,#0d1117 100%);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+        .header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .header h1{font-size:1.5rem;font-weight:700;color:var(--text-primary);letter-spacing:-0.3px}.header h1 span{font-weight:400;color:var(--text-secondary)}
+        .header-badges{display:flex;gap:0.75rem;flex-wrap:wrap}
+        .badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500;letter-spacing:0.2px}
+        .badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}
+        .badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}
+        .badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}
+        .search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}
+        .search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;transition:border-color 0.2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}
+        .search-bar input:focus{border-color:var(--accent)}.search-bar input::placeholder{color:var(--text-muted)}
+        .stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}
+        .stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}
+        .nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}
+        .nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}
+        .nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}
+        .container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}
+        .kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}
+        .kb-entry:hover{border-color:rgba(88,166,255,0.35)}
+        .kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer;user-select:none}
+        .kb-entry-header:hover{background:var(--bg-card-hover)}
+        .kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}
+        .kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}
+        .kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}
+        .kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}
+        .kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}
+        .kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}
+        .tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}
+        .tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}
+        .tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}
+        .tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}
+        .tag-recovery{background:rgba(163,113,247,0.08);color:#c4b5fd;border-color:rgba(163,113,247,0.18)}
+        .kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}
+        .kb-entry.open .kb-chevron{transform:rotate(180deg)}
+        .kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}
+        .kb-entry.open .kb-entry-body{display:block}
+        .section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}
+        .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+        .kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}
+        .kb-entry-body ul,.kb-entry-body ol{padding-left:1.5rem;margin-bottom:0.75rem}
+        .kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}
+        .kb-entry-body li strong{color:var(--text-primary)}
+        pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}
+        pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}
+        code.inline{background:var(--code-bg);padding:0.15rem 0.45rem;border-radius:4px;font-size:0.85rem;color:var(--accent-light);font-family:'Cascadia Code','Fira Code','Consolas',monospace}
+        .copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem;transition:all 0.2s}
+        .copy-btn:hover{color:var(--accent-light);border-color:var(--accent)}
+        .alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}
+        .alert-icon{flex-shrink:0;font-size:1.1rem;margin-top:0.1rem}
+        .alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}
+        .alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}
+        .alert-success{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2);color:var(--success-light)}
+        .alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin:0.75rem 0}
+        @media(max-width:768px){.two-col{grid-template-columns:1fr}}
+        .info-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem}
+        .info-box-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem}
+        .info-box-title.red{color:var(--danger-light)}.info-box-title.green{color:var(--success-light)}.info-box-title.orange{color:var(--warning-light)}.info-box-title.blue{color:var(--accent-light)}
+        .steps{counter-reset:step;margin:0.75rem 0}
+        .step{display:flex;gap:1rem;margin-bottom:1rem;align-items:flex-start}
+        .step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}
+        .step-content{flex:1}.step-content p{margin-bottom:0.3rem}
+        .cross-ref{margin:1rem 0;padding:0.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px}
+        .cross-ref-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:0.4rem}
+        .cross-ref a{display:inline-block;font-size:0.8rem;color:var(--accent-light);text-decoration:none;margin-right:1rem;padding:0.2rem 0;transition:color 0.2s}
+        .cross-ref a:hover{color:var(--accent)}
+        .footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}
+        .footer a{color:var(--text-secondary);text-decoration:none;transition:color .15s}.footer a:hover{color:var(--accent)}
+        .phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}
+        .phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500;transition:border-color .15s,color .15s}
+        .phase-nav a:hover{border-color:rgba(88,166,255,0.35);color:var(--text-primary)}
+        .phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}
+        .phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}
+        @media(max-width:600px){.header-inner{flex-direction:column;align-items:flex-start}.header h1{font-size:1.3rem}.container,.search-bar,.stats-bar,.nav-tabs{padding-left:1rem;padding-right:1rem}}
+    </style>
+</head>
+<body>
+
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header class="header">
+    <div class="header-inner">
+        <h1>VMware NSX-T <span>Knowledge Base</span></h1>
+        <div class="header-badges">
+            <span class="badge badge-phase">Phase 1 — Top 10 Common Issues</span>
+            <span class="badge badge-break">&#9888; 8 Break</span>
+            <span class="badge badge-fix">&#10003; 2 Fix</span>
+        </div>
+    </div>
+</header>
+
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html" class="active">Phase 1</a>
+    <a href="phase2.html">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="phase8.html">Phase 8</a>
+</nav>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search Transport Node, BGP, Edge, DFW, VTEP, Manager, Controller..." oninput="filterEntries()">
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">8</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">2</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 1</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #1: Transport Node Preparation Failure    -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-1" data-type="break" data-severity="critical" data-keywords="transport node preparation failure install host agent vibs nsx kernel modules datapath">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">1</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Transport Node Preparation Failure</div>
+            <div class="kb-entry-subtitle">Host fails NSX preparation — VIB installation failure, kernel module issues, agent connectivity loss</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Transport Node</span>
+                <span class="tag">VIB</span>
+                <span class="tag">Host Prep</span>
+                <span class="tag tag-recovery">ERT: 30-60 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Host cannot participate in NSX overlay networking. VMs on this host have no DFW protection. No GENEVE encapsulation means overlay segments are unreachable. The host is effectively outside the NSX fabric.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Transport Node status shows <strong>"Failed"</strong> or <strong>"In Progress"</strong> indefinitely</li>
+                    <li>NSX Manager UI: Host state stuck at <strong>"NSX Install Pending"</strong></li>
+                    <li>Error: <strong>"VIB installation failed on host"</strong> in NSX Manager alarms</li>
+                    <li><code class="inline">/var/log/esxupdate.log</code> shows VIB dependency conflicts</li>
+                    <li>Host agent <code class="inline">nsx-cfgagent</code> not running or crashing</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Incompatible ESXi version for the NSX-T release (check interop matrix)</li>
+                    <li>Pre-existing third-party VIBs conflicting with NSX kernel modules</li>
+                    <li>Insufficient disk space on ESXi host for VIB installation</li>
+                    <li>Network connectivity issues between host and NSX Manager cluster</li>
+                    <li>Host firewall blocking TCP 1234/1235 (NSX messaging ports)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check transport node state from NSX Manager</strong></p>
+                    <pre><code># NSX Manager CLI:
+get transport-nodes status
+
+# NSX API — Check specific transport node:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/state
+
+# Look for "state": "failed" or "in_progress"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify VIB installation status on ESXi host</strong></p>
+                    <pre><code># On the ESXi host via SSH:
+esxcli software vib list | grep -i nsx
+
+# Expected VIBs:
+# nsx-esx-datapath
+# nsx-host
+# nsx-vdpi
+# nsx-exsi-transportnode-* (varies by version)
+
+# Check for failed VIB install:
+cat /var/log/esxupdate.log | grep -i "error\|fail"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify NSX agent health on the host</strong></p>
+                    <pre><code># Check nsx-cfgagent status:
+/etc/init.d/nsx-cfgagent status
+
+# Check nsx-proxy (MPA) agent:
+/etc/init.d/nsx-proxy status
+
+# View agent logs:
+tail -100 /var/log/nsx-cfgagent.log
+tail -100 /var/log/nsx-proxy.log</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify ESXi host compatibility and disk space</strong></p>
+                    <pre><code># Check ESXi version:
+esxcli system version get
+
+# Check available disk space:
+vdf -h
+
+# Ensure /locker has at least 200MB free
+# Ensure /tmp has at least 100MB free</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Remove conflicting VIBs and retry preparation</strong></p>
+                    <pre><code># List all third-party VIBs:
+esxcli software vib list | grep -v VMware | grep -v VMW
+
+# Remove conflicting VIB (if identified):
+esxcli software vib remove -n &lt;conflicting-vib-name&gt;
+
+# Retry transport node preparation from NSX Manager:
+# NSX API:
+POST https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;?action=retry_prepare</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Restart NSX agents and verify connectivity</strong></p>
+                    <pre><code># Restart NSX messaging proxy agent:
+/etc/init.d/nsx-proxy restart
+
+# Restart NSX config agent:
+/etc/init.d/nsx-cfgagent restart
+
+# Verify connectivity to NSX Manager (port 1235):
+nc -z &lt;nsx-manager-ip&gt; 1235
+
+# Check ESXi firewall rules:
+esxcli network firewall ruleset list | grep nsx</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Force re-realize the transport node configuration</strong></p>
+                    <pre><code># From NSX Manager CLI:
+# Re-deploy host preparation
+POST https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;?action=restore_cluster_config
+
+# Monitor the state transition:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/state
+# Wait for "state": "success"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Confirm transport node is UP:
+get transport-nodes status
+# Should show "Success" for the host
+
+# Verify TEP interfaces are created:
+esxcli network ip interface list | grep nsx
+# Should show vmk10 or vmk50 (NSX TEP vmkernel)
+
+# Verify overlay connectivity:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep-ip&gt;
+
+# Check from NSX Manager UI:
+# System → Fabric → Nodes → Host Transport Nodes → Status = "Up"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="phase2.html#kb-13">KB #13 — N-VDS to VDS Migration</a>
+            <a href="phase6.html#kb-59">KB #59 — TEP Pool Exhaustion</a>
+            <a href="phase8.html#kb-79">KB #79 — Host TN Troubleshooting</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #2: T0/T1 Gateway Connectivity Loss       -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-2" data-type="break" data-severity="critical" data-keywords="T0 T1 gateway connectivity loss tier-0 tier-1 routing uplink SR DR service router distributed">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">2</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">T0/T1 Gateway Connectivity Loss</div>
+            <div class="kb-entry-subtitle">Tier-0 or Tier-1 gateway loses northbound/southbound connectivity — routing, uplinks, and SR/DR issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Tier-0</span>
+                <span class="tag">Tier-1</span>
+                <span class="tag">Routing</span>
+                <span class="tag tag-recovery">ERT: 15-45 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Complete loss of north-south routing. All VMs behind affected gateways lose external connectivity. If T0 is affected, the entire NSX fabric is isolated from the physical network. Services dependent on external access (DNS, NTP, backup) fail.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs cannot reach external (physical) network destinations</li>
+                    <li>NSX Manager shows T0/T1 gateway status as <strong>"Degraded"</strong> or <strong>"Down"</strong></li>
+                    <li>BGP peers show <strong>neighbor state "Idle"</strong> on physical router</li>
+                    <li>Edge node CLI: <code class="inline">get route-table</code> shows missing routes</li>
+                    <li>Ping from Edge service router to upstream gateway fails</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Edge uplink interface down — physical NIC, VLAN, or port-group misconfigured</li>
+                    <li>BGP session dropped due to hold-timer expiry or misconfigured ASN</li>
+                    <li>SR (Service Router) not allocated on any Edge node</li>
+                    <li>T0-to-T1 link failure — transit segment connectivity broken</li>
+                    <li>Edge node crashed or datapath process restarted</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check gateway realization status from NSX Manager</strong></p>
+                    <pre><code># NSX API — Get T0 gateway status:
+GET https://&lt;nsx-manager&gt;/api/v1/logical-routers/&lt;t0-id&gt;/status
+
+# NSX Manager CLI:
+get logical-routers
+get logical-router &lt;lr-id&gt; interfaces
+
+# Check edge allocation:
+get logical-router &lt;lr-id&gt; service-router</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify Edge uplink and BGP status</strong></p>
+                    <pre><code># On Edge node CLI:
+get interfaces
+# Check uplink interfaces — should show "admin up" and "link up"
+
+get bgp neighbor summary
+# Check if neighbors are in "Established" state
+
+get route-table
+# Verify default route and expected prefixes exist</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Test connectivity from Service Router context</strong></p>
+                    <pre><code># Enter the T0 Service Router VRF on the Edge:
+vrf &lt;t0-sr-id&gt;
+
+# Ping the upstream physical gateway:
+ping &lt;upstream-gateway-ip&gt;
+
+# Check ARP table:
+get arp
+
+# Exit VRF:
+exit</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify and fix Edge uplink connectivity</strong></p>
+                    <pre><code># Check Edge VM NIC status from vSphere:
+# Ensure the Edge uplink port-group VLAN matches the physical switch config
+
+# On Edge CLI — verify interface state:
+get interfaces
+# If interface shows "link down", check:
+# 1. vSphere port-group connectivity
+# 2. Physical switch port status
+# 3. VLAN tagging consistency
+
+# Reset the interface if needed:
+set interface &lt;interface-name&gt; state down
+set interface &lt;interface-name&gt; state up</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Re-establish BGP peering</strong></p>
+                    <pre><code># Verify BGP configuration on Edge:
+get bgp neighbor summary
+get bgp config
+
+# If ASN is wrong — fix via NSX Manager UI:
+# Networking → Tier-0 Gateways → Edit → BGP → Neighbors
+
+# Clear BGP session to force re-establish:
+clear bgp neighbor &lt;neighbor-ip&gt;
+
+# Verify convergence:
+get bgp neighbor &lt;neighbor-ip&gt; detail</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Force SR reallocation if edge is healthy but SR missing</strong></p>
+                    <pre><code># Check if SR is allocated:
+get logical-routers
+# Look for the T0 SR entry — if missing:
+
+# From NSX API — trigger reallocation:
+POST https://&lt;nsx-manager&gt;/api/v1/logical-routers/&lt;t0-id&gt;?action=reallocate
+
+# Or force Edge cluster failover:
+POST https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;?action=replace_transport_node</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Verify BGP is established:
+get bgp neighbor summary
+# All neighbors should show "Established"
+
+# Verify routes are learned:
+get route-table
+# Should show default route and external prefixes
+
+# Test end-to-end from a VM:
+# VM → T1 DR → T0 DR → T0 SR (Edge) → Physical Router
+ping &lt;external-ip&gt;
+
+# NSX Manager UI:
+# Networking → Tier-0 Gateways → Status should show "Success"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="#kb-8">KB #8 — BGP Peering Failure</a>
+            <a href="phase4.html#kb-34">KB #34 — T0 SR-DR Communication</a>
+            <a href="phase4.html#kb-33">KB #33 — Route Redistribution Loops</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #3: Edge Node Cluster Failover Issues      -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-3" data-type="break" data-severity="critical" data-keywords="edge node cluster failover active standby ECMP HA preemptive service router allocation">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">3</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Edge Node Cluster Failover Issues</div>
+            <div class="kb-entry-subtitle">Edge cluster fails to failover — active/standby misconfiguration, ECMP imbalance, preemptive mode issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Edge Cluster</span>
+                <span class="tag">Failover</span>
+                <span class="tag">ECMP</span>
+                <span class="tag tag-recovery">ERT: 15-30 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> Service Routers may not failover during Edge node failure, causing prolonged outage of north-south traffic. Stateful services (NAT, firewall, LB) on the failed Edge are disrupted. ECMP-based T0 may route traffic to a non-functional member.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>North-south traffic drops during Edge node maintenance or failure</li>
+                    <li>Edge cluster shows <strong>"Degraded"</strong> but does not failover</li>
+                    <li>BFD sessions between Edge nodes report <strong>"Down"</strong></li>
+                    <li>Active/Standby status unclear or both nodes claim <strong>Standby</strong></li>
+                    <li>Stateful sessions (NAT, LB) reset after failover</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Inter-Edge BFD communication failure (overlay or VLAN issue)</li>
+                    <li>Preemptive failover mode causing unnecessary flapping</li>
+                    <li>Edge cluster member count below quorum for HA</li>
+                    <li>Edge node datapath failure — dp-fp process crash</li>
+                    <li>Anti-affinity rules not set — both Edges on same ESXi host</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check Edge cluster status and member health</strong></p>
+                    <pre><code># NSX Manager CLI:
+get edge-cluster status
+
+# NSX API:
+GET https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;/status
+
+# On each Edge node:
+get high-availability status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify inter-Edge BFD sessions</strong></p>
+                    <pre><code># On Edge node:
+get bfd-sessions
+
+# Check for "Up" status between cluster members
+# If Down — check overlay/underlay connectivity between Edge nodes
+
+# Verify internal transit VLAN between Edge members:
+get interfaces | grep -i transit</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check service router allocation</strong></p>
+                    <pre><code># From NSX Manager:
+get logical-routers
+
+# Look for SR entries and their edge-node allocation:
+# If SR shows "standby" on both nodes — split-brain condition
+
+# API check:
+GET https://&lt;nsx-manager&gt;/api/v1/logical-routers?router_type=SERVICE_ROUTER_TIER0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Fix inter-Edge connectivity for BFD</strong></p>
+                    <pre><code># Verify overlay TEP connectivity between Edge nodes:
+# On Edge-1:
+ping &lt;Edge-2-TEP-IP&gt; source &lt;Edge-1-TEP-IP&gt;
+
+# If using VLAN-backed HA interface:
+get interfaces
+# Check the HA interface (typically fp-ethX) link state
+
+# Ensure DRS anti-affinity is configured:
+# vSphere → VMs → Edge-1, Edge-2 → Create Anti-Affinity Rule</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Disable preemptive failover if causing flapping</strong></p>
+                    <pre><code># NSX Manager UI:
+# Networking → Tier-0 Gateways → Edit → Edge Cluster
+# Set "Failover Mode" to "Non-Preemptive"
+
+# API equivalent:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;
+{
+  "failover_mode": "NON_PREEMPTIVE"
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Force failover to recover from stuck state</strong></p>
+                    <pre><code># If Edge is in degraded state — force failover:
+# NSX API — Force failover to specific member:
+POST https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;?action=replace_transport_node
+{
+  "transport_node_id": "&lt;failed-edge-tn-id&gt;",
+  "new_transport_node_id": "&lt;healthy-edge-tn-id&gt;"
+}
+
+# Or from Edge CLI — restart HA:
+restart service dataplane</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Verify cluster health:
+get edge-cluster status
+# All members should show "Up"
+
+# Verify HA state:
+get high-availability status
+# Should show clear Active/Standby designation
+
+# Verify BFD sessions:
+get bfd-sessions
+# All sessions should show "Up"
+
+# Test failover manually (if maintenance window):
+# Shut down Active Edge VM → verify Standby promotes within 10s</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="#kb-5">KB #5 — BFD Session Flapping</a>
+            <a href="phase5.html#kb-48">KB #48 — Edge Anti-Affinity Rules</a>
+            <a href="phase5.html#kb-44">KB #44 — Edge CPU/Memory Exhaustion</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #4: DFW Rules Not Applied                  -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-4" data-type="break" data-severity="high" data-keywords="DFW distributed firewall rules not applied push policy realized state pending">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">4</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Distributed Firewall Rules Not Applied</div>
+            <div class="kb-entry-subtitle">DFW policy fails to push to hosts — realized state errors, stale rules, vNIC filter issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">DFW</span>
+                <span class="tag">Policy</span>
+                <span class="tag">Security</span>
+                <span class="tag tag-recovery">ERT: 15-30 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs are unprotected by microsegmentation policy. Security posture is compromised — traffic that should be denied is permitted. Compliance violations if DFW is required for PCI-DSS or HIPAA.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>DFW rules visible in NSX Manager but <strong>not enforced</strong> on VMs</li>
+                    <li>Policy shows <strong>"Realized State: Error"</strong> or <strong>"In Progress"</strong></li>
+                    <li>VM-to-VM traffic allowed when it should be blocked</li>
+                    <li>Host <code class="inline">nsxcli</code> shows stale or empty firewall rules</li>
+                    <li>Alarm: <strong>"DFW rule push failed on transport node"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>CCP (Central Control Plane) connectivity lost from host to controllers</li>
+                    <li>DFW filter not attached to VM vNIC (transport node agent issue)</li>
+                    <li>Policy conflict — overlapping rules with different actions</li>
+                    <li>NSX Manager database inconsistency after failed upgrade</li>
+                    <li>Host has too many DFW rules exceeding memory capacity</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check DFW realization status</strong></p>
+                    <pre><code># NSX API — Check policy realization:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/realized-state/status
+
+# Check specific security policy:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;/realized-state
+
+# Look for "publish_status": "REALIZED" vs "ERROR"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify DFW rules on the ESXi host</strong></p>
+                    <pre><code># SSH to the ESXi host, enter nsxcli:
+nsxcli -c "get firewall rules"
+
+# Check DFW filter on a specific VM vNIC:
+nsxcli -c "get firewall &lt;vm-vnic-uuid&gt; rules"
+
+# List all DFW filters:
+summarize-dvfilter
+
+# Check if filter is attached to the VM:
+vsipioctl getfilters</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check controller connectivity from host</strong></p>
+                    <pre><code># On ESXi host via nsxcli:
+nsxcli -c "get controllers"
+
+# Should show controller IP with status "Connected"
+# If "Disconnected" — DFW rules cannot be updated
+
+# Check messaging channel:
+nsxcli -c "get control-plane-stats"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore controller connectivity</strong></p>
+                    <pre><code># Restart nsx-proxy on the host (reconnects to controllers):
+/etc/init.d/nsx-proxy restart
+
+# Verify connection re-establishes:
+nsxcli -c "get controllers"
+# Wait up to 60 seconds for "Connected" status
+
+# If still disconnected — check NSX Manager cluster health:
+get cluster status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Force DFW rule re-push from NSX Manager</strong></p>
+                    <pre><code># Re-publish the security policy:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;?action=revise
+
+# Or force full re-sync for a transport node:
+POST https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/state?action=resync</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Restart DFW on the host if filters are missing</strong></p>
+                    <pre><code># WARNING: This briefly interrupts DFW enforcement on ALL VMs on this host
+# Schedule during maintenance window
+
+# Restart the firewall daemon:
+/etc/init.d/nsx-cfgagent restart
+
+# Wait for filters to reattach (monitor):
+nsxcli -c "get firewall rules" | wc -l
+# Should return expected rule count within 60-120 seconds</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Confirm DFW realized state:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/realized-state/status
+# All policies should show "REALIZED"
+
+# On host — verify rules are present:
+nsxcli -c "get firewall rules" | head -20
+
+# Test enforcement — try traffic that should be blocked:
+# From VM-A (blocked by rule) → VM-B should timeout/reset</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="phase3.html#kb-24">KB #24 — Rule Publish Failure</a>
+            <a href="phase3.html#kb-27">KB #27 — DFW Performance Degradation</a>
+            <a href="#kb-9">KB #9 — Controller Connectivity Lost</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #5: BFD Session Flapping                   -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-5" data-type="break" data-severity="high" data-keywords="BFD bidirectional forwarding detection flapping session down timer interval multiplier edge">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">5</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">BFD Session Flapping</div>
+            <div class="kb-entry-subtitle">BFD sessions flap between Edge nodes or to physical routers — causes route withdrawal and traffic blackholing</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">BFD</span>
+                <span class="tag">Edge</span>
+                <span class="tag">Routing</span>
+                <span class="tag tag-recovery">ERT: 10-30 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> BGP session teardown when BFD fails, causing route withdrawal. Traffic blackholed during flap windows. Frequent failovers between Active/Standby Edge nodes, disrupting stateful services.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Edge syslog shows repeated <strong>"BFD session down"</strong> / <strong>"BFD session up"</strong></li>
+                    <li>BGP neighbor flaps correlated with BFD state changes</li>
+                    <li>Intermittent packet loss to external destinations</li>
+                    <li>Edge HA failover log entries without actual node failure</li>
+                    <li><code class="inline">get bfd-sessions</code> shows session toggling between Up/Down</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>BFD timers too aggressive for the network (sub-second detection on lossy link)</li>
+                    <li>Physical network micro-bursts causing BFD packet drops</li>
+                    <li>CPU pressure on Edge node delaying BFD packet processing</li>
+                    <li>MTU mismatch causing BFD packet fragmentation/drops</li>
+                    <li>QoS policy deprioritizing BFD control traffic</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check current BFD timers and session state</strong></p>
+                    <pre><code># On Edge node CLI:
+get bfd-sessions
+get bfd-config
+
+# Check the negotiated timer values:
+# Tx Interval, Rx Interval, Detect Multiplier
+# Default: 500ms interval, 3x multiplier = 1.5s detection</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Increase BFD timers to reduce false positives</strong></p>
+                    <pre><code># NSX Manager UI:
+# Networking → Tier-0 → BGP → BFD Configuration
+# Set:
+#   BFD Interval: 1000 (ms)
+#   BFD Multiplier: 4
+# This gives 4-second detection time — reduces false flaps
+
+# API:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;
+{
+  "bfd_config": {
+    "interval": 1000,
+    "multiple": 4
+  }
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Ensure QoS marking for BFD traffic on physical network</strong></p>
+                    <pre><code># BFD uses UDP port 3784 (single-hop) or 4784 (multi-hop)
+# On physical switches — mark BFD as high priority:
+# Example Cisco IOS-XE:
+# class-map match-any BFD-TRAFFIC
+#   match access-group name BFD-ACL
+# policy-map MARK-BFD
+#   class BFD-TRAFFIC
+#     set dscp ef
+
+# Verify from Edge — check for packet drops:
+get dataplane-stats interface &lt;uplink-interface&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Monitor BFD stability over 15 minutes:
+get bfd-sessions
+# All sessions should remain "Up" consistently
+
+# Check BGP is stable (no flaps):
+get bgp neighbor summary
+# Uptime should be increasing, not resetting
+
+# Verify no Edge CPU pressure:
+get dataplane-stats cpu</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="#kb-8">KB #8 — BGP Peering Failure</a>
+            <a href="phase4.html#kb-37">KB #37 — BFD Timer Tuning</a>
+            <a href="#kb-3">KB #3 — Edge Cluster Failover</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #6: NSX Manager Cluster Split-Brain        -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-6" data-type="break" data-severity="critical" data-keywords="NSX manager cluster split-brain quorum corfu database consensus three-node">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">6</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NSX Manager Cluster Split-Brain</div>
+            <div class="kb-entry-subtitle">NSX Manager cluster loses quorum or enters split-brain — Corfu DB divergence, API conflicts</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">Manager</span>
+                <span class="tag">Cluster</span>
+                <span class="tag">Corfu</span>
+                <span class="tag tag-recovery">ERT: 30-90 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> NSX management plane is non-functional. No configuration changes can be made. DFW rules stop updating (though existing rules remain enforced). New VM provisioning fails. CCP may lose connectivity to hosts if prolonged.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>NSX Manager UI returns <strong>HTTP 503</strong> or fails to load</li>
+                    <li><code class="inline">get cluster status</code> shows <strong>"DEGRADED"</strong> or <strong>"UNAVAILABLE"</strong></li>
+                    <li>Corfu logs show <strong>"QuorumUnreachableException"</strong></li>
+                    <li>Two manager nodes claim to be the <strong>leader</strong> simultaneously</li>
+                    <li>API calls return conflicting data depending on which node responds</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Network partition isolating one manager from the other two</li>
+                    <li>NTP drift exceeding 5 seconds between manager nodes</li>
+                    <li>Disk full on one manager node — Corfu DB cannot write</li>
+                    <li>Manager node VM snapshot causing I/O freeze and timeout</li>
+                    <li>vCenter HA event moving manager VMs to isolated hosts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check cluster status from each manager node</strong></p>
+                    <pre><code># SSH to each NSX Manager node and run:
+get cluster status
+
+# Expected output for healthy cluster:
+# Cluster Id: ...
+# Cluster Status: STABLE
+# Node Status: UP (for all 3 nodes)
+
+# If DEGRADED — check which node is unhealthy:
+get cluster status verbose</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check Corfu database health</strong></p>
+                    <pre><code># Check Corfu service status:
+get service corfu
+
+# Check Corfu cluster health:
+get corfu-cluster status
+
+# Look for replication lag or epoch divergence:
+# /var/log/corfu/corfu.log
+tail -100 /var/log/corfu/corfu.log | grep -i "error\|exception\|quorum"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify inter-node connectivity</strong></p>
+                    <pre><code># From each manager, ping the other two:
+ping &lt;manager-2-ip&gt;
+ping &lt;manager-3-ip&gt;
+
+# Check if cluster port (7777 for Corfu) is reachable:
+nc -z &lt;manager-2-ip&gt; 7777
+nc -z &lt;manager-3-ip&gt; 7777
+
+# Check NTP synchronization:
+get ntp-status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Restore network connectivity between manager nodes</strong></p>
+                    <pre><code># Identify the isolated node:
+get cluster status
+# The node with "UNKNOWN" status is likely isolated
+
+# Verify the network path:
+traceroute &lt;isolated-manager-ip&gt;
+
+# Fix: Ensure manager VMs are on the same L2 network or
+# that routing between them is reliable.
+# Check vSphere DRS did not separate VMs to different sites.</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Fix NTP drift and restart services</strong></p>
+                    <pre><code># On each manager — fix NTP:
+set ntp-server &lt;ntp-server-ip&gt;
+get ntp-status
+
+# If drift was the issue — restart cluster services:
+restart service cluster-manager
+
+# Wait 2-3 minutes for consensus to re-establish:
+get cluster status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>If split-brain persists — detach and re-join the divergent node</strong></p>
+                    <pre><code># CAUTION: Only perform if standard recovery fails
+# Identify the minority node (the one that diverged):
+
+# On the healthy majority (2 nodes):
+detach node &lt;divergent-node-uuid&gt;
+
+# Wait for cluster to stabilize with 2 nodes:
+get cluster status
+# Should show STABLE (2/3 nodes)
+
+# Re-join the detached node:
+join &lt;divergent-node-ip&gt; cluster-id &lt;cluster-id&gt; username admin</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Confirm cluster is STABLE:
+get cluster status
+# All 3 nodes should show "UP"
+# Cluster Status: STABLE
+
+# Verify API is functional:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/status
+# Should return 200 OK with all nodes listed
+
+# Verify CCP connectivity to hosts:
+get transport-nodes status
+# All hosts should show "Success"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="phase2.html#kb-12">KB #12 — Backup &amp; Restore</a>
+            <a href="phase2.html#kb-20">KB #20 — Manager Decommission</a>
+            <a href="phase2.html#kb-19">KB #19 — MP/CCP Cert Regen</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #7: VTEP Communication Failure             -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-7" data-type="break" data-severity="critical" data-keywords="VTEP TEP tunnel endpoint communication overlay geneve encapsulation vmkernel">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">7</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">VTEP Communication Failure</div>
+            <div class="kb-entry-subtitle">Tunnel Endpoint (TEP) communication broken — VMs on different hosts cannot communicate via overlay</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-critical">Critical</span>
+                <span class="tag">VTEP</span>
+                <span class="tag">TEP</span>
+                <span class="tag">Overlay</span>
+                <span class="tag tag-recovery">ERT: 15-45 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> VMs on overlay segments cannot communicate across hosts. East-west traffic between hosts is completely broken. Only VMs co-located on the same ESXi host can communicate. Effectively partitions the NSX network fabric.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>VMs on different hosts but same overlay segment <strong>cannot ping</strong> each other</li>
+                    <li>VMs on the <strong>same host</strong> communicate fine (local switching)</li>
+                    <li>TEP-to-TEP ping fails: <code class="inline">vmkping ++netstack=vxlan</code> times out</li>
+                    <li>NSX Manager shows transport node tunnel status as <strong>"Down"</strong></li>
+                    <li>Physical network drops GENEVE packets (port 6081/UDP)</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Physical network MTU too low — GENEVE adds 54-byte overhead (need 1600+ MTU)</li>
+                    <li>TEP VLAN not configured on physical switch (uplink trunk missing VLAN)</li>
+                    <li>Duplicate TEP IP addresses in the pool</li>
+                    <li>N-VDS or VDS uplink failure — no physical path for TEP traffic</li>
+                    <li>Physical firewall blocking UDP 6081 (GENEVE encapsulation port)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify TEP interface and IP on host</strong></p>
+                    <pre><code># On ESXi host:
+esxcli network ip interface list | grep -A5 "vmk10\|vmk50"
+
+# Check TEP IP address:
+esxcli network ip interface ipv4 address list | grep vmk10
+
+# Verify the TEP vmkernel is on the correct VLAN:
+esxcli network vswitch dvs vmware list</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Test TEP-to-TEP connectivity with proper MTU</strong></p>
+                    <pre><code># Ping remote TEP with GENEVE overhead accounted for:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep-ip&gt;
+# -d = don't fragment
+# -s 1572 = 1572 + 28 (IP+ICMP header) = 1600 = minimum MTU for GENEVE
+
+# If this fails but standard ping works:
+vmkping ++netstack=vxlan &lt;remote-tep-ip&gt;
+# → MTU issue on physical network</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Check tunnel status from NSX Manager</strong></p>
+                    <pre><code># NSX API — Get tunnel status:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/tunnels
+
+# On host via nsxcli:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; vtep-table"
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; mac-table"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Fix physical network MTU (must be ≥1600)</strong></p>
+                    <pre><code># GENEVE overhead = 54 bytes
+# Minimum physical MTU = 1500 (inner) + 54 (GENEVE) + ~50 (safety) = 1600+
+# Recommended: 9000 (jumbo frames end-to-end)
+
+# Verify on ESXi uplink:
+esxcli network vswitch dvs vmware lacp config get
+esxcli network nic get -n vmnic0 | grep MTU
+
+# Set MTU on N-VDS/VDS from vCenter:
+# Networking → DVS → Configure → Properties → MTU = 9000
+
+# On physical switch (example Cisco):
+# interface range GigabitEthernet1/0/1-48
+#   mtu 9216</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify TEP VLAN is trunked on physical switch</strong></p>
+                    <pre><code># Identify TEP VLAN from NSX Manager:
+# System → Fabric → Profiles → Uplink Profiles → VLAN (Transport VLAN)
+
+# On physical switch — ensure VLAN is trunked:
+# Example Cisco:
+# interface GigabitEthernet1/0/1
+#   switchport trunk allowed vlan add &lt;tep-vlan-id&gt;
+
+# Verify from ESXi:
+esxcli network vswitch dvs vmware list
+# Check the transport VLAN ID matches</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Resolve duplicate TEP IP conflict</strong></p>
+                    <pre><code># Check TEP IP pool allocation:
+GET https://&lt;nsx-manager&gt;/api/v1/pools/ip-pools/&lt;pool-id&gt;/allocations
+
+# If duplicate found — release and reallocate:
+# 1. Put host in maintenance mode
+# 2. Delete transport node config
+# 3. Remove the conflicting IP from pool
+# 4. Re-add transport node
+
+# Verify no ARP conflicts:
+vmkping ++netstack=vxlan -I vmk10 &lt;suspected-duplicate-ip&gt;
+# If responds from wrong MAC — duplicate confirmed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Full TEP connectivity test:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep-ip&gt;
+# Should succeed with 0% packet loss
+
+# Verify tunnel is UP in NSX Manager:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/tunnels
+# tunnel_status should be "UP"
+
+# Test VM-to-VM across hosts:
+# From VM on host-A → ping VM on host-B (same overlay segment)
+# Should now succeed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="phase6.html#kb-52">KB #52 — GENEVE MTU Issues</a>
+            <a href="phase6.html#kb-59">KB #59 — TEP Pool Exhaustion</a>
+            <a href="#kb-1">KB #1 — Transport Node Preparation</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #8: BGP Peering Failure on Edge            -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-8" data-type="break" data-severity="high" data-keywords="BGP peering failure edge neighbor AS path route ASN autonomous system hold timer keepalive">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">8</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">BGP Peering Failure on Edge</div>
+            <div class="kb-entry-subtitle">BGP neighbor relationship fails to establish or drops — ASN mismatch, authentication, or hold timer issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">BGP</span>
+                <span class="tag">Edge</span>
+                <span class="tag">Peering</span>
+                <span class="tag tag-recovery">ERT: 10-30 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> No dynamic route exchange between NSX and physical network. Default route not learned — north-south traffic fails. If ECMP, reduced path diversity and potential oversubscription on remaining paths.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li><code class="inline">get bgp neighbor summary</code> shows state <strong>"Idle"</strong> or <strong>"Active"</strong> (not Established)</li>
+                    <li>Physical router logs: <strong>"BGP notification: OPEN message error"</strong></li>
+                    <li>Edge cannot learn any external routes (empty route table)</li>
+                    <li>Hold timer expires repeatedly — session resets every 90 seconds</li>
+                    <li>MD5 authentication mismatch errors in Edge syslog</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>Remote ASN configured incorrectly on NSX side (or vice versa)</li>
+                    <li>BGP password (MD5) mismatch between Edge and physical router</li>
+                    <li>Source IP not matching — Edge using wrong interface for peering</li>
+                    <li>Physical router ACL blocking TCP port 179 (BGP)</li>
+                    <li>eBGP multihop not configured when peers are not directly connected</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Diagnostic Commands</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check BGP neighbor state on Edge</strong></p>
+                    <pre><code># On Edge node CLI:
+get bgp neighbor summary
+
+# Detailed neighbor info:
+get bgp neighbor &lt;neighbor-ip&gt; detail
+
+# Check BGP configuration:
+get bgp config
+
+# Verify local AS and remote AS match expectations</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Verify TCP 179 reachability to BGP peer</strong></p>
+                    <pre><code># From Edge Service Router context:
+vrf &lt;t0-sr-id&gt;
+
+# Test BGP port connectivity:
+# Note: nc may not be available — use ping first:
+ping &lt;bgp-peer-ip&gt;
+
+# Check if TCP 179 is being blocked:
+get dataplane-stats interface &lt;uplink&gt;
+# Look for dropped packets on the uplink interface</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Fix ASN and neighbor configuration</strong></p>
+                    <pre><code># NSX Manager UI:
+# Networking → Tier-0 Gateways → &lt;T0&gt; → BGP
+# Verify:
+#   Local AS Number matches what physical router expects as "remote-as"
+#   Neighbor IP is the correct interface IP of the physical router
+#   Remote AS matches the physical router's actual AS number
+
+# API — Update BGP neighbor:
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/locale-services/&lt;ls-id&gt;/bgp/neighbors/&lt;neighbor-id&gt;
+{
+  "remote_as_num": "&lt;correct-remote-asn&gt;",
+  "neighbor_address": "&lt;peer-ip&gt;"
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Fix MD5 authentication password</strong></p>
+                    <pre><code># Set password on NSX side to match physical router:
+# NSX Manager UI:
+# Networking → Tier-0 → BGP → Neighbors → Edit
+# Password field — enter the exact same password as physical router
+
+# On physical router (Cisco example):
+# router bgp 65000
+#   neighbor &lt;edge-ip&gt; password &lt;same-password&gt;
+
+# After fixing, clear and re-establish:
+# Edge CLI:
+clear bgp neighbor &lt;peer-ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Configure eBGP multi-hop if needed</strong></p>
+                    <pre><code># If BGP peers are not directly connected (L3 hop between them):
+# NSX Manager → BGP Neighbor → Advanced Settings
+# Set "Hop Limit" to appropriate value (e.g., 2 or 3)
+
+# On physical router:
+# router bgp 65000
+#   neighbor &lt;edge-ip&gt; ebgp-multihop 3
+#   neighbor &lt;edge-ip&gt; update-source Loopback0</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Verify BGP session is Established:
+get bgp neighbor summary
+# State should show "Established" with route counts
+
+# Verify routes are being exchanged:
+get bgp neighbor &lt;peer-ip&gt; received-routes
+get bgp neighbor &lt;peer-ip&gt; advertised-routes
+
+# Verify route table has expected entries:
+get route-table
+# Should show default route and/or specific prefixes learned via BGP</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="#kb-5">KB #5 — BFD Session Flapping</a>
+            <a href="phase4.html#kb-31">KB #31 — BGP Route Reflector Design</a>
+            <a href="phase4.html#kb-36">KB #36 — Route Filtering</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #9: Controller Connectivity Lost           -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-9" data-type="fix" data-severity="high" data-keywords="controller connectivity lost CCP central control plane LCP local messaging channel host">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">9</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Controller Connectivity Lost</div>
+            <div class="kb-entry-subtitle">Host transport nodes lose connection to Central Control Plane (CCP) — stale forwarding tables, no updates</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Controller</span>
+                <span class="tag">CCP</span>
+                <span class="tag">Connectivity</span>
+                <span class="tag tag-recovery">ERT: 10-20 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning">
+            <span class="alert-icon">&#9888;</span>
+            <span><strong>Impact:</strong> No new MAC/ARP entries learned on overlay segments. DFW rules stop updating (existing rules remain). New VMs cannot join overlay segments properly. Forwarding tables become stale — new workloads unreachable.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li><code class="inline">nsxcli -c "get controllers"</code> shows <strong>"Disconnected"</strong></li>
+                    <li>New VMs provisioned but <strong>cannot communicate</strong> on overlay</li>
+                    <li>Existing VMs work fine (stale but valid forwarding entries)</li>
+                    <li>NSX Manager shows host as <strong>"Controller Disconnected"</strong></li>
+                    <li>MPA (Management Plane Agent) log shows connection timeouts</li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>ESXi host firewall blocking port 1235 (controller messaging)</li>
+                    <li>NSX Manager cluster unhealthy — CCP service not running</li>
+                    <li>Network MTU issue on management network (fragmentation)</li>
+                    <li>nsx-proxy (MPA) agent crashed or stuck on the host</li>
+                    <li>Certificate mismatch — host certificate not trusted by manager</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Verify and restart NSX proxy agent on host</strong></p>
+                    <pre><code># Check agent status:
+/etc/init.d/nsx-proxy status
+
+# If not running or in bad state:
+/etc/init.d/nsx-proxy restart
+
+# Wait 30 seconds, then verify:
+nsxcli -c "get controllers"
+# Should show "Connected"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check firewall and network connectivity</strong></p>
+                    <pre><code># Verify ESXi firewall allows NSX traffic:
+esxcli network firewall ruleset list | grep nsx
+
+# Enable NSX firewall rules if disabled:
+esxcli network firewall ruleset set --ruleset-id=nsx-manager --enabled=true
+
+# Test port connectivity to all 3 NSX Manager nodes:
+nc -z &lt;nsx-mgr-1&gt; 1235
+nc -z &lt;nsx-mgr-2&gt; 1235
+nc -z &lt;nsx-mgr-3&gt; 1235</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Verify CCP health on NSX Manager side</strong></p>
+                    <pre><code># On NSX Manager CLI:
+get service proton
+get service local-controller
+
+# If services are not running:
+restart service proton
+restart service local-controller
+
+# Check manager cluster is healthy:
+get cluster status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># On host — confirm controller connected:
+nsxcli -c "get controllers"
+# Status: Connected
+
+# Verify control-plane stats are updating:
+nsxcli -c "get control-plane-stats"
+
+# Provision a new VM on overlay segment — verify it gets connectivity
+# New MAC should appear in the segment MAC table:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; mac-table"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="#kb-4">KB #4 — DFW Rules Not Applied</a>
+            <a href="#kb-6">KB #6 — Manager Split-Brain</a>
+            <a href="phase8.html#kb-79">KB #79 — Host TN Troubleshooting</a>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────────────────────────────────── -->
+<!-- KB #10: Upgrade Coordinator Failure           -->
+<!-- ──────────────────────────────────────────── -->
+<div class="kb-entry" id="kb-10" data-type="fix" data-severity="high" data-keywords="upgrade coordinator failure UC version pre-check host group bundle upload">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">10</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Upgrade Coordinator Failure</div>
+            <div class="kb-entry-subtitle">NSX Upgrade Coordinator stuck, pre-checks failing, or upgrade bundle upload issues</div>
+            <div class="kb-entry-tags">
+                <span class="tag tag-severity-high">High</span>
+                <span class="tag">Upgrade</span>
+                <span class="tag">Coordinator</span>
+                <span class="tag">Pre-check</span>
+                <span class="tag tag-recovery">ERT: 30-60 min</span>
+            </div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info">
+            <span class="alert-icon">&#128712;</span>
+            <span><strong>Impact:</strong> NSX upgrade cannot proceed. Environment remains on older version with known vulnerabilities. Planned maintenance window may be missed. Security patches cannot be applied.</span>
+        </div>
+
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box">
+                <div class="info-box-title red">Symptoms</div>
+                <ul>
+                    <li>Upgrade Coordinator shows <strong>"Not Running"</strong> or <strong>"Failed to start"</strong></li>
+                    <li>Bundle upload fails with <strong>"insufficient disk space"</strong> or <strong>timeout</strong></li>
+                    <li>Pre-check phase fails with <strong>"Host not ready for upgrade"</strong></li>
+                    <li>Upgrade stuck at <strong>specific host group</strong> — won't proceed</li>
+                    <li>Edge upgrade fails with <strong>"Datapath connectivity check failed"</strong></li>
+                </ul>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title orange">Root Causes</div>
+                <ul>
+                    <li>NSX Manager disk space insufficient for upgrade bundle (/opt/vmware/nsx)</li>
+                    <li>Pre-existing transport node failures blocking pre-checks</li>
+                    <li>Network partition between Manager and host during upgrade</li>
+                    <li>Upgrade Coordinator service crashed — requires restart</li>
+                    <li>Bundle version incompatible with current installation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <p><strong>Check and restart Upgrade Coordinator service</strong></p>
+                    <pre><code># On NSX Manager:
+get service upgrade-coordinator
+
+# If not running:
+restart service upgrade-coordinator
+
+# Wait 60 seconds, then verify:
+get service upgrade-coordinator
+# Should show "running"
+
+# Access UC UI:
+# https://&lt;nsx-manager&gt;/upgrade/index.html</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <p><strong>Check disk space and clean up if needed</strong></p>
+                    <pre><code># Check disk usage on NSX Manager:
+df -h
+
+# If /opt/vmware is full — clean old bundles:
+ls -la /opt/vmware/nsx/upgrade-coordinator/bundles/
+# Remove old/failed bundle files
+
+# Alternatively, clean repository:
+GET https://&lt;nsx-manager&gt;/api/v1/upgrade/bundles
+# DELETE old bundles via API</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <p><strong>Fix pre-check failures before retrying</strong></p>
+                    <pre><code># Run pre-checks manually:
+POST https://&lt;nsx-manager&gt;/api/v1/upgrade?action=execute_pre_upgrade_checks
+
+# Review pre-check results:
+GET https://&lt;nsx-manager&gt;/api/v1/upgrade/pre-upgrade-checks
+
+# Common fixes:
+# 1. Resolve all transport node failures first
+# 2. Ensure all manager nodes are healthy
+# 3. Take NSX backup before proceeding
+# 4. Verify compute manager (vCenter) connectivity</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <p><strong>Resume a stuck upgrade</strong></p>
+                    <pre><code># If upgrade is stuck on a host group:
+GET https://&lt;nsx-manager&gt;/api/v1/upgrade/status-summary
+
+# Identify the failed unit:
+GET https://&lt;nsx-manager&gt;/api/v1/upgrade/upgrade-unit-groups
+
+# Skip the failed host (if non-critical) or retry:
+POST https://&lt;nsx-manager&gt;/api/v1/upgrade?action=continue
+# Or:
+POST https://&lt;nsx-manager&gt;/api/v1/upgrade?action=retry</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Verification</div>
+        <pre><code># Verify upgrade completed:
+GET https://&lt;nsx-manager&gt;/api/v1/upgrade/status-summary
+# Should show "SUCCESS" for all components
+
+# Verify all nodes are on new version:
+get version
+get transport-nodes status
+
+# Run post-upgrade checks:
+POST https://&lt;nsx-manager&gt;/api/v1/upgrade?action=execute_post_upgrade_checks</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+
+        <div class="cross-ref">
+            <div class="cross-ref-title">Cross-References</div>
+            <a href="phase7.html#kb-63">KB #63 — VCF NSX Upgrade</a>
+            <a href="phase2.html#kb-12">KB #12 — Backup &amp; Restore</a>
+            <a href="#kb-1">KB #1 — Transport Node Preparation</a>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<!-- Footer -->
+<footer class="footer">
+    <p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p>
+    <p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p>
+    <p style="margin-top:0.25rem">Keyboard: <kbd>Ctrl+K</kbd> Search &middot; <kbd>Esc</kbd> Clear &middot; <kbd>↑</kbd> Top</p>
+</footer>
+
+<script>
+    function copyCode(btn) {
+        const code = btn.parentElement.querySelector('code').textContent;
+        navigator.clipboard.writeText(code).then(() => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); });
+    }
+    function toggleEntry(header) {
+        const entry = header.closest('.kb-entry');
+        entry.classList.toggle('open');
+    }
+    function filterByType(type, btn) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            const entryType = entry.dataset.type;
+            const severity = entry.dataset.severity;
+            if (type === 'all') entry.style.display = '';
+            else if (type === 'break' || type === 'fix') entry.style.display = entryType === type ? '' : 'none';
+            else if (type === 'critical' || type === 'high') entry.style.display = severity === type ? '' : 'none';
+        });
+    }
+    function filterEntries() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.querySelectorAll('.kb-entry').forEach(entry => {
+            if (!query) { entry.style.display = ''; return; }
+            const text = entry.textContent.toLowerCase();
+            const keywords = entry.dataset.keywords || '';
+            entry.style.display = (text.includes(query) || keywords.includes(query)) ? '' : 'none';
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput').focus(); }
+        if (e.key === 'Escape') { document.getElementById('searchInput').value = ''; filterEntries(); }
+    });
+    // Scroll progress
+    window.addEventListener('scroll', () => { const h = document.documentElement.scrollHeight - window.innerHeight; document.getElementById('scrollProgress').style.width = (h > 0 ? (window.scrollY/h)*100 : 0) + '%'; }, {passive:true});
+    // Auto-open from hash
+    (function() { var hash = window.location.hash; if (hash && hash.match(/^#kb-\d+$/)) { var el = document.querySelector(hash); if (el) { el.classList.add('open'); setTimeout(() => el.scrollIntoView({behavior:'smooth',block:'start'}), 100); } } })();
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 3: Distributed Firewall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117;--shadow:0 4px 12px rgba(0,0,0,0.25)}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}.scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}.header{background:linear-gradient(180deg,#0d1117 0%,#111820 50%,#0d1117 100%);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}.header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}.header h1{font-size:1.5rem;font-weight:700}.header h1 span{font-weight:400;color:var(--text-secondary)}.header-badges{display:flex;gap:0.75rem;flex-wrap:wrap}.badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500}.badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}.badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}.badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}.search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}.search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}.search-bar input:focus{border-color:var(--accent)}.search-bar input::placeholder{color:var(--text-muted)}.stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}.stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}.nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}.nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}.nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}.container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}.kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}.kb-entry:hover{border-color:rgba(88,166,255,0.35)}.kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer;user-select:none}.kb-entry-header:hover{background:var(--bg-card-hover)}.kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}.kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}.kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}.kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}.kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}.kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}.tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}.tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}.tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}.tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}.tag-recovery{background:rgba(163,113,247,0.08);color:#c4b5fd;border-color:rgba(163,113,247,0.18)}.kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}.kb-entry.open .kb-chevron{transform:rotate(180deg)}.kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}.kb-entry.open .kb-entry-body{display:block}.section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}.section-label::after{content:'';flex:1;height:1px;background:var(--border)}.kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}.kb-entry-body ul,.kb-entry-body ol{padding-left:1.5rem;margin-bottom:0.75rem}.kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}.kb-entry-body li strong{color:var(--text-primary)}pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}code.inline{background:var(--code-bg);padding:0.15rem 0.45rem;border-radius:4px;font-size:0.85rem;color:var(--accent-light);font-family:'Cascadia Code','Fira Code','Consolas',monospace}.copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem}.copy-btn:hover{color:var(--accent-light);border-color:var(--accent)}.alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}.alert-icon{flex-shrink:0;font-size:1.1rem;margin-top:0.1rem}.alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}.alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}.alert-success{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2);color:var(--success-light)}.alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin:0.75rem 0}@media(max-width:768px){.two-col{grid-template-columns:1fr}}.info-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem}.info-box-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem}.info-box-title.red{color:var(--danger-light)}.info-box-title.green{color:var(--success-light)}.info-box-title.orange{color:var(--warning-light)}.info-box-title.blue{color:var(--accent-light)}.steps{margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem;align-items:flex-start}.step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}.step-content{flex:1}.step-content p{margin-bottom:0.3rem}.cross-ref{margin:1rem 0;padding:0.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px}.cross-ref-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:0.4rem}.cross-ref a{display:inline-block;font-size:0.8rem;color:var(--accent-light);text-decoration:none;margin-right:1rem;padding:0.2rem 0}.cross-ref a:hover{color:var(--accent)}.footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}.footer a{color:var(--text-secondary);text-decoration:none}.footer a:hover{color:var(--accent)}.phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}.phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}.phase-nav a:hover{border-color:rgba(88,166,255,0.35);color:var(--text-primary)}.phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}.phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}
+    </style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<header class="header"><div class="header-inner"><h1>VMware NSX-T <span>Knowledge Base</span></h1><div class="header-badges"><span class="badge badge-phase">Phase 3 — Distributed Firewall</span><span class="badge badge-break">&#9888; 6 Break</span><span class="badge badge-fix">&#10003; 4 Fix</span></div></div></header>
+<nav class="phase-nav"><a href="index.html" class="nav-dashboard">&larr; Dashboard</a><a href="phase1.html">Phase 1</a><a href="phase2.html">Phase 2</a><a href="phase3.html" class="active">Phase 3</a><a href="phase4.html">Phase 4</a><a href="phase5.html">Phase 5</a><a href="phase6.html">Phase 6</a><a href="phase7.html">Phase 7</a><a href="phase8.html">Phase 8</a></nav>
+<div class="search-bar"><input type="text" id="searchInput" placeholder="Search DFW, microsegmentation, exclusion list, IDFW, security group, rules..." oninput="filterEntries()"></div>
+<div class="stats-bar"><div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div><div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">6</div><div class="stat-label">Break Scenarios</div></div><div class="stat-card"><div class="stat-value" style="color:var(--success-light)">4</div><div class="stat-label">Fix Procedures</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 3</div><div class="stat-label">Current Phase</div></div></div>
+<div class="nav-tabs"><button class="nav-tab active" onclick="filterByType('all',this)">All Issues</button><button class="nav-tab" onclick="filterByType('break',this)">Break / Failure</button><button class="nav-tab" onclick="filterByType('fix',this)">Fix / Resolution</button><button class="nav-tab" onclick="filterByType('critical',this)">Critical</button><button class="nav-tab" onclick="filterByType('high',this)">High</button></div>
+
+<div class="container" id="kbContainer">
+
+<!-- KB #21 --><div class="kb-entry" id="kb-21" data-type="fix" data-severity="medium" data-keywords="DFW rule hit count analysis statistics unused cleanup optimization"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">21</div><div class="kb-entry-title-block"><div class="kb-entry-title">DFW Rule Hit Count Analysis</div><div class="kb-entry-subtitle">Analyze DFW rule statistics to identify unused rules and optimize policy</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">DFW</span><span class="tag">Hit Count</span><span class="tag tag-recovery">ERT: 20-40 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Purpose:</strong> Identify DFW rules with zero hit counts for cleanup. Reduces rule table size, improves DFW performance, and simplifies security posture management.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Retrieve DFW rule statistics</strong></p><pre><code># NSX API — Get rule statistics for a section:
+GET https://&lt;nsx-manager&gt;/api/v1/firewall/sections/&lt;section-id&gt;/rules/stats
+
+# Policy API equivalent:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;/statistics
+
+# On host — check per-rule hit count:
+nsxcli -c "get firewall rules" | grep -E "rule_id|hit_count"
+
+# Look for rules with hit_count = 0 over 30+ days</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Identify and mark unused rules for removal</strong></p><pre><code># Export all rules with stats:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies
+
+# Filter for rules with zero packets:
+# Rules with packet_count: 0 and byte_count: 0
+# Consider time period — rules may be seasonal
+
+# Best practice: Disable before deleting
+# Set rule to "disabled" for 7 days
+# If no impact → safe to delete
+
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;/rules/&lt;rule-id&gt;
+{
+  "disabled": true
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-27">KB #27 — DFW Performance</a><a href="#kb-29">KB #29 — Applied To Scope</a></div></div></div>
+
+<!-- KB #22 --><div class="kb-entry" id="kb-22" data-type="fix" data-severity="high" data-keywords="DFW microsegmentation design patterns zero trust zone group tag"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">22</div><div class="kb-entry-title-block"><div class="kb-entry-title">DFW Microsegmentation Design Patterns</div><div class="kb-entry-subtitle">Implement effective microsegmentation using NSX tags, groups, and tiered security policies</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Microsegmentation</span><span class="tag">Design</span><span class="tag tag-recovery">ERT: Planning</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Design policy hierarchy (Emergency → Infrastructure → Environment → Application)</strong></p><pre><code># NSX DFW policy processing order (top-down):
+# Category 1: Emergency — block known threats, quarantine
+# Category 2: Infrastructure — shared services (DNS, NTP, AD, backup)
+# Category 3: Environment — zone isolation (Prod/Dev/DMZ)
+# Category 4: Application — app-tier microsegmentation
+
+# Create infrastructure allow policy:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/Infra-Allow
+{
+  "display_name": "Infrastructure-Services",
+  "category": "Infrastructure",
+  "rules": [
+    {
+      "display_name": "Allow-DNS",
+      "source_groups": ["ANY"],
+      "destination_groups": ["/infra/domains/default/groups/DNS-Servers"],
+      "services": ["/infra/services/DNS-UDP", "/infra/services/DNS-TCP"],
+      "action": "ALLOW"
+    }
+  ]
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Create tag-based dynamic groups</strong></p><pre><code># Create group based on NSX tags:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/Web-Tier
+{
+  "display_name": "Web-Tier",
+  "expression": [
+    {
+      "resource_type": "Condition",
+      "member_type": "VirtualMachine",
+      "key": "Tag",
+      "operator": "EQUALS",
+      "value": "web-tier|app-name"
+    }
+  ]
+}
+
+# Tag VMs for automatic group membership:
+# NSX Manager UI → Inventory → Virtual Machines → Select VM → Tags → Add
+# Or via API:
+POST https://&lt;nsx-manager&gt;/api/v1/fabric/virtual-machines/&lt;vm-id&gt;/tags
+{
+  "tags": [{"scope": "app-name", "tag": "web-tier"}]
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-29">KB #29 — Applied To Scope</a><a href="#kb-28">KB #28 — Security Group Stale</a></div></div></div>
+
+<!-- KB #23 --><div class="kb-entry" id="kb-23" data-type="break" data-severity="high" data-keywords="DFW exclusion list not working bypass filter VM skip"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">23</div><div class="kb-entry-title-block"><div class="kb-entry-title">DFW Exclusion List Not Working</div><div class="kb-entry-subtitle">VMs on DFW exclusion list still have firewall rules applied — filter not removed</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">DFW</span><span class="tag">Exclusion List</span><span class="tag tag-recovery">ERT: 10-20 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> VMs that should bypass DFW (e.g., NSX Manager, vCenter, physical appliances) may have traffic blocked. Critical infrastructure VMs may lose connectivity.</span></div><div class="section-label">Symptoms &amp; Root Cause</div><div class="two-col"><div class="info-box"><div class="info-box-title red">Symptoms</div><ul><li>VM added to exclusion list but DFW rules <strong>still enforce</strong></li><li>Packet captures show <strong>DFW drops</strong> for excluded VM traffic</li><li><code class="inline">vsipioctl getfilters</code> still shows filter on excluded VM vNIC</li><li>Exclusion list shows VM but <strong>realized state is pending</strong></li></ul></div><div class="info-box"><div class="info-box-title orange">Root Causes</div><ul><li>VM was powered off when added to exclusion (filter not removed until power cycle)</li><li>Transport node lost controller connectivity — cannot receive exclusion update</li><li>VM has multiple vNICs — only one was processed</li><li>NSX Manager realized state lag — configuration not pushed yet</li></ul></div></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify exclusion list membership</strong></p><pre><code># Check current exclusion list:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/exclude-list
+
+# Add VM to exclusion list if missing:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/security/exclude-list
+{
+  "members": [
+    {"path_expression": "/infra/domains/default/groups/DFW-Exclude-Group"}
+  ]
+}
+
+# Verify the group contains the VM:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/DFW-Exclude-Group/members/virtual-machines</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Force filter removal on host</strong></p><pre><code># On ESXi host — check if filter is still attached:
+vsipioctl getfilters
+
+# Check specific VM's filter:
+nsxcli -c "get firewall &lt;vm-vnic-uuid&gt; rules"
+# If rules still present — the exclusion hasn't been applied
+
+# Power cycle the VM (vMotion will NOT trigger re-apply)
+# Or restart nsx-cfgagent:
+/etc/init.d/nsx-cfgagent restart
+
+# After restart — verify filter is removed:
+vsipioctl getfilters | grep &lt;vm-name&gt;
+# Should show no DFW filter for excluded VM</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-4">KB #4 — DFW Rules Not Applied</a><a href="#kb-24">KB #24 — Rule Publish Failure</a></div></div></div>
+
+<!-- KB #24 --><div class="kb-entry" id="kb-24" data-type="break" data-severity="critical" data-keywords="rule publish failure DFW policy push realized state error timeout"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">24</div><div class="kb-entry-title-block"><div class="kb-entry-title">Rule Publish Failure</div><div class="kb-entry-subtitle">DFW security policy fails to publish — realized state shows error, rules not pushed to hosts</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">DFW</span><span class="tag">Publish</span><span class="tag">Policy</span><span class="tag tag-recovery">ERT: 15-45 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> New security rules are not enforced. Policy changes saved in intent but not realized on the data plane. Security posture is inconsistent between intended and actual state.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check realized state and identify errors</strong></p><pre><code># Check overall DFW realization:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/realized-state/realized-entities?intent_path=/infra/domains/default/security-policies/&lt;policy-id&gt;
+
+# Check specific alarms:
+GET https://&lt;nsx-manager&gt;/api/v1/alarms?feature_name=firewall
+
+# On host — check for partial rules:
+nsxcli -c "get firewall rules" | wc -l
+# Compare with expected rule count from NSX Manager</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Resolve common publish failures</strong></p><pre><code># Error: "Group member resolution failed"
+# → Group references a deleted or invalid object
+# Fix: Edit the group, remove invalid members
+
+# Error: "Service not found"
+# → Rule references a deleted service definition
+# Fix: Update rule to use valid service
+
+# Error: "Maximum rule limit exceeded"
+# → Host DFW table full (max ~100K rules per host)
+# Fix: Consolidate rules, use broader groups
+
+# Force re-publish:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra?enforce_revision_check=false
+# Re-save the policy with no changes to trigger re-push</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-4">KB #4 — DFW Not Applied</a><a href="#kb-27">KB #27 — DFW Performance</a></div></div></div>
+
+<!-- KB #25 --><div class="kb-entry" id="kb-25" data-type="break" data-severity="high" data-keywords="IDFW identity firewall AD user group login event guest introspection"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">25</div><div class="kb-entry-title-block"><div class="kb-entry-title">Identity-Based Firewall (IDFW) Issues</div><div class="kb-entry-subtitle">IDFW rules not matching user sessions — AD event log integration, Guest Introspection issues</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">IDFW</span><span class="tag">Identity</span><span class="tag">AD</span><span class="tag tag-recovery">ERT: 20-40 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> User-based DFW rules cannot enforce policy. Users from restricted AD groups access resources they shouldn't. Identity-to-IP mapping is stale or missing.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify IDFW configuration and AD event source</strong></p><pre><code># Check IDFW is enabled:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/settings/firewall/idfw/cluster/&lt;cluster-id&gt;
+
+# Verify AD event log scraper:
+GET https://&lt;nsx-manager&gt;/api/v1/idfw/idfw-compute-collections
+
+# Check Active Directory event source:
+# NSX UI → Security → Distributed Firewall → IDFW → AD Event Sources
+# Verify connection to domain controllers
+
+# On host — check Guest Introspection service:
+nsxcli -c "get ids status"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Verify user-to-IP mapping</strong></p><pre><code># Check current IDFW user sessions:
+GET https://&lt;nsx-manager&gt;/api/v1/idfw/user-session-data
+
+# Check if specific user is mapped:
+GET https://&lt;nsx-manager&gt;/api/v1/idfw/user-session-data?user_name=&lt;username&gt;
+
+# If mapping is stale — user logged in but mapping shows old IP:
+# Verify Guest Introspection VM is deployed on the cluster
+# Verify NSX Tools (VMware Tools with thin agent) are installed in guest VMs
+
+# Force refresh:
+POST https://&lt;nsx-manager&gt;/api/v1/idfw/compute-collections/&lt;cc-id&gt;?action=refresh</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase2.html#kb-16">KB #16 — LDAP/AD Issues</a><a href="#kb-28">KB #28 — Security Group Stale</a></div></div></div>
+
+<!-- KB #26 --><div class="kb-entry" id="kb-26" data-type="break" data-severity="medium" data-keywords="time-based rules triggering schedule window DFW NTP clock"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">26</div><div class="kb-entry-title-block"><div class="kb-entry-title">Time-Based Rules Not Triggering</div><div class="kb-entry-subtitle">Scheduled DFW rules don't activate or deactivate at configured times</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Time-Based</span><span class="tag">Schedule</span><span class="tag tag-recovery">ERT: 10-20 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify NTP synchronization across all components</strong></p><pre><code># On NSX Manager:
+get ntp-status
+# Verify synchronized with NTP source
+
+# On ESXi hosts:
+esxcli system time get
+ntpq -p
+
+# If time is skewed — fix NTP:
+# On NSX Manager:
+set ntp-server &lt;ntp-server-ip&gt;
+
+# Time-based rules use the NSX Manager's timezone
+# Verify timezone setting:
+get timezone</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Verify time window configuration</strong></p><pre><code># Check time window definitions:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;/rules/&lt;rule-id&gt;
+
+# Look for "time_window" field in the rule
+# Verify start_time, end_time, days_of_week
+
+# Common issues:
+# 1. Timezone mismatch (UTC vs local)
+# 2. Days of week not including current day
+# 3. Rule was modified — time window removed accidentally</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-24">KB #24 — Rule Publish Failure</a><a href="phase1.html#kb-4">KB #4 — DFW Not Applied</a></div></div></div>
+
+<!-- KB #27 --><div class="kb-entry" id="kb-27" data-type="break" data-severity="high" data-keywords="DFW performance degradation slow rule count connection table memory"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">27</div><div class="kb-entry-title-block"><div class="kb-entry-title">DFW Performance Degradation</div><div class="kb-entry-subtitle">DFW causing latency or packet drops — excessive rules, connection table exhaustion, CPU pressure on hosts</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">DFW</span><span class="tag">Performance</span><span class="tag tag-recovery">ERT: 15-45 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> VM-to-VM latency increases. Packet drops under high connection rates. Application timeouts. May be mistaken for network or storage issues.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check DFW connection table utilization</strong></p><pre><code># On ESXi host:
+nsxcli -c "get firewall connection-stats"
+
+# Check connection table size vs limit:
+nsxcli -c "get firewall thresholds"
+# Default: 65536 connections per vNIC
+
+# If connection count approaches limit:
+# Option 1: Increase connection limit
+# Option 2: Reduce connection timeout for idle sessions
+
+# Check per-VM connection stats:
+nsxcli -c "get firewall &lt;vnic-uuid&gt; connection-stats"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Optimize DFW rule table</strong></p><pre><code># Check total rule count on host:
+nsxcli -c "get firewall rules" | wc -l
+
+# Best practices for performance:
+# 1. Use "Applied To" to limit rule scope (don't apply to all VMs)
+# 2. Consolidate overlapping rules
+# 3. Use IP Sets instead of individual IPs in rules
+# 4. Move inactive rules to disabled state
+# 5. Use security policy categories efficiently
+
+# Monitor DFW CPU impact:
+# esxtop → press 'n' for network → check %DRPS column</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-21">KB #21 — Hit Count Analysis</a><a href="#kb-29">KB #29 — Applied To Scope</a></div></div></div>
+
+<!-- KB #28 --><div class="kb-entry" id="kb-28" data-type="break" data-severity="high" data-keywords="security group membership stale dynamic criteria tag IP set outdated"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">28</div><div class="kb-entry-title-block"><div class="kb-entry-title">Security Group Membership Stale</div><div class="kb-entry-subtitle">Dynamic security group membership not updating — VMs not added or removed correctly</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Security Group</span><span class="tag">Membership</span><span class="tag tag-recovery">ERT: 10-30 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> New VMs not protected by DFW rules (not in correct group). Decommissioned VMs still consuming rule entries. Security posture inconsistent with intent.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify group membership and criteria</strong></p><pre><code># Check effective members of a group:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/&lt;group-id&gt;/members/virtual-machines
+
+# Check group criteria (what should match):
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/&lt;group-id&gt;
+
+# Verify VM tags match the criteria:
+GET https://&lt;nsx-manager&gt;/api/v1/fabric/virtual-machines?display_name=&lt;vm-name&gt;
+# Check "tags" field matches group expression
+
+# Force group membership recalculation:
+POST https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/&lt;group-id&gt;?action=recompute</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Fix tag assignment for dynamic groups</strong></p><pre><code># Add missing tag to VM:
+PUT https://&lt;nsx-manager&gt;/api/v1/fabric/virtual-machines/&lt;vm-ext-id&gt;/tags
+{
+  "tags": [
+    {"scope": "environment", "tag": "production"},
+    {"scope": "app-tier", "tag": "web"}
+  ]
+}
+
+# Verify group membership updates within 60 seconds:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/&lt;group-id&gt;/members/virtual-machines
+
+# Check consolidated effective members:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups/&lt;group-id&gt;/members/consolidated-effective-ip-addresses</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-22">KB #22 — Microsegmentation Design</a><a href="#kb-25">KB #25 — IDFW Issues</a></div></div></div>
+
+<!-- KB #29 --><div class="kb-entry" id="kb-29" data-type="fix" data-severity="high" data-keywords="applied to scope best practices DFW section policy optimization limit"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">29</div><div class="kb-entry-title-block"><div class="kb-entry-title">Applied To Scope Best Practices</div><div class="kb-entry-subtitle">Optimize DFW performance using "Applied To" to limit rule distribution scope</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Applied To</span><span class="tag">Optimization</span><span class="tag tag-recovery">ERT: 15-30 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Purpose:</strong> "Applied To" determines which hosts receive the DFW rules. By default, rules are pushed to ALL hosts. Using Applied To reduces rule table size on hosts that don't need those rules.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure Applied To at the policy level</strong></p><pre><code># Set Applied To on a security policy:
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;
+{
+  "scope": ["/infra/domains/default/groups/Web-Servers"]
+}
+
+# This means the rules in this policy are ONLY pushed to hosts
+# where members of "Web-Servers" group reside
+
+# Best practices:
+# 1. Set Applied To = target group for application-specific policies
+# 2. Leave Infrastructure policies as "DFW" (all hosts) since they're universal
+# 3. Use per-rule Applied To for mixed policies
+
+# NSX Manager UI:
+# Security → DFW → Policy → Applied To column → Click to edit</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Verify rule distribution after Applied To change</strong></p><pre><code># Check which hosts have the rules:
+# On a host that SHOULD have the rules:
+nsxcli -c "get firewall rules" | grep &lt;rule-id-keyword&gt;
+# Should find the rule
+
+# On a host that should NOT have the rules:
+nsxcli -c "get firewall rules" | grep &lt;rule-id-keyword&gt;
+# Should return empty — rule not distributed here
+
+# This reduces total rules per host → better performance</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-27">KB #27 — DFW Performance</a><a href="#kb-21">KB #21 — Hit Count Analysis</a></div></div></div>
+
+<!-- KB #30 --><div class="kb-entry" id="kb-30" data-type="fix" data-severity="medium" data-keywords="DFW rule export import backup migration API JSON configuration"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">30</div><div class="kb-entry-title-block"><div class="kb-entry-title">DFW Rule Export/Import</div><div class="kb-entry-subtitle">Export DFW configuration for backup, migration, or replication to another NSX environment</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Export</span><span class="tag">Import</span><span class="tag">Migration</span><span class="tag tag-recovery">ERT: 20-40 min</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Export DFW configuration via API</strong></p><pre><code># Export all security policies:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies
+
+# Export specific policy with all rules:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;/rules
+
+# Export all groups (needed for rule references):
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/domains/default/groups
+
+# Export all services:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/services
+
+# Save all responses as JSON files for backup</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div><div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Import DFW configuration to target environment</strong></p><pre><code># Import order matters:
+# 1. Create Services first
+# 2. Create Groups (modify member criteria for new environment)
+# 3. Create Security Policies with rules
+
+# Import groups:
+PUT https://&lt;target-nsx&gt;/policy/api/v1/infra/domains/default/groups/&lt;group-id&gt;
+{...exported group JSON...}
+
+# Import policy with rules:
+PUT https://&lt;target-nsx&gt;/policy/api/v1/infra/domains/default/security-policies/&lt;policy-id&gt;
+{...exported policy JSON with rules...}
+
+# Verify realization:
+GET https://&lt;target-nsx&gt;/policy/api/v1/infra/realized-state/status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div><div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase2.html#kb-12">KB #12 — Backup &amp; Restore</a><a href="#kb-22">KB #22 — Microsegmentation Design</a></div></div></div>
+
+</div>
+
+<footer class="footer"><p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p><p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p></footer>
+
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+(function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>

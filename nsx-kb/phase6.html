@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 6: Segments &amp; Overlays</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}.scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}.header{background:linear-gradient(180deg,#0d1117,#111820,#0d1117);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}.header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}.header h1{font-size:1.5rem;font-weight:700}.header h1 span{font-weight:400;color:var(--text-secondary)}.badge{display:inline-flex;align-items:center;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500}.badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}.badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}.badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}.search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}.search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}.search-bar input:focus{border-color:var(--accent)}.stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}.stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase}.nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}.nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}.nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}.container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}.kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}.kb-entry:hover{border-color:rgba(88,166,255,0.35)}.kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer}.kb-entry-header:hover{background:var(--bg-card-hover)}.kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}.kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}.kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}.kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}.kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}.kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}.tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}.tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}.tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}.tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}.kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}.kb-entry.open .kb-chevron{transform:rotate(180deg)}.kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}.kb-entry.open .kb-entry-body{display:block}.section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}.section-label::after{content:'';flex:1;height:1px;background:var(--border)}.kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}.kb-entry-body ul{padding-left:1.5rem;margin-bottom:0.75rem}.kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}.kb-entry-body li strong{color:var(--text-primary)}pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}.copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem}.alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}.alert-icon{flex-shrink:0;font-size:1.1rem}.alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}.alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}.alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}.steps{margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem}.step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}.step-content{flex:1}.footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}.footer a{color:var(--text-secondary);text-decoration:none}.phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}.phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}.phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}.phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<header class="header"><div class="header-inner"><h1>VMware NSX-T <span>Knowledge Base</span></h1><div style="display:flex;gap:0.75rem"><span class="badge badge-phase">Phase 6 — Segments &amp; Overlays</span><span class="badge badge-break">&#9888; 6 Break</span><span class="badge badge-fix">&#10003; 4 Fix</span></div></div></header>
+<nav class="phase-nav"><a href="index.html" class="nav-dashboard">&larr; Dashboard</a><a href="phase1.html">Phase 1</a><a href="phase2.html">Phase 2</a><a href="phase3.html">Phase 3</a><a href="phase4.html">Phase 4</a><a href="phase5.html">Phase 5</a><a href="phase6.html" class="active">Phase 6</a><a href="phase7.html">Phase 7</a><a href="phase8.html">Phase 8</a></nav>
+<div class="search-bar"><input type="text" id="searchInput" placeholder="Search GENEVE, MTU, MAC learning, VTEP, segment, TEP pool, VLAN trunk..." oninput="filterEntries()"></div>
+<div class="stats-bar"><div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div><div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">6</div><div class="stat-label">Break Scenarios</div></div><div class="stat-card"><div class="stat-value" style="color:var(--success-light)">4</div><div class="stat-label">Fix Procedures</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 6</div><div class="stat-label">Current Phase</div></div></div>
+<div class="nav-tabs"><button class="nav-tab active" onclick="filterByType('all',this)">All Issues</button><button class="nav-tab" onclick="filterByType('break',this)">Break / Failure</button><button class="nav-tab" onclick="filterByType('fix',this)">Fix / Resolution</button><button class="nav-tab" onclick="filterByType('critical',this)">Critical</button><button class="nav-tab" onclick="filterByType('high',this)">High</button></div>
+<div class="container" id="kbContainer">
+
+<div class="kb-entry" id="kb-51" data-type="break" data-severity="critical" data-keywords="port blocking table full MAC address limit segment switch overflow"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">51</div><div class="kb-entry-title-block"><div class="kb-entry-title">Port Blocking — MAC Table Full</div><div class="kb-entry-subtitle">Logical switch MAC address table overflow causing port blocking and traffic loss</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">MAC Table</span><span class="tag">Port Block</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Ports placed in blocking state — VMs lose all network connectivity. Traffic flooding occurs when MAC table is full, causing performance degradation for all VMs on the segment.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check MAC table utilization and clear stale entries</strong></p><pre><code># On host — check MAC table for segment:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; mac-table"
+
+# Check MAC table size:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; mac-table-size"
+# Default limit: 2048 MACs per logical switch
+
+# Identify source of MAC flooding:
+# Look for VMs with multiple MACs (nested hypervisors, containers)
+# Check for MAC spoofing or looping
+
+# Clear MAC table:
+nsxcli -c "clear logical-switch &lt;ls-uuid&gt; mac-table"
+
+# Increase MAC table limit if legitimate:
+# NSX UI → Networking → Segments → Segment Profile → Spoofguard
+# Adjust MAC address limit per port
+
+# Long-term: Identify and fix MAC source
+# Nested VMs: Enable MAC Learning on the port
+# Loops: Check for bridging loops in physical network</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-52" data-type="break" data-severity="critical" data-keywords="GENEVE MTU overlay encapsulation fragmentation packet loss jumbo frames"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">52</div><div class="kb-entry-title-block"><div class="kb-entry-title">GENEVE Overlay MTU Issues</div><div class="kb-entry-subtitle">MTU mismatch causing packet drops for overlay-encapsulated traffic — silent data loss</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">GENEVE</span><span class="tag">MTU</span><span class="tag">Overlay</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Large packets (SCP, SMB, database) fail while small packets (ping, DNS) work. Classic "ping works but file transfer fails" scenario. GENEVE adds 54-byte overhead to each frame.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify end-to-end MTU path supports 1600+ bytes</strong></p><pre><code># NSX-T GENEVE overhead: 54 bytes
+# VM sends 1500-byte frame → becomes 1554 bytes on wire
+# Physical infrastructure must support at least 1600 MTU (1700 recommended)
+
+# Test MTU between TEPs:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep-ip&gt;
+# -s 1572 + 28 (ICMP header) = 1600 bytes
+# If this fails — physical MTU is too low
+
+# Check physical switch MTU:
+# Cisco: show interface &lt;int&gt; | include MTU
+# Must be 9000 (jumbo) or at least 1700
+
+# Set ESXi TEP vmk MTU:
+esxcli network ip interface set -i vmk10 -m 1600
+
+# Best practice: Set physical to 9000, ESXi TEP to 1700
+# This covers GENEVE (54) + any future overhead</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-53" data-type="break" data-severity="high" data-keywords="MAC learning flooding unknown unicast BUM nested VM container"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">53</div><div class="kb-entry-title-block"><div class="kb-entry-title">MAC Learning &amp; Unknown Unicast Flooding</div><div class="kb-entry-subtitle">Excessive BUM traffic due to unknown unicast flooding — performance impact on segments</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">MAC Learning</span><span class="tag">BUM</span><span class="tag">Flooding</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Enable MAC learning for ports with multiple MACs</strong></p><pre><code># Create MAC Discovery segment profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/segments/&lt;segment-id&gt;/segment-discovery-profile-binding-maps/mac-learn
+{
+  "mac_discovery_profile_path": "/infra/mac-discovery-profiles/mac-learning-enabled"
+}
+
+# Create MAC learning profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/mac-discovery-profiles/mac-learning-enabled
+{
+  "display_name": "MAC-Learning-Enabled",
+  "mac_learning_enabled": true,
+  "unknown_unicast_flooding_enabled": true,
+  "mac_limit": 4096,
+  "mac_limit_policy": "ALLOW"
+}
+
+# Apply to specific ports (nested VMs, containers):
+# NSX UI → Networking → Segments → Ports → Edit Port
+# Attach MAC Discovery Profile
+
+# Monitor BUM traffic:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; stats" | grep "flood\|unknown"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-54" data-type="break" data-severity="high" data-keywords="segment post-migration vMotion connectivity lost VLAN VNI mapping"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">54</div><div class="kb-entry-title-block"><div class="kb-entry-title">Post-Migration Segment Issues</div><div class="kb-entry-subtitle">VM loses connectivity after vMotion or migration between transport nodes</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Migration</span><span class="tag">vMotion</span><span class="tag">Connectivity</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Diagnose post-vMotion connectivity loss</strong></p><pre><code># After vMotion — VM should automatically reconnect to same segment
+# If connectivity lost:
+
+# Check VM port attachment on destination host:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; ports"
+# VM should appear on the new host
+
+# Verify transport zone membership:
+# Source and destination hosts must be in same transport zone
+GET https://&lt;nsx-manager&gt;/api/v1/transport-zones/&lt;tz-id&gt;/transport-node-status
+
+# Check VTEP connectivity from new host:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep-ip&gt;
+
+# If VM was on VLAN-backed segment — verify VLAN is trunked on new host:
+esxcli network vswitch dvs vmware list | grep -A5 "uplink"
+
+# Force re-learn on destination:
+# Power cycle VM vNIC (disconnect/reconnect in vCenter)
+# Or: nsxcli -c "clear logical-switch &lt;ls-uuid&gt; mac-table"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-55" data-type="fix" data-severity="medium" data-keywords="ARP suppression table VTEP learn broadcast reduction overlay"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">55</div><div class="kb-entry-title-block"><div class="kb-entry-title">ARP Suppression Configuration</div><div class="kb-entry-subtitle">Reduce ARP broadcast traffic in overlay segments using ARP suppression tables</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">ARP</span><span class="tag">Suppression</span><span class="tag">Broadcast</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure ARP suppression on segments</strong></p><pre><code># ARP suppression is enabled by default on NSX-T overlay segments
+# Each host maintains a local ARP table for known VMs
+# When an ARP request arrives, host replies locally if it knows the answer
+
+# Check ARP suppression table on host:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; arp-table"
+
+# If ARP suppression not working:
+# 1. Verify IP Discovery profile is attached to segment
+# 2. Check that ARP snooping is enabled
+
+# Create/verify IP Discovery profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/ip-discovery-profiles/default-ip-discovery
+{
+  "arp_snooping_enabled": true,
+  "dhcp_snooping_enabled": true,
+  "vmtools_enabled": true,
+  "arp_binding_limit": 128
+}
+
+# Monitor ARP suppression effectiveness:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; stats"
+# Check suppressed ARP count vs forwarded ARP count</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-56" data-type="fix" data-severity="high" data-keywords="cross-vCenter segment extension L2 stretch bridge multisite"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">56</div><div class="kb-entry-title-block"><div class="kb-entry-title">Cross-vCenter Segment Extension</div><div class="kb-entry-subtitle">Extend L2 segments across multiple vCenter/NSX domains for workload mobility</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Cross-vCenter</span><span class="tag">L2 Extension</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure stretched segment in NSX Federation</strong></p><pre><code># NSX Federation — stretched segments via Global Manager:
+# On GM: Networking → Segments → Add Segment
+# Transport Zone: Select stretched TZ (spans multiple locations)
+# The same VNI is used at both sites
+
+# Verify stretched segment:
+# On GM:
+GET https://&lt;gm&gt;/global-manager/api/v1/global-infra/segments/&lt;stretched-seg-id&gt;
+
+# Traffic flow for stretched segment:
+# Same-site: Normal overlay (host-to-host via TEP)
+# Cross-site: Via RTEP (Remote TEP) on Edge nodes
+
+# Verify RTEP connectivity between sites:
+# On Edge at Site-A:
+ping &lt;site-b-rtep-ip&gt;
+
+# Ensure inter-site link has sufficient bandwidth
+# L2 extension increases cross-site traffic significantly</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-57" data-type="fix" data-severity="high" data-keywords="VLAN trunk port segment uplink tagging native nested"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">57</div><div class="kb-entry-title-block"><div class="kb-entry-title">VLAN Trunk Port Configuration</div><div class="kb-entry-subtitle">Configure VLAN trunk ports on segments for VMs that need to receive tagged traffic</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">VLAN</span><span class="tag">Trunk</span><span class="tag">Tagged</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure VLAN trunk on segment port</strong></p><pre><code># Use case: VM needs to receive VLAN-tagged frames
+# (nested ESXi, firewall VM with sub-interfaces, router VM)
+
+# Create segment with trunk VLAN range:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/segments/Trunk-Segment
+{
+  "display_name": "Trunk-Segment",
+  "transport_zone_path": "/infra/sites/default/enforcement-points/default/transport-zones/&lt;tz-id&gt;",
+  "vlan_ids": ["100-200", "300"]
+}
+
+# Or configure per-port trunk (overlay segment):
+# NSX UI → Segments → Select Segment → Ports → VM Port → Edit
+# Address Binding: None
+# VLAN Trunk: Enable → Specify VLAN ranges
+
+# Verify trunk works:
+# Inside the VM — create sub-interface:
+# ip link add link eth0 name eth0.100 type vlan id 100
+# Verify tagged traffic received</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-58" data-type="fix" data-severity="medium" data-keywords="segment security profile spoofguard BPDU storm control QoS"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">58</div><div class="kb-entry-title-block"><div class="kb-entry-title">Segment Security Profile Configuration</div><div class="kb-entry-subtitle">Configure SpoofGuard, BPDU filter, and storm control profiles for segment protection</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">SpoofGuard</span><span class="tag">BPDU</span><span class="tag">Security</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure segment security profiles</strong></p><pre><code># Create SpoofGuard profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/spoofguard-profiles/Strict-SG
+{
+  "display_name": "Strict-SpoofGuard",
+  "address_binding_allowlist": true,
+  "address_binding_whitelist": true
+}
+
+# Create Segment Security profile (BPDU + Storm Control):
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/segment-security-profiles/Protected
+{
+  "display_name": "Protected-Profile",
+  "bpdu_filter_enabled": true,
+  "bpdu_filter_allow": [],
+  "rate_limits_enabled": true,
+  "rx_broadcast": 1000,
+  "rx_multicast": 1000,
+  "tx_broadcast": 1000,
+  "tx_multicast": 1000
+}
+
+# Attach profiles to segment:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/segments/&lt;segment-id&gt;/segment-security-profile-binding-maps/default
+{
+  "segment_security_profile_path": "/infra/segment-security-profiles/Protected",
+  "spoofguard_profile_path": "/infra/spoofguard-profiles/Strict-SG"
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-59" data-type="break" data-severity="critical" data-keywords="TEP IP pool exhaustion VTEP address depleted no available tunnel endpoint"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">59</div><div class="kb-entry-title-block"><div class="kb-entry-title">TEP IP Pool Exhaustion</div><div class="kb-entry-subtitle">Tunnel Endpoint IP pool depleted — new transport nodes cannot get TEP IPs, overlay connectivity fails</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">TEP</span><span class="tag">IP Pool</span><span class="tag">Exhaustion</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> New hosts cannot join NSX fabric. Cluster expansion blocked. Existing hosts work fine but new deployments fail with "IP address allocation failed" errors.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check TEP pool utilization and expand</strong></p><pre><code># Check IP pool allocation:
+GET https://&lt;nsx-manager&gt;/api/v1/pools/ip-pools/&lt;tep-pool-id&gt;/allocations
+
+# Check pool capacity:
+GET https://&lt;nsx-manager&gt;/api/v1/pools/ip-pools/&lt;tep-pool-id&gt;
+# Compare total IPs in range vs allocated count
+
+# Look for leaked allocations (hosts removed but IP not freed):
+# Cross-reference allocated IPs with active transport nodes
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes
+
+# Release orphaned IPs:
+POST https://&lt;nsx-manager&gt;/api/v1/pools/ip-pools/&lt;pool-id&gt;?action=RELEASE
+{
+  "allocation_id": "&lt;leaked-allocation-id&gt;"
+}
+
+# Expand pool range:
+# Add additional IP subnet to existing TEP pool
+PATCH https://&lt;nsx-manager&gt;/api/v1/pools/ip-pools/&lt;pool-id&gt;
+# Add new range in "subnets" array</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-60" data-type="break" data-severity="high" data-keywords="segment disconnect orphan port VM no logical port detached"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">60</div><div class="kb-entry-title-block"><div class="kb-entry-title">Segment Port Disconnect / Orphan Ports</div><div class="kb-entry-subtitle">VM logical ports detached from segments — network connectivity lost due to orphan port state</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Segment</span><span class="tag">Port</span><span class="tag">Orphan</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Identify and reconnect orphan ports</strong></p><pre><code># Find orphan ports (ports not attached to any VM):
+GET https://&lt;nsx-manager&gt;/api/v1/logical-ports?attachment_type=VIF&amp;attachment_status=UNATTACHED
+
+# Check specific VM's port:
+# Get VM external-id from vCenter (vm-xxx)
+GET https://&lt;nsx-manager&gt;/api/v1/fabric/virtual-machines?external_id=&lt;vm-id&gt;
+
+# Check if VM has a logical port:
+GET https://&lt;nsx-manager&gt;/api/v1/logical-ports?attachment_id=&lt;vm-vnic-uuid&gt;
+
+# If port exists but disconnected — reconnect VM's vNIC:
+# In vCenter: Edit VM → Network adapter → Disconnect → Save → Connect → Save
+
+# If port doesn't exist — VM may need to be reconnected to NSX segment:
+# Change VM's network to the correct NSX segment port group
+# The logical port will be auto-created
+
+# Clean up orphan ports:
+DELETE https://&lt;nsx-manager&gt;/api/v1/logical-ports/&lt;orphan-port-id&gt;?detach=true</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+</div>
+<footer class="footer"><p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p><p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p></footer>
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+(function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>

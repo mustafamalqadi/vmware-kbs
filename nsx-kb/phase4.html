@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 4: Routing &amp; BGP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>:root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117}*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}.scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}.header{background:linear-gradient(180deg,#0d1117,#111820,#0d1117);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}.header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}.header h1{font-size:1.5rem;font-weight:700}.header h1 span{font-weight:400;color:var(--text-secondary)}.badge{display:inline-flex;align-items:center;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500}.badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}.badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}.badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}.search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}.search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}.search-bar input:focus{border-color:var(--accent)}.stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}.stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase}.nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}.nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}.nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}.container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}.kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}.kb-entry:hover{border-color:rgba(88,166,255,0.35)}.kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer}.kb-entry-header:hover{background:var(--bg-card-hover)}.kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}.kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}.kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}.kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}.kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}.kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}.tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}.tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}.tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}.tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}.kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}.kb-entry.open .kb-chevron{transform:rotate(180deg)}.kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}.kb-entry.open .kb-entry-body{display:block}.section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}.section-label::after{content:'';flex:1;height:1px;background:var(--border)}.kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}.kb-entry-body ul{padding-left:1.5rem;margin-bottom:0.75rem}.kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}.kb-entry-body li strong{color:var(--text-primary)}pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}.copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem}.alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}.alert-icon{flex-shrink:0;font-size:1.1rem}.alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}.alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}.alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}.steps{margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem}.step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}.step-content{flex:1}.footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}.footer a{color:var(--text-secondary);text-decoration:none}.phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}.phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}.phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}.phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}</style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<header class="header"><div class="header-inner"><h1>VMware NSX-T <span>Knowledge Base</span></h1><div class="header-badges" style="display:flex;gap:0.75rem"><span class="badge badge-phase">Phase 4 — Routing &amp; BGP</span><span class="badge badge-break">&#9888; 5 Break</span><span class="badge badge-fix">&#10003; 5 Fix</span></div></div></header>
+<nav class="phase-nav"><a href="index.html" class="nav-dashboard">&larr; Dashboard</a><a href="phase1.html">Phase 1</a><a href="phase2.html">Phase 2</a><a href="phase3.html">Phase 3</a><a href="phase4.html" class="active">Phase 4</a><a href="phase5.html">Phase 5</a><a href="phase6.html">Phase 6</a><a href="phase7.html">Phase 7</a><a href="phase8.html">Phase 8</a></nav>
+<div class="search-bar"><input type="text" id="searchInput" placeholder="Search BGP, ECMP, redistribution, prefix list, NAT, BFD, federation routing..." oninput="filterEntries()"></div>
+<div class="stats-bar"><div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div><div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">5</div><div class="stat-label">Break Scenarios</div></div><div class="stat-card"><div class="stat-value" style="color:var(--success-light)">5</div><div class="stat-label">Fix Procedures</div></div><div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 4</div><div class="stat-label">Current Phase</div></div></div>
+<div class="nav-tabs"><button class="nav-tab active" onclick="filterByType('all',this)">All Issues</button><button class="nav-tab" onclick="filterByType('break',this)">Break / Failure</button><button class="nav-tab" onclick="filterByType('fix',this)">Fix / Resolution</button><button class="nav-tab" onclick="filterByType('critical',this)">Critical</button><button class="nav-tab" onclick="filterByType('high',this)">High</button></div>
+<div class="container" id="kbContainer">
+
+<div class="kb-entry" id="kb-31" data-type="fix" data-severity="high" data-keywords="BGP route reflector design RR iBGP full mesh cluster"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">31</div><div class="kb-entry-title-block"><div class="kb-entry-title">BGP Route Reflector Design</div><div class="kb-entry-subtitle">Configure route reflectors for scalable iBGP peering in NSX-T Edge clusters</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">BGP</span><span class="tag">Route Reflector</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure BGP route reflector on physical router</strong></p><pre><code># NSX Edge nodes typically peer with physical ToR switches
+# For iBGP between multiple Edge clusters, use route reflector
+
+# Physical router (Cisco) — configure as RR:
+# router bgp 65000
+#   neighbor &lt;edge-1-ip&gt; route-reflector-client
+#   neighbor &lt;edge-2-ip&gt; route-reflector-client
+
+# NSX side — configure iBGP neighbor:
+# Networking → Tier-0 → BGP → Add Neighbor
+# Remote AS = Same as local (iBGP)
+# Source Address = Edge uplink IP
+
+# Verify routes reflected:
+get bgp neighbor &lt;rr-ip&gt; received-routes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-32" data-type="break" data-severity="high" data-keywords="ECMP load balancing asymmetric equal cost multipath edge traffic"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">32</div><div class="kb-entry-title-block"><div class="kb-entry-title">ECMP Load Balancing Asymmetric</div><div class="kb-entry-subtitle">Traffic not balanced across ECMP paths — asymmetric routing causing stateful service failures</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">ECMP</span><span class="tag">Asymmetric</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Stateful services (NAT, firewall) break with asymmetric ECMP. Return traffic arrives at different Edge than outbound, causing session mismatch and drops.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify ECMP configuration and path selection</strong></p><pre><code># Check T0 HA mode:
+# Active-Standby = no ECMP (single path)
+# Active-Active = ECMP enabled
+
+# Verify ECMP paths:
+get route-table
+# Multiple next-hops for same prefix = ECMP active
+
+# For stateful services — use Active-Standby mode:
+# NSX UI → Tier-0 → Edit → HA Mode → Active-Standby
+# This ensures all traffic uses same Edge for state tracking
+
+# If ECMP is required — ensure physical routers also hash symmetrically:
+# Match 5-tuple hash on both directions</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-33" data-type="break" data-severity="critical" data-keywords="route redistribution loops connected static BGP OSPF filter prefix"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">33</div><div class="kb-entry-title-block"><div class="kb-entry-title">Route Redistribution Loops</div><div class="kb-entry-subtitle">Route redistribution between BGP and connected/static creates routing loops or black holes</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Redistribution</span><span class="tag">Loop</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Routing loops cause packet TTL expiry and complete path failure. CPU spike on routing devices processing looped packets. Network instability spreads to physical infrastructure.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Audit route redistribution configuration</strong></p><pre><code># Check what's being redistributed on T0:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/locale-services/&lt;ls-id&gt;/bgp
+
+# Check route redistribution rules:
+# NSX UI → Networking → Tier-0 → Route Redistribution
+# Verify only intended sources are redistributed:
+#   T0 Connected Subnets → BGP (typically yes)
+#   T1 Connected → BGP (yes, for VM subnets)
+#   Static → BGP (be careful — can create loops)
+#   BGP → Connected (NEVER do this)
+
+# Apply route filters to prevent loops:
+# Use prefix lists to only advertise known-good prefixes
+# NSX UI → Tier-0 → BGP → Neighbors → Route Filters</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-34" data-type="break" data-severity="critical" data-keywords="T0 SR DR communication failure service router distributed transit"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">34</div><div class="kb-entry-title-block"><div class="kb-entry-title">T0 SR to DR Communication Failure</div><div class="kb-entry-subtitle">Service Router and Distributed Router components lose connectivity — transit link failure</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">SR</span><span class="tag">DR</span><span class="tag">Transit</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> East-west traffic works (DR handles it) but north-south traffic fails because DR cannot reach SR on the Edge. VMs can communicate locally but not externally.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify SR-DR transit link</strong></p><pre><code># The SR and DR communicate via internal transit segments
+# Check transit link status:
+get logical-routers
+# Look for T0 SR and T0 DR entries
+
+# On Edge — check transit interface:
+get interfaces
+# Look for "transit" type interface — should show UP
+
+# Verify routing between SR and DR:
+# In SR VRF:
+vrf &lt;sr-vrf-id&gt;
+get route-table
+# Should have routes to DR subnets via transit link
+
+# If transit link is down — check overlay connectivity to Edge:
+vmkping ++netstack=vxlan -d -s 1572 &lt;edge-tep-ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-35" data-type="break" data-severity="high" data-keywords="static route blackhole next-hop null unreachable gateway dead"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">35</div><div class="kb-entry-title-block"><div class="kb-entry-title">Static Route Blackhole</div><div class="kb-entry-subtitle">Static routes pointing to unreachable next-hops cause traffic blackholing</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Static Route</span><span class="tag">Blackhole</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Identify and fix blackhole static routes</strong></p><pre><code># List all static routes:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/static-routes
+
+# On Edge — verify next-hop reachability:
+vrf &lt;sr-vrf-id&gt;
+ping &lt;next-hop-ip&gt;
+
+# If next-hop unreachable — the static route is a blackhole
+# Options:
+# 1. Fix next-hop connectivity (VLAN, interface, etc.)
+# 2. Remove the static route
+# 3. Use BFD for static route health monitoring
+
+# Configure BFD for static route:
+# NSX UI → Tier-0 → Static Routes → BFD Peer
+# If BFD fails, route is withdrawn from FIB</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-36" data-type="fix" data-severity="high" data-keywords="route filtering prefix list route-map BGP deny permit community"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">36</div><div class="kb-entry-title-block"><div class="kb-entry-title">Route Filtering with Prefix Lists</div><div class="kb-entry-subtitle">Configure prefix lists and route maps for BGP route filtering on NSX-T Edge</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Prefix List</span><span class="tag">Route Filter</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Create prefix list for route filtering</strong></p><pre><code># NSX API — Create prefix list:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/prefix-lists/Allow-Internal
+{
+  "display_name": "Allow-Internal",
+  "prefixes": [
+    {"network": "10.0.0.0/8", "action": "PERMIT", "le": 24},
+    {"network": "172.16.0.0/12", "action": "PERMIT", "le": 24},
+    {"network": "0.0.0.0/0", "action": "DENY"}
+  ]
+}
+
+# Apply to BGP neighbor as outbound filter:
+# NSX UI → Tier-0 → BGP → Neighbors → Route Filter
+# Direction: OUT
+# Prefix List: Allow-Internal
+# This prevents advertising unwanted routes to physical network
+
+# Verify on Edge:
+get bgp neighbor &lt;peer-ip&gt; advertised-routes
+# Should only show permitted prefixes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-37" data-type="fix" data-severity="high" data-keywords="BFD timer tuning fast failover detect multiplier interval"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">37</div><div class="kb-entry-title-block"><div class="kb-entry-title">BFD Timer Tuning for Fast Failover</div><div class="kb-entry-subtitle">Optimize BFD timers for rapid failure detection without false positives</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">BFD</span><span class="tag">Timer</span><span class="tag">Failover</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure optimal BFD timers</strong></p><pre><code># BFD Detection Time = Interval × Multiplier
+# Aggressive: 300ms × 3 = 900ms detection (risk of false positives)
+# Balanced:   500ms × 3 = 1.5s detection (recommended)
+# Conservative: 1000ms × 4 = 4s detection (stable, slower failover)
+
+# Set BFD configuration:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;
+{
+  "internal_transit_subnets": ["169.254.0.0/28"],
+  "ha_mode": "ACTIVE_STANDBY",
+  "bfd_peers": [{
+    "bfd_profile_path": "/infra/bfd-profiles/default",
+    "peer_address": "&lt;peer-ip&gt;"
+  }]
+}
+
+# Custom BFD profile:
+PUT https://&lt;nsx-manager&gt;/policy/api/v1/infra/bfd-profiles/Fast-BFD
+{
+  "display_name": "Fast-BFD",
+  "interval": 500,
+  "multiple": 3
+}
+
+# Monitor BFD stability after change:
+get bfd-sessions</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-38" data-type="fix" data-severity="critical" data-keywords="multi-site federation routing cross-location GM LM T0 span"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">38</div><div class="kb-entry-title-block"><div class="kb-entry-title">Multi-Site / Federation Routing</div><div class="kb-entry-subtitle">Configure routing across NSX Federation sites with Global Manager stretched T0 gateways</div><div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">Federation</span><span class="tag">Multi-Site</span><span class="tag">Routing</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure stretched T0 gateway across sites</strong></p><pre><code># On Global Manager:
+# Networking → Tier-0 Gateways → Add Gateway
+# Span: All Locations (or specific sites)
+
+# Each site gets its own SR on local Edge cluster
+# DR is distributed across all hosts at all sites
+
+# Configure per-site BGP peering:
+# Each site's Edge peers with local physical routers
+# Routes learned at Site-A are advertised to Site-B via RTEP
+
+# Verify cross-site routing:
+# On Edge at Site-A:
+get route-table
+# Should see routes for Site-B subnets
+
+# Check RTEP (Remote Tunnel Endpoint) connectivity:
+# RTEP enables cross-site overlay communication
+ping &lt;remote-site-rtep-ip&gt;</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-39" data-type="break" data-severity="high" data-keywords="NAT rules conflict resolution SNAT DNAT priority order overlap"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number break-num">39</div><div class="kb-entry-title-block"><div class="kb-entry-title">NAT Rules Conflict Resolution</div><div class="kb-entry-subtitle">Overlapping NAT rules causing unexpected translations or bypassing intended NAT</div><div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">NAT</span><span class="tag">Conflict</span><span class="tag">SNAT/DNAT</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> VMs get wrong translated IP. Services unreachable from outside due to incorrect DNAT. Internal traffic incorrectly SNATed, breaking return paths.</span></div><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Audit NAT rules and priority</strong></p><pre><code># List all NAT rules on T0/T1:
+GET https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/nat/rules
+
+# NAT processing order:
+# 1. DNAT processed first (inbound)
+# 2. Then routing decision
+# 3. Then SNAT (outbound)
+# Priority field determines order within same type (lower = first)
+
+# Check for overlapping source/destination:
+# Two SNAT rules matching same source → first match wins
+# Two DNAT rules matching same destination → first match wins
+
+# Fix: Set explicit priority values:
+PATCH https://&lt;nsx-manager&gt;/policy/api/v1/infra/tier-0s/&lt;t0-id&gt;/nat/rules/&lt;rule-id&gt;
+{
+  "priority": 100
+}
+
+# Use "No SNAT" rules to exclude traffic from NAT:
+# Action: NO_SNAT, Source: internal-subnet, Dest: other-internal-subnet
+# This prevents internal traffic from being unnecessarily NATed</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+<div class="kb-entry" id="kb-40" data-type="fix" data-severity="medium" data-keywords="edge cluster traffic rebalancing member SR allocation redistribute"><div class="kb-entry-header" onclick="toggleEntry(this)"><div class="kb-number fix-num">40</div><div class="kb-entry-title-block"><div class="kb-entry-title">Edge Cluster Traffic Rebalancing</div><div class="kb-entry-subtitle">Rebalance SR allocation across Edge cluster members after node addition or recovery</div><div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Edge Cluster</span><span class="tag">Rebalancing</span></div></div><svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="kb-entry-body"><div class="section-label">Resolution</div><div class="steps"><div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check current SR allocation and rebalance</strong></p><pre><code># View current SR placement:
+GET https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;/allocation-status
+
+# Check which Edge has which SRs:
+get logical-routers
+# Note the edge-node assignment for each SR
+
+# If imbalanced after node recovery — trigger rebalance:
+POST https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;?action=rebalance
+
+# Verify redistribution:
+GET https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;/allocation-status
+# SRs should be evenly distributed
+
+# Note: Rebalancing causes brief (sub-second) failover for moved SRs
+# Schedule during maintenance window for stateful services</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div></div></div></div>
+
+</div>
+<footer class="footer"><p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p><p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p></footer>
+<script>
+function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+(function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>

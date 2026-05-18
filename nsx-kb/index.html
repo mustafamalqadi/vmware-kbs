@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T Knowledge Base — Dashboard</title>
+    <meta name="description" content="VMware NSX-T Knowledge Base — Professional network virtualization troubleshooting references by Eng. Mustafa Al-Qadi.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #1c2128;
+            --bg-card-hover: #262c34;
+            --accent: #58a6ff;
+            --accent-light: #79c0ff;
+            --danger: #f85149;
+            --danger-light: #ff7b72;
+            --success: #3fb950;
+            --success-light: #56d364;
+            --warning: #d29922;
+            --warning-light: #e3b341;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border: #30363d;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ── Scroll Progress ── */
+        .scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); z-index: 9999; transition: width 0.1s linear; width: 0%; }
+
+        /* ── Hero Header ── */
+        .hero {
+            background: linear-gradient(180deg, #0d1117 0%, #111820 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            position: relative;
+        }
+        .hero h1 {
+            font-size: 2.4rem; font-weight: 700; margin-bottom: 0.6rem;
+            color: var(--text-primary); letter-spacing: -0.5px;
+        }
+        .hero h1 span { color: var(--accent-light); }
+        .hero .subtitle {
+            font-size: 1rem; color: var(--text-secondary); font-weight: 400;
+            margin-bottom: 1.25rem; max-width: 600px; margin-left: auto; margin-right: auto;
+        }
+        .hero-badges {
+            display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.3rem 0.85rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 500; letter-spacing: 0.2px;
+        }
+        .badge-total { background: rgba(88,166,255,0.15); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.3); }
+        .badge-break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.3); }
+        .badge-fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.3); }
+        .badge-phase { background: rgba(210,153,34,0.15); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.3); }
+
+        /* ── Global Search ── */
+        .search-section {
+            max-width: 900px; margin: -1.5rem auto 0; padding: 0 2rem;
+            position: relative; z-index: 10;
+        }
+        .search-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: border-color 0.2s;
+        }
+        .search-box:focus-within { border-color: var(--accent); }
+        .search-box input {
+            width: 100%; padding: 0.75rem 1rem 0.75rem 3rem;
+            border-radius: 10px; border: 1px solid var(--border);
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-size: 1.1rem; outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: 0.85rem center;
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+        .search-hint {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem;
+            justify-content: center;
+        }
+        .search-chip {
+            font-size: 0.72rem; padding: 0.25rem 0.65rem; border-radius: 12px;
+            background: var(--bg-secondary); border: 1px solid var(--border);
+            color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+        }
+        .search-chip:hover { border-color: var(--accent); color: var(--accent-light); }
+        .search-results {
+            display: none; margin-top: 1rem; max-height: 480px; overflow-y: auto;
+            border-top: 1px solid var(--border); padding-top: 0.75rem;
+        }
+        .search-results.visible { display: block; }
+        .search-result-item {
+            display: flex; align-items: flex-start; gap: 0.85rem;
+            padding: 0.75rem 0.5rem; border-radius: 8px; cursor: pointer;
+            text-decoration: none; color: inherit; transition: background 0.2s;
+        }
+        .search-result-item:hover { background: var(--bg-card-hover); }
+        .sr-num {
+            flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem;
+        }
+        .sr-num.break { background: rgba(248,81,73,0.15); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.25); }
+        .sr-num.fix { background: rgba(63,185,80,0.15); color: var(--success-light); border: 1px solid rgba(63,185,80,0.25); }
+        .sr-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .sr-meta { font-size: 0.75rem; color: var(--text-muted); }
+        .sr-highlight { background: rgba(88,166,255,0.25); padding: 0 2px; border-radius: 2px; }
+        .no-results { text-align: center; color: var(--text-muted); padding: 2rem 0; font-size: 0.9rem; }
+
+        /* ── Stats Grid ── */
+        .stats-section {
+            max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem 1.5rem; text-align: center;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+        .stat-label { font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.25rem; }
+
+        /* ── Phase Cards ── */
+        .phases-section { max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem; }
+        .section-title {
+            font-size: 0.75rem; font-weight: 600; margin-bottom: 1.25rem;
+            display: flex; align-items: center; gap: 0.75rem;
+            text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted);
+        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .phases-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.25rem;
+        }
+        .phase-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 10px; overflow: hidden;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+            text-decoration: none; color: inherit; display: block; position: relative;
+        }
+        .phase-card:hover { border-color: rgba(88,166,255,.4); box-shadow: 0 4px 16px rgba(0,0,0,.25); transform: translateY(-2px); }
+        .phase-card-bar { height: 3px; width: 100%; }
+        .phase-card-header {
+            padding: 1.25rem 1.5rem 0.75rem;
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .phase-icon {
+            width: 42px; height: 42px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; font-weight: 700;
+        }
+        .phase-card-title { font-size: 0.95rem; font-weight: 600; }
+        .phase-card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem; }
+        .phase-card-body { padding: 0 1.5rem 1.25rem; }
+        .phase-kb-list { list-style: none; }
+        .phase-kb-list li {
+            font-size: 0.8rem; color: var(--text-secondary); padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(42,63,82,0.5);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .phase-kb-list li:last-child { border-bottom: none; }
+        .kb-num-small {
+            font-weight: 700; font-size: 0.7rem; min-width: 26px; text-align: center;
+            padding: 0.1rem 0.3rem; border-radius: 4px;
+        }
+        .kb-num-small.b { color: var(--danger-light); background: rgba(248,81,73,0.1); }
+        .kb-num-small.f { color: var(--success-light); background: rgba(63,185,80,0.1); }
+        .phase-card-footer {
+            padding: 0.75rem 1.5rem; background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.78rem;
+        }
+        .phase-card-footer .count { color: var(--text-muted); }
+        .phase-card-footer .link-text { color: var(--accent-light); font-weight: 600; }
+        .bf-progress { display:flex; height:3px; border-radius:2px; overflow:hidden; margin-top:.5rem; gap:1px; }
+        .bf-bar-break { background: var(--danger); height:100%; border-radius:2px 0 0 2px; }
+        .bf-bar-fix { background: var(--success); height:100%; border-radius:0 2px 2px 0; }
+        .bf-legend { display:flex; gap:.75rem; margin-top:.35rem; font-size:.65rem; color:var(--text-muted); }
+        .bf-legend span { display:flex; align-items:center; gap:.3rem; }
+        .bf-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+        /* ── Category Filter ── */
+        .filter-section { max-width: 1400px; margin: 2.5rem auto 0; padding: 0 2rem; }
+        .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+        .filter-tab {
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-secondary);
+            color: var(--text-secondary); cursor: pointer;
+            font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+        }
+        .filter-tab:hover { border-color: var(--accent); color: var(--text-primary); }
+        .filter-tab.active { background: rgba(88,166,255,0.15); border-color: var(--accent); color: var(--accent-light); }
+
+        /* ── Full KB Index ── */
+        .kb-index { margin-top: 0.5rem; }
+        .kb-index-item {
+            display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.65rem 1rem; border-radius: 8px;
+            border-bottom: 1px solid rgba(42,63,82,0.4);
+            transition: background 0.2s; cursor: pointer; text-decoration: none; color: inherit;
+            border-left: 3px solid transparent;
+        }
+        .kb-index-item:hover { background: var(--bg-card-hover); transform: translateX(4px); }
+        .kb-index-item[data-type='break']:hover { border-left-color: var(--danger); }
+        .kb-index-item[data-type='fix']:hover { border-left-color: var(--success); }
+        .kb-idx-num {
+            flex-shrink: 0; width: 38px; height: 38px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.95rem;
+        }
+        .kb-idx-num.break { background: rgba(248,81,73,0.12); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
+        .kb-idx-num.fix { background: rgba(63,185,80,0.12); color: var(--success-light); border: 1px solid rgba(63,185,80,0.2); }
+        .kb-idx-info { flex: 1; min-width: 0; }
+        .kb-idx-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .kb-idx-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 1rem; margin-top: 0.15rem; }
+        .kb-idx-tags { display: flex; gap: 0.3rem; flex-shrink: 0; }
+        .idx-tag { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
+        .idx-tag.critical { background: rgba(248,81,73,0.1); color: var(--danger-light); border: 1px solid rgba(248,81,73,0.2); }
+        .idx-tag.high { background: rgba(210,153,34,0.1); color: var(--warning-light); border: 1px solid rgba(210,153,34,0.2); }
+        .idx-tag.medium { background: rgba(88,166,255,0.1); color: var(--accent-light); border: 1px solid rgba(88,166,255,0.2); }
+
+        /* ── Reveal animations ── */
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── Sticky Nav ── */
+        .sticky-nav { position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(13,17,23,.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:.6rem 2rem; display:flex; align-items:center; justify-content:space-between; transform:translateY(-100%); transition:transform .25s ease; }
+        .sticky-nav.visible { transform:translateY(0); }
+        .sticky-nav-brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; color:var(--text-primary); font-weight:600; font-size:.8rem; }
+        .sticky-nav-brand .sn-logo { width:24px; height:24px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.5rem; color:#fff; }
+        .sticky-nav-links { display:flex; gap:1.25rem; align-items:center; }
+        .sticky-nav-links a { color:var(--text-secondary); text-decoration:none; font-size:.78rem; font-weight:500; transition:color .15s; }
+        .sticky-nav-links a:hover { color:var(--accent); }
+
+        /* Section divider */
+        .section-divider { width:100%; max-width:1400px; margin:0 auto; height:1px; background:var(--border); }
+
+        /* ── Footer ── */
+        .footer {
+            border-top: 1px solid var(--border); margin-top: 3rem;
+            padding: 3rem 2rem 2rem; color: var(--text-muted); font-size: 0.8rem;
+        }
+        .footer-inner { max-width:1400px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr; gap:2rem; }
+        .footer-brand p { line-height:1.6; max-width:340px; margin-top:.5rem; }
+        .footer-logo { display:flex; align-items:center; gap:.6rem; margin-bottom:.25rem; }
+        .footer-logo .logo-mark { width:28px; height:28px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.55rem; color:#fff; }
+        .footer-logo span { font-weight:700; font-size:.9rem; color:var(--text-primary); }
+        .footer-col h4 { font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-secondary); margin-bottom:.75rem; }
+        .footer-col a { display:block; font-size:.8rem; color:var(--text-muted); text-decoration:none; padding:.2rem 0; transition:color .2s; }
+        .footer-col a:hover { color:var(--accent-light); }
+        .footer-bottom { max-width:1400px; margin:1.5rem auto 0; padding-top:1.25rem; border-top:1px solid var(--border); text-align:center; font-size:.75rem; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.8rem; }
+            .phases-grid { grid-template-columns: 1fr; }
+            .stats-section { grid-template-columns: repeat(2, 1fr); }
+            .search-section, .phases-section, .filter-section, .stats-section { padding: 0 1rem; }
+            .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Sticky compact nav -->
+<div class="sticky-nav" id="stickyNav">
+    <a href="index.html" class="sticky-nav-brand"><div class="sn-logo">NS</div> NSX-T Knowledge Base</a>
+    <div class="sticky-nav-links">
+        <a href="#stats">Stats</a>
+        <a href="#phases">Phases</a>
+        <a href="#kbindex">KB Index</a>
+        <a href="../vsphere-kb/index.html">vSphere KB</a>
+        <a href="../vsan-kb/index.html">vSAN KB</a>
+        <a href="../index.html">↑ Portal</a>
+    </div>
+</div>
+
+<!-- ── Hero ── -->
+<section class="hero">
+    <h1>VMware NSX-T <span>Knowledge Base</span></h1>
+    <p class="subtitle">Professional NSX-T Data Center troubleshooting — Transport Nodes, DFW, Routing, Edge Services &amp; Federation</p>
+    <div class="hero-badges">
+        <span class="badge badge-total">80 KB Entries</span>
+        <span class="badge badge-break">&#9888; 40 Break</span>
+        <span class="badge badge-fix">&#10003; 40 Fix</span>
+        <span class="badge badge-phase">8 Phases</span>
+    </div>
+</section>
+
+<!-- ── Global Search ── -->
+<div class="search-section">
+    <div class="search-box" id="searchBox">
+        <input type="text" id="globalSearch" placeholder="Search all 80 KB entries — DFW, BGP, Edge, Transport Node, VTEP, Federation..." oninput="performSearch()" autocomplete="off">
+        <div class="search-hint">
+            <span class="search-chip" onclick="quickSearch('DFW')">DFW</span>
+            <span class="search-chip" onclick="quickSearch('BGP')">BGP</span>
+            <span class="search-chip" onclick="quickSearch('Edge')">Edge</span>
+            <span class="search-chip" onclick="quickSearch('Transport Node')">Transport Node</span>
+            <span class="search-chip" onclick="quickSearch('VTEP')">VTEP</span>
+            <span class="search-chip" onclick="quickSearch('Federation')">Federation</span>
+            <span class="search-chip" onclick="quickSearch('Segment')">Segment</span>
+            <span class="search-chip" onclick="quickSearch('Certificate')">Certificate</span>
+            <span class="search-chip" onclick="quickSearch('VPN')">VPN</span>
+            <span class="search-chip" onclick="quickSearch('Load Balancer')">Load Balancer</span>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+</div>
+
+<!-- ── Stats ── -->
+<div class="stats-section reveal" id="stats">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="80">0</div><div class="stat-label">Total KB Entries</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)" data-target="40">0</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)" data-target="40">0</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)" data-target="8">0</div><div class="stat-label">Phases</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)" data-target="0">0</div><div class="stat-label" style="font-size:0.65rem">Python / PowerCLI / 3rd-Party</div></div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ── Phase Cards ── -->
+<section class="phases-section reveal" id="phases">
+    <div class="section-title">Phases</div>
+    <div class="phases-grid">
+
+        <!-- Phase 1 -->
+        <a href="phase1.html" class="phase-card">
+            <div class="phase-card-bar" style="background:var(--accent)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light)">1</div>
+                <div>
+                    <div class="phase-card-title">Top 10 Common Issues</div>
+                    <div class="phase-card-sub">Most critical NSX-T break &amp; fix scenarios</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#1</span> Transport Node Prep Failure</li>
+                    <li><span class="kb-num-small b">#2</span> T0/T1 Gateway Loss</li>
+                    <li><span class="kb-num-small b">#3</span> Edge Cluster Failover</li>
+                    <li><span class="kb-num-small b">#4</span> DFW Rules Not Applied</li>
+                    <li><span class="kb-num-small b">#5</span> BFD Session Flapping</li>
+                    <li><span class="kb-num-small b">#6</span> Manager Split-Brain</li>
+                    <li><span class="kb-num-small b">#7</span> VTEP Communication</li>
+                    <li><span class="kb-num-small b">#8</span> BGP Peering Failure</li>
+                    <li><span class="kb-num-small f">#9</span> Controller Connectivity</li>
+                    <li><span class="kb-num-small f">#10</span> Upgrade Coordinator</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #1–10</span>
+                <span class="link-text">Open Phase 1 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 2 -->
+        <a href="phase2.html" class="phase-card">
+            <div class="phase-card-bar" style="background:var(--success)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.25);color:var(--success-light)">2</div>
+                <div>
+                    <div class="phase-card-title">Day-2 Operations</div>
+                    <div class="phase-card-sub">Certificates, backup, migration &amp; maintenance</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small f">#11</span> Certificate Rotation</li>
+                    <li><span class="kb-num-small f">#12</span> Backup &amp; Restore</li>
+                    <li><span class="kb-num-small f">#13</span> N-VDS to VDS Migration</li>
+                    <li><span class="kb-num-small f">#14</span> Edge Node Replacement</li>
+                    <li><span class="kb-num-small b">#15</span> Transport Zone Drift</li>
+                    <li><span class="kb-num-small f">#16</span> LDAP/AD Identity Source</li>
+                    <li><span class="kb-num-small f">#17</span> Alarm Correlation</li>
+                    <li><span class="kb-num-small f">#18</span> Syslog Configuration</li>
+                    <li><span class="kb-num-small f">#19</span> MP/CCP Cert Regen</li>
+                    <li><span class="kb-num-small f">#20</span> Manager Decommission</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #11–20</span>
+                <span class="link-text">Open Phase 2 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 3 -->
+        <a href="phase3.html" class="phase-card">
+            <div class="phase-card-bar" style="background:var(--danger)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(248,81,73,0.12);border:1px solid rgba(248,81,73,0.25);color:var(--danger-light)">3</div>
+                <div>
+                    <div class="phase-card-title">Distributed Firewall</div>
+                    <div class="phase-card-sub">DFW rules, microsegmentation &amp; security groups</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small f">#21</span> DFW Hit Count Analysis</li>
+                    <li><span class="kb-num-small f">#22</span> Microsegmentation Design</li>
+                    <li><span class="kb-num-small b">#23</span> Exclusion List Failure</li>
+                    <li><span class="kb-num-small b">#24</span> Rule Publish Failure</li>
+                    <li><span class="kb-num-small b">#25</span> IDFW Issues</li>
+                    <li><span class="kb-num-small b">#26</span> Time-Based Rules</li>
+                    <li><span class="kb-num-small b">#27</span> DFW Performance</li>
+                    <li><span class="kb-num-small b">#28</span> Security Group Stale</li>
+                    <li><span class="kb-num-small f">#29</span> Applied To Scope</li>
+                    <li><span class="kb-num-small f">#30</span> Rule Export/Import</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #21–30</span>
+                <span class="link-text">Open Phase 3 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 4 -->
+        <a href="phase4.html" class="phase-card">
+            <div class="phase-card-bar" style="background:var(--warning)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:var(--warning-light)">4</div>
+                <div>
+                    <div class="phase-card-title">Routing &amp; BGP</div>
+                    <div class="phase-card-sub">BGP peering, ECMP, route redistribution &amp; NAT</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small f">#31</span> BGP Route Reflector</li>
+                    <li><span class="kb-num-small b">#32</span> ECMP Asymmetric</li>
+                    <li><span class="kb-num-small b">#33</span> Redistribution Loops</li>
+                    <li><span class="kb-num-small b">#34</span> T0 SR-DR Failure</li>
+                    <li><span class="kb-num-small b">#35</span> Static Route Blackhole</li>
+                    <li><span class="kb-num-small f">#36</span> Prefix List Filtering</li>
+                    <li><span class="kb-num-small f">#37</span> BFD Timer Tuning</li>
+                    <li><span class="kb-num-small f">#38</span> Federation Routing</li>
+                    <li><span class="kb-num-small b">#39</span> NAT Conflict</li>
+                    <li><span class="kb-num-small f">#40</span> Edge Rebalancing</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #31–40</span>
+                <span class="link-text">Open Phase 4 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 5 -->
+        <a href="phase5.html" class="phase-card">
+            <div class="phase-card-bar" style="background:#79c0ff"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(88,166,255,0.12);border:1px solid rgba(88,166,255,0.25);color:#79c0ff">5</div>
+                <div>
+                    <div class="phase-card-title">Edge Services</div>
+                    <div class="phase-card-sub">Load balancer, VPN, DHCP &amp; edge datapath</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#41</span> LB Health Monitor</li>
+                    <li><span class="kb-num-small f">#42</span> L7 SSL Binding</li>
+                    <li><span class="kb-num-small b">#43</span> IPSec VPN Flapping</li>
+                    <li><span class="kb-num-small b">#44</span> Edge CPU/Memory</li>
+                    <li><span class="kb-num-small b">#45</span> Edge Datapath Failure</li>
+                    <li><span class="kb-num-small b">#46</span> DNS Forwarder Cache</li>
+                    <li><span class="kb-num-small f">#47</span> DHCP Relay Config</li>
+                    <li><span class="kb-num-small f">#48</span> Edge Anti-Affinity</li>
+                    <li><span class="kb-num-small f">#49</span> GFW vs DFW Precedence</li>
+                    <li><span class="kb-num-small f">#50</span> Edge Redeployment</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #41–50</span>
+                <span class="link-text">Open Phase 5 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 6 -->
+        <a href="phase6.html" class="phase-card">
+            <div class="phase-card-bar" style="background:#a371f7"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(163,113,247,0.12);border:1px solid rgba(163,113,247,0.25);color:#a371f7">6</div>
+                <div>
+                    <div class="phase-card-title">Segments &amp; Overlays</div>
+                    <div class="phase-card-sub">GENEVE, VTEP pools, segment connectivity &amp; MTU</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#51</span> Port Blocking Table Full</li>
+                    <li><span class="kb-num-small b">#52</span> GENEVE MTU Issues</li>
+                    <li><span class="kb-num-small b">#53</span> MAC Learning Flood</li>
+                    <li><span class="kb-num-small b">#54</span> Post-Migration Issues</li>
+                    <li><span class="kb-num-small f">#55</span> ARP Suppression</li>
+                    <li><span class="kb-num-small f">#56</span> Cross-vCenter Extension</li>
+                    <li><span class="kb-num-small f">#57</span> VLAN Trunk Config</li>
+                    <li><span class="kb-num-small f">#58</span> Security Profile</li>
+                    <li><span class="kb-num-small b">#59</span> TEP Pool Exhaustion</li>
+                    <li><span class="kb-num-small b">#60</span> Segment Disconnect</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #51–60</span>
+                <span class="link-text">Open Phase 6 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 7 -->
+        <a href="phase7.html" class="phase-card">
+            <div class="phase-card-bar" style="background:#f0883e"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(240,136,62,0.12);border:1px solid rgba(240,136,62,0.25);color:#f0883e">7</div>
+                <div>
+                    <div class="phase-card-title">VCF &amp; Federation</div>
+                    <div class="phase-card-sub">Global Manager, stretched segments &amp; VCF lifecycle</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small b">#61</span> GM/LM Connectivity</li>
+                    <li><span class="kb-num-small f">#62</span> Stretched Segments</li>
+                    <li><span class="kb-num-small f">#63</span> VCF NSX Upgrade</li>
+                    <li><span class="kb-num-small f">#64</span> VCF BOM Compliance</li>
+                    <li><span class="kb-num-small b">#65</span> GM Failover</li>
+                    <li><span class="kb-num-small f">#66</span> Workload Domain Isolation</li>
+                    <li><span class="kb-num-small f">#67</span> Edge Cluster in VCF</li>
+                    <li><span class="kb-num-small b">#68</span> Cert Sync Federation</li>
+                    <li><span class="kb-num-small f">#69</span> Transport Zone Mapping</li>
+                    <li><span class="kb-num-small f">#70</span> Federation Span</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #61–70</span>
+                <span class="link-text">Open Phase 7 →</span>
+            </div>
+        </a>
+
+        <!-- Phase 8 -->
+        <a href="phase8.html" class="phase-card">
+            <div class="phase-card-bar" style="background:#da3633"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(218,54,51,0.12);border:1px solid rgba(218,54,51,0.25);color:#ff7b72">8</div>
+                <div>
+                    <div class="phase-card-title">Troubleshooting &amp; CLI</div>
+                    <div class="phase-card-sub">central-cli, packet capture, NSX Intelligence &amp; monitoring</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul class="phase-kb-list">
+                    <li><span class="kb-num-small f">#71</span> central-cli Reference</li>
+                    <li><span class="kb-num-small f">#72</span> Packet Capture</li>
+                    <li><span class="kb-num-small f">#73</span> NSX Intelligence</li>
+                    <li><span class="kb-num-small f">#74</span> get logical-switches</li>
+                    <li><span class="kb-num-small f">#75</span> Support Bundle</li>
+                    <li><span class="kb-num-small f">#76</span> Edge Datapath CLI</li>
+                    <li><span class="kb-num-small b">#77</span> API Rate Limiting</li>
+                    <li><span class="kb-num-small f">#78</span> Proactive Health</li>
+                    <li><span class="kb-num-small f">#79</span> Host TN Workflow</li>
+                    <li><span class="kb-num-small f">#80</span> Metrics &amp; Monitoring</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count">KB #71–80</span>
+                <span class="link-text">Open Phase 8 →</span>
+            </div>
+        </a>
+
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ── Full KB Index ── -->
+<section class="filter-section reveal" id="kbindex">
+    <div class="section-title">Complete KB Index</div>
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterIndex('all', this)">All (80)</button>
+        <button class="filter-tab" onclick="filterIndex('break', this)">Break (40)</button>
+        <button class="filter-tab" onclick="filterIndex('fix', this)">Fix (40)</button>
+        <button class="filter-tab" onclick="filterIndex('critical', this)">Critical</button>
+        <button class="filter-tab" onclick="filterIndex('high', this)">High</button>
+        <button class="filter-tab" onclick="filterIndex('medium', this)">Medium</button>
+    </div>
+    <div class="kb-index" id="kbIndex"></div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-logo">
+                <div class="logo-mark">NS</div>
+                <span>NSX-T Knowledge Base</span>
+            </div>
+            <p>Professional NSX-T Data Center troubleshooting reference. Native CLI commands &amp; NSX API only — no third-party tools.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Phases</h4>
+            <a href="phase1.html">Phase 1 — Common Issues</a>
+            <a href="phase2.html">Phase 2 — Day-2 Operations</a>
+            <a href="phase3.html">Phase 3 — Distributed Firewall</a>
+            <a href="phase4.html">Phase 4 — Routing &amp; BGP</a>
+            <a href="phase5.html">Phase 5 — Edge Services</a>
+            <a href="phase6.html">Phase 6 — Segments &amp; Overlays</a>
+            <a href="phase7.html">Phase 7 — VCF &amp; Federation</a>
+            <a href="phase8.html">Phase 8 — Troubleshooting &amp; CLI</a>
+        </div>
+        <div class="footer-col">
+            <h4>Resources</h4>
+            <a href="../vsphere-kb/index.html">vSphere KB</a>
+            <a href="../vsan-kb/index.html">vSAN KB</a>
+            <a href="../index.html">Portal Home</a>
+            <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Main Portfolio</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        &copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base. All troubleshooting content is original.
+        <br>Keyboard: <kbd>Ctrl+K</kbd> Search &middot; <kbd>T</kbd> Theme &middot; <kbd>↑</kbd> Scroll to Top
+    </div>
+</footer>
+
+<script>
+// ═══════════ KB Data ═══════════
+const kbEntries = [
+    { id:1, title:"Transport Node Preparation Failure", type:"break", severity:"critical", phase:1, file:"phase1.html#kb-1", keywords:"transport node preparation failure install host agent vibs nsx" },
+    { id:2, title:"T0/T1 Gateway Connectivity Loss", type:"break", severity:"critical", phase:1, file:"phase1.html#kb-2", keywords:"T0 T1 gateway connectivity loss tier-0 tier-1 routing uplink" },
+    { id:3, title:"Edge Node Cluster Failover Issues", type:"break", severity:"critical", phase:1, file:"phase1.html#kb-3", keywords:"edge node cluster failover active standby ECMP HA" },
+    { id:4, title:"Distributed Firewall Rules Not Applied", type:"break", severity:"high", phase:1, file:"phase1.html#kb-4", keywords:"DFW distributed firewall rules not applied push policy" },
+    { id:5, title:"BFD Session Flapping", type:"break", severity:"high", phase:1, file:"phase1.html#kb-5", keywords:"BFD bidirectional forwarding detection flapping session down timer" },
+    { id:6, title:"NSX Manager Cluster Split-Brain", type:"break", severity:"critical", phase:1, file:"phase1.html#kb-6", keywords:"NSX manager cluster split-brain quorum corfu database" },
+    { id:7, title:"VTEP Communication Failure", type:"break", severity:"critical", phase:1, file:"phase1.html#kb-7", keywords:"VTEP TEP tunnel endpoint communication overlay geneve" },
+    { id:8, title:"BGP Peering Failure on Edge", type:"break", severity:"high", phase:1, file:"phase1.html#kb-8", keywords:"BGP peering failure edge neighbor AS path route" },
+    { id:9, title:"Controller Connectivity Lost", type:"fix", severity:"high", phase:1, file:"phase1.html#kb-9", keywords:"controller connectivity lost CCP central control plane LCP" },
+    { id:10, title:"Upgrade Coordinator Failure", type:"fix", severity:"high", phase:1, file:"phase1.html#kb-10", keywords:"upgrade coordinator failure UC version pre-check host group" },
+    { id:11, title:"Certificate Rotation & Expiry", type:"fix", severity:"high", phase:2, file:"phase2.html#kb-11", keywords:"certificate rotation expiry TLS SSL renewal API trust" },
+    { id:12, title:"Backup & Restore Procedures", type:"fix", severity:"high", phase:2, file:"phase2.html#kb-12", keywords:"backup restore procedures SFTP inventory cluster configuration" },
+    { id:13, title:"N-VDS to VDS Migration", type:"fix", severity:"critical", phase:2, file:"phase2.html#kb-13", keywords:"N-VDS VDS migration switch converge vSphere distributed" },
+    { id:14, title:"Edge Node Replacement", type:"fix", severity:"high", phase:2, file:"phase2.html#kb-14", keywords:"edge node replacement redeploy new VM maintenance" },
+    { id:15, title:"Transport Zone Configuration Drift", type:"break", severity:"high", phase:2, file:"phase2.html#kb-15", keywords:"transport zone configuration drift overlay VLAN inconsistency" },
+    { id:16, title:"LDAP/AD Identity Source Issues", type:"fix", severity:"medium", phase:2, file:"phase2.html#kb-16", keywords:"LDAP AD identity source authentication login directory" },
+    { id:17, title:"Alarm & Event Correlation", type:"fix", severity:"medium", phase:2, file:"phase2.html#kb-17", keywords:"alarm event correlation syslog monitoring alert suppress" },
+    { id:18, title:"Syslog & Log Collection Configuration", type:"fix", severity:"medium", phase:2, file:"phase2.html#kb-18", keywords:"syslog log collection configuration remote server facility" },
+    { id:19, title:"MP/CCP Cluster Certificate Regeneration", type:"fix", severity:"critical", phase:2, file:"phase2.html#kb-19", keywords:"MP CCP cluster certificate regeneration management plane control" },
+    { id:20, title:"NSX Manager Node Decommission", type:"fix", severity:"high", phase:2, file:"phase2.html#kb-20", keywords:"NSX manager node decommission remove cluster shrink" },
+    { id:21, title:"DFW Rule Hit Count Analysis", type:"fix", severity:"medium", phase:3, file:"phase3.html#kb-21", keywords:"DFW rule hit count analysis statistics unused cleanup" },
+    { id:22, title:"DFW Microsegmentation Design Patterns", type:"fix", severity:"high", phase:3, file:"phase3.html#kb-22", keywords:"DFW microsegmentation design patterns zero trust zone group" },
+    { id:23, title:"DFW Exclusion List Not Working", type:"break", severity:"high", phase:3, file:"phase3.html#kb-23", keywords:"DFW exclusion list not working bypass filter VM" },
+    { id:24, title:"Rule Publish Failure", type:"break", severity:"critical", phase:3, file:"phase3.html#kb-24", keywords:"rule publish failure DFW policy push realized state" },
+    { id:25, title:"Identity-Based Firewall (IDFW) Issues", type:"break", severity:"high", phase:3, file:"phase3.html#kb-25", keywords:"IDFW identity firewall AD user group login event" },
+    { id:26, title:"Time-Based Rules Not Triggering", type:"break", severity:"medium", phase:3, file:"phase3.html#kb-26", keywords:"time-based rules triggering schedule window DFW NTP" },
+    { id:27, title:"DFW Performance Degradation", type:"break", severity:"high", phase:3, file:"phase3.html#kb-27", keywords:"DFW performance degradation slow rule count connection table" },
+    { id:28, title:"Security Group Membership Stale", type:"break", severity:"high", phase:3, file:"phase3.html#kb-28", keywords:"security group membership stale dynamic criteria tag IP set" },
+    { id:29, title:"Applied To Scope Best Practices", type:"fix", severity:"high", phase:3, file:"phase3.html#kb-29", keywords:"applied to scope best practices DFW section policy optimization" },
+    { id:30, title:"DFW Rule Export/Import", type:"fix", severity:"medium", phase:3, file:"phase3.html#kb-30", keywords:"DFW rule export import backup migration API JSON" },
+    { id:31, title:"BGP Route Reflector Design", type:"fix", severity:"high", phase:4, file:"phase4.html#kb-31", keywords:"BGP route reflector design RR iBGP full mesh cluster" },
+    { id:32, title:"ECMP Load Balancing Asymmetric", type:"break", severity:"high", phase:4, file:"phase4.html#kb-32", keywords:"ECMP load balancing asymmetric equal cost multipath edge" },
+    { id:33, title:"Route Redistribution Loops", type:"break", severity:"critical", phase:4, file:"phase4.html#kb-33", keywords:"route redistribution loops connected static BGP OSPF filter" },
+    { id:34, title:"T0 SR to DR Communication Failure", type:"break", severity:"critical", phase:4, file:"phase4.html#kb-34", keywords:"T0 SR DR communication failure service router distributed" },
+    { id:35, title:"Static Route Blackhole", type:"break", severity:"high", phase:4, file:"phase4.html#kb-35", keywords:"static route blackhole next-hop null unreachable gateway" },
+    { id:36, title:"Route Filtering with Prefix Lists", type:"fix", severity:"high", phase:4, file:"phase4.html#kb-36", keywords:"route filtering prefix list route-map BGP deny permit" },
+    { id:37, title:"BFD Timer Tuning for Fast Failover", type:"fix", severity:"high", phase:4, file:"phase4.html#kb-37", keywords:"BFD timer tuning fast failover detect multiplier interval" },
+    { id:38, title:"Multi-Site / Federation Routing", type:"fix", severity:"critical", phase:4, file:"phase4.html#kb-38", keywords:"multi-site federation routing cross-location GM LM T0 span" },
+    { id:39, title:"NAT Rules Conflict Resolution", type:"break", severity:"high", phase:4, file:"phase4.html#kb-39", keywords:"NAT rules conflict resolution SNAT DNAT priority order overlap" },
+    { id:40, title:"Edge Cluster Traffic Rebalancing", type:"fix", severity:"medium", phase:4, file:"phase4.html#kb-40", keywords:"edge cluster traffic rebalancing member SR allocation" },
+    { id:41, title:"Load Balancer Health Monitor Failure", type:"break", severity:"high", phase:5, file:"phase5.html#kb-41", keywords:"load balancer health monitor failure pool member down check" },
+    { id:42, title:"L7 LB SSL Certificate Binding", type:"fix", severity:"high", phase:5, file:"phase5.html#kb-42", keywords:"L7 load balancer SSL TLS certificate binding virtual server" },
+    { id:43, title:"VPN IPSec Tunnel Flapping", type:"break", severity:"critical", phase:5, file:"phase5.html#kb-43", keywords:"VPN IPSec tunnel flapping IKE SA phase1 phase2 DPD" },
+    { id:44, title:"Edge Node CPU/Memory Exhaustion", type:"break", severity:"critical", phase:5, file:"phase5.html#kb-44", keywords:"edge node CPU memory exhaustion OOM resource dataplane" },
+    { id:45, title:"Edge Transport Node Datapath Failure", type:"break", severity:"critical", phase:5, file:"phase5.html#kb-45", keywords:"edge transport node datapath failure dp crash fp" },
+    { id:46, title:"DNS Forwarder Cache Issues", type:"break", severity:"medium", phase:5, file:"phase5.html#kb-46", keywords:"DNS forwarder cache issues stale resolution upstream zone" },
+    { id:47, title:"DHCP Relay Configuration", type:"fix", severity:"high", phase:5, file:"phase5.html#kb-47", keywords:"DHCP relay configuration server segment gateway profile" },
+    { id:48, title:"Edge VM Anti-Affinity Rules", type:"fix", severity:"high", phase:5, file:"phase5.html#kb-48", keywords:"edge VM anti-affinity rules DRS separate host placement" },
+    { id:49, title:"Gateway Firewall vs DFW Precedence", type:"fix", severity:"medium", phase:5, file:"phase5.html#kb-49", keywords:"gateway firewall GFW DFW precedence order processing north-south" },
+    { id:50, title:"Edge Node Redeployment Procedure", type:"fix", severity:"high", phase:5, file:"phase5.html#kb-50", keywords:"edge node redeployment procedure replace rebuild new" },
+    { id:51, title:"Segment Port Blocking Table Full", type:"break", severity:"critical", phase:6, file:"phase6.html#kb-51", keywords:"segment port blocking table full MAC address limit" },
+    { id:52, title:"GENEVE Encapsulation MTU Issues", type:"break", severity:"critical", phase:6, file:"phase6.html#kb-52", keywords:"GENEVE encapsulation MTU issues 1600 overhead fragment" },
+    { id:53, title:"MAC Learning & Unknown Unicast Flood", type:"break", severity:"high", phase:6, file:"phase6.html#kb-53", keywords:"MAC learning unknown unicast flood broadcast segment" },
+    { id:54, title:"Segment Connectivity Issues Post-Migration", type:"break", severity:"high", phase:6, file:"phase6.html#kb-54", keywords:"segment connectivity issues post-migration VLAN overlay move" },
+    { id:55, title:"ARP Suppression & Broadcast Optimization", type:"fix", severity:"medium", phase:6, file:"phase6.html#kb-55", keywords:"ARP suppression broadcast optimization proxy table flood" },
+    { id:56, title:"Cross-vCenter NSX Segment Extension", type:"fix", severity:"high", phase:6, file:"phase6.html#kb-56", keywords:"cross-vCenter NSX segment extension stretch L2 multisite" },
+    { id:57, title:"VLAN-Backed Segment Trunk Configuration", type:"fix", severity:"high", phase:6, file:"phase6.html#kb-57", keywords:"VLAN backed segment trunk configuration access port tag" },
+    { id:58, title:"Segment Security Profile Assignment", type:"fix", severity:"medium", phase:6, file:"phase6.html#kb-58", keywords:"segment security profile assignment spoofguard BPDU DHCP" },
+    { id:59, title:"TEP Pool Exhaustion / IP Conflict", type:"break", severity:"critical", phase:6, file:"phase6.html#kb-59", keywords:"TEP pool exhaustion IP conflict VTEP address duplicate" },
+    { id:60, title:"Segment Disconnect from T1 Gateway", type:"break", severity:"high", phase:6, file:"phase6.html#kb-60", keywords:"segment disconnect T1 gateway detach router port link" },
+    { id:61, title:"NSX Federation — GM/LM Connectivity", type:"break", severity:"critical", phase:7, file:"phase7.html#kb-61", keywords:"NSX federation GM LM connectivity global local manager sync" },
+    { id:62, title:"Cross-Location Stretched Segments", type:"fix", severity:"high", phase:7, file:"phase7.html#kb-62", keywords:"cross-location stretched segments L2 extend site RTEP" },
+    { id:63, title:"VCF Lifecycle Manager — NSX Upgrade", type:"fix", severity:"critical", phase:7, file:"phase7.html#kb-63", keywords:"VCF lifecycle manager NSX upgrade SDDC LCM bundle" },
+    { id:64, title:"NSX Compliance with VCF BOM", type:"fix", severity:"high", phase:7, file:"phase7.html#kb-64", keywords:"NSX compliance VCF BOM bill of materials version matrix" },
+    { id:65, title:"NSX Federation — Active/Standby GM Failover", type:"break", severity:"critical", phase:7, file:"phase7.html#kb-65", keywords:"NSX federation active standby GM failover promote demote" },
+    { id:66, title:"Workload Domain — NSX Instance Isolation", type:"fix", severity:"high", phase:7, file:"phase7.html#kb-66", keywords:"workload domain NSX instance isolation WLD separate manager" },
+    { id:67, title:"NSX Edge Cluster in VCF", type:"fix", severity:"high", phase:7, file:"phase7.html#kb-67", keywords:"NSX edge cluster VCF deploy size placement converge" },
+    { id:68, title:"Certificate Synchronization in Federation", type:"break", severity:"high", phase:7, file:"phase7.html#kb-68", keywords:"certificate synchronization federation GM LM trust CA TLS" },
+    { id:69, title:"VCF NSX — Transport Zone Mapping", type:"fix", severity:"medium", phase:7, file:"phase7.html#kb-69", keywords:"VCF NSX transport zone mapping overlay VLAN workload" },
+    { id:70, title:"Federation Span & Ingress/Egress", type:"fix", severity:"high", phase:7, file:"phase7.html#kb-70", keywords:"federation span ingress egress traffic locality prefer local" },
+    { id:71, title:"central-cli Command Reference", type:"fix", severity:"medium", phase:8, file:"phase8.html#kb-71", keywords:"central-cli command reference nsxcli remote get set" },
+    { id:72, title:"NSX-T Packet Capture (tcpdump/pktcap-uw)", type:"fix", severity:"high", phase:8, file:"phase8.html#kb-72", keywords:"packet capture tcpdump pktcap-uw uplink vmnic trace" },
+    { id:73, title:"NSX Intelligence — Flow Visualization", type:"fix", severity:"medium", phase:8, file:"phase8.html#kb-73", keywords:"NSX intelligence flow visualization recommendation micro" },
+    { id:74, title:"get logical-switches / get firewall", type:"fix", severity:"medium", phase:8, file:"phase8.html#kb-74", keywords:"get logical-switches get firewall rules CLI nsxcli show" },
+    { id:75, title:"NSX Manager Support Bundle Analysis", type:"fix", severity:"high", phase:8, file:"phase8.html#kb-75", keywords:"NSX manager support bundle analysis log diagnostic tar" },
+    { id:76, title:"Edge Datapath CLI Deep Dive", type:"fix", severity:"high", phase:8, file:"phase8.html#kb-76", keywords:"edge datapath CLI deep dive proton fp dp interface" },
+    { id:77, title:"NSX API Rate Limiting & Throttling", type:"break", severity:"high", phase:8, file:"phase8.html#kb-77", keywords:"NSX API rate limiting throttling 429 too many requests" },
+    { id:78, title:"Proactive Transport Node Health Checks", type:"fix", severity:"high", phase:8, file:"phase8.html#kb-78", keywords:"proactive transport node health checks status readiness" },
+    { id:79, title:"Host Transport Node Troubleshooting Workflow", type:"fix", severity:"critical", phase:8, file:"phase8.html#kb-79", keywords:"host transport node troubleshooting workflow install configure connectivity" },
+    { id:80, title:"NSX Metrics & Monitoring (Prometheus/SNMP)", type:"fix", severity:"medium", phase:8, file:"phase8.html#kb-80", keywords:"NSX metrics monitoring Prometheus SNMP trap MIB export" }
+];
+
+const phaseNames = {
+    1: "Phase 1 — Top 10 Common Issues",
+    2: "Phase 2 — Day-2 Operations",
+    3: "Phase 3 — Distributed Firewall",
+    4: "Phase 4 — Routing & BGP",
+    5: "Phase 5 — Edge Services",
+    6: "Phase 6 — Segments & Overlays",
+    7: "Phase 7 — VCF & Federation",
+    8: "Phase 8 — Troubleshooting & CLI"
+};
+
+// ── Render KB Index ──
+function renderIndex(entries) {
+    const container = document.getElementById('kbIndex');
+    if (entries.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:2rem;">No entries match the filter.</div>';
+        return;
+    }
+    container.innerHTML = entries.map(e => `
+        <a href="${e.file}" class="kb-index-item" data-type="${e.type}" data-severity="${e.severity}">
+            <div class="kb-idx-num ${e.type === 'break' ? 'break' : 'fix'}">${e.id}</div>
+            <div class="kb-idx-info">
+                <div class="kb-idx-title">${e.title}</div>
+                <div class="kb-idx-meta">
+                    <span>${phaseNames[e.phase]}</span>
+                    <span>${e.type === 'break' ? '⚠ Break' : '✓ Fix'}</span>
+                </div>
+            </div>
+            <div class="kb-idx-tags">
+                <span class="idx-tag ${e.severity}">${e.severity.charAt(0).toUpperCase() + e.severity.slice(1)}</span>
+            </div>
+        </a>
+    `).join('');
+}
+
+function filterIndex(filter, btn) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    let filtered = kbEntries;
+    if (filter === 'break' || filter === 'fix') filtered = kbEntries.filter(e => e.type === filter);
+    else if (filter === 'critical' || filter === 'high' || filter === 'medium') filtered = kbEntries.filter(e => e.severity === filter);
+    renderIndex(filtered);
+}
+
+// ── Global Search ──
+function performSearch() {
+    const query = document.getElementById('globalSearch').value.toLowerCase().trim();
+    const resultsDiv = document.getElementById('searchResults');
+    if (query.length < 2) { resultsDiv.classList.remove('visible'); resultsDiv.innerHTML = ''; return; }
+    const matches = kbEntries.filter(e => {
+        const searchable = `${e.id} ${e.title} ${e.keywords} ${phaseNames[e.phase]} ${e.type} ${e.severity}`.toLowerCase();
+        return query.split(/\s+/).every(term => searchable.includes(term));
+    });
+    resultsDiv.classList.add('visible');
+    if (matches.length === 0) { resultsDiv.innerHTML = '<div class="no-results">No entries match your search.</div>'; return; }
+    resultsDiv.innerHTML = matches.map(e => {
+        const typeClass = e.type === 'break' ? 'break' : 'fix';
+        return `<a href="${e.file}" class="search-result-item"><div class="sr-num ${typeClass}">${e.id}</div><div><div class="sr-title">${highlightMatch(e.title, query)}</div><div class="sr-meta">${phaseNames[e.phase]} · ${e.type === 'break' ? '⚠ Break' : '✓ Fix'} · ${e.severity}</div></div></a>`;
+    }).join('');
+}
+
+function highlightMatch(text, query) {
+    const terms = query.split(/\s+/).filter(t => t.length >= 2);
+    let result = text;
+    terms.forEach(term => {
+        const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        result = result.replace(regex, '<span class="sr-highlight">$1</span>');
+    });
+    return result;
+}
+
+function quickSearch(term) {
+    document.getElementById('globalSearch').value = term;
+    performSearch();
+    document.getElementById('globalSearch').focus();
+}
+
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('searchBox').contains(e.target)) {
+        document.getElementById('searchResults').classList.remove('visible');
+    }
+});
+
+// ── Init ──
+renderIndex(kbEntries);
+
+// ── Animated Stat Counters ──
+(function() {
+    var statEls = document.querySelectorAll('.stat-value[data-target]');
+    if (!statEls.length) return;
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (!entry.isIntersecting) return;
+            obs.unobserve(entry.target);
+            var el = entry.target, target = parseInt(el.getAttribute('data-target'), 10);
+            if (target === 0) return;
+            var dur = 1000, start = performance.now();
+            (function tick(now) {
+                var p = Math.min((now - start) / dur, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                if (p < 1) requestAnimationFrame(tick);
+            })(performance.now());
+        });
+    }, { threshold: 0.3 });
+    statEls.forEach(function(el) { obs.observe(el); });
+})();
+
+// ── Break/Fix Progress Bars ──
+(function() {
+    var phaseCounts = { 1:{b:8,f:2}, 2:{b:1,f:9}, 3:{b:6,f:4}, 4:{b:5,f:5}, 5:{b:5,f:5}, 6:{b:6,f:4}, 7:{b:3,f:7}, 8:{b:1,f:9} };
+    document.querySelectorAll('.phase-card-footer').forEach(function(footer, i) {
+        var c = phaseCounts[i+1]; if(!c) return;
+        var total = c.b + c.f;
+        var bar = document.createElement('div'); bar.className = 'bf-progress';
+        bar.innerHTML = '<div class="bf-bar-break" style="width:'+((c.b/total)*100)+'%"></div><div class="bf-bar-fix" style="width:'+((c.f/total)*100)+'%"></div>';
+        var legend = document.createElement('div'); legend.className = 'bf-legend';
+        legend.innerHTML = '<span><span class="bf-dot" style="background:var(--danger)"></span>'+c.b+' Break</span><span><span class="bf-dot" style="background:var(--success)"></span>'+c.f+' Fix</span>';
+        footer.appendChild(bar); footer.appendChild(legend);
+    });
+})();
+
+// ── Scroll Reveal ──
+(function() {
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) { if (entry.isIntersecting) { entry.target.classList.add('visible'); obs.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el) { obs.observe(el); });
+})();
+
+// ── Sticky Nav ──
+(function() {
+    var nav = document.getElementById('stickyNav'), hero = document.querySelector('.hero');
+    if (!nav || !hero) return;
+    var threshold = hero.offsetTop + hero.offsetHeight - 60, shown = false;
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > threshold && !shown) { nav.classList.add('visible'); shown = true; }
+        else if (window.scrollY <= threshold && shown) { nav.classList.remove('visible'); shown = false; }
+    }, { passive: true });
+})();
+
+// ── Scroll Progress ──
+(function() {
+    var bar = document.getElementById('scrollProgress');
+    window.addEventListener('scroll', function() {
+        var h = document.documentElement.scrollHeight - window.innerHeight;
+        bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+    }, { passive: true });
+})();
+
+// ── Keyboard Shortcuts ──
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('globalSearch').focus(); }
+    if (e.key === 'ArrowUp' && !e.ctrlKey && document.activeElement === document.body) { window.scrollTo({top:0,behavior:'smooth'}); }
+});
+</script>
+
+</body>
+</html>

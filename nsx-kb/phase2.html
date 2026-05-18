@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMware NSX-T KB — Phase 2: Day-2 Operations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg-primary:#0d1117;--bg-secondary:#161b22;--bg-card:#1c2128;--bg-card-hover:#262c34;--accent:#58a6ff;--accent-light:#79c0ff;--danger:#f85149;--danger-light:#ff7b72;--success:#3fb950;--success-light:#56d364;--warning:#d29922;--warning-light:#e3b341;--text-primary:#e6edf3;--text-secondary:#8b949e;--text-muted:#6e7681;--border:#30363d;--code-bg:#0d1117;--shadow:0 4px 12px rgba(0,0,0,0.25)}
+        *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7}
+        .scroll-progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:9999;width:0%}
+        .header{background:linear-gradient(180deg,#0d1117 0%,#111820 50%,#0d1117 100%);border-bottom:1px solid var(--border);padding:2rem 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+        .header-inner{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .header h1{font-size:1.5rem;font-weight:700}.header h1 span{font-weight:400;color:var(--text-secondary)}
+        .header-badges{display:flex;gap:0.75rem;flex-wrap:wrap}
+        .badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.3rem 0.85rem;border-radius:6px;font-size:0.75rem;font-weight:500}
+        .badge-break{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.25)}
+        .badge-fix{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.25)}
+        .badge-phase{background:rgba(88,166,255,0.12);color:var(--accent-light);border:1px solid rgba(88,166,255,0.25)}
+        .search-bar{max-width:1400px;margin:0 auto;padding:1.5rem 2rem}
+        .search-bar input{width:100%;padding:0.9rem 1.2rem 0.9rem 3rem;border-radius:12px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);font-size:1rem;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235c7a94' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:1rem center}
+        .search-bar input:focus{border-color:var(--accent)}.search-bar input::placeholder{color:var(--text-muted)}
+        .stats-bar{max-width:1400px;margin:0 auto;padding:0 2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+        .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center}
+        .stat-card .stat-value{font-size:1.6rem;font-weight:700}.stat-card .stat-label{font-size:0.8rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}
+        .nav-tabs{max-width:1400px;margin:0 auto;padding:0 2rem 1rem;display:flex;gap:0.5rem;flex-wrap:wrap}
+        .nav-tab{padding:0.55rem 1.2rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:500;transition:all 0.2s}
+        .nav-tab:hover{border-color:var(--accent);color:var(--text-primary)}.nav-tab.active{background:rgba(88,166,255,0.08);border-color:var(--accent);color:var(--accent-light)}
+        .container{max-width:1400px;margin:0 auto;padding:1rem 2rem 4rem}
+        .kb-entry{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:1.25rem;overflow:hidden;transition:border-color 0.2s}
+        .kb-entry:hover{border-color:rgba(88,166,255,0.35)}
+        .kb-entry-header{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem 1.75rem;cursor:pointer;user-select:none}
+        .kb-entry-header:hover{background:var(--bg-card-hover)}
+        .kb-number{flex-shrink:0;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem}
+        .kb-number.break-num{background:rgba(248,81,73,0.12);color:var(--danger-light);border:1px solid rgba(248,81,73,0.2)}
+        .kb-number.fix-num{background:rgba(63,185,80,0.12);color:var(--success-light);border:1px solid rgba(63,185,80,0.2)}
+        .kb-entry-title-block{flex:1}.kb-entry-title{font-size:1.05rem;font-weight:600;margin-bottom:0.3rem}
+        .kb-entry-subtitle{font-size:0.85rem;color:var(--text-secondary)}
+        .kb-entry-tags{display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.5rem}
+        .tag{font-size:0.7rem;padding:0.2rem 0.6rem;border-radius:4px;background:rgba(88,166,255,0.08);color:var(--accent-light);border:1px solid rgba(88,166,255,0.18);font-weight:500}
+        .tag-severity-critical{background:rgba(248,81,73,0.08);color:var(--danger-light);border-color:rgba(248,81,73,0.18)}
+        .tag-severity-high{background:rgba(210,153,34,0.08);color:var(--warning-light);border-color:rgba(210,153,34,0.18)}
+        .tag-severity-medium{background:rgba(88,166,255,0.08);color:var(--accent-light);border-color:rgba(88,166,255,0.18)}
+        .tag-recovery{background:rgba(163,113,247,0.08);color:#c4b5fd;border-color:rgba(163,113,247,0.18)}
+        .kb-chevron{flex-shrink:0;width:24px;height:24px;margin-top:0.5rem;transition:transform 0.3s;color:var(--text-muted)}
+        .kb-entry.open .kb-chevron{transform:rotate(180deg)}
+        .kb-entry-body{display:none;padding:0 1.75rem 1.75rem;border-top:1px solid var(--border)}
+        .kb-entry.open .kb-entry-body{display:block}
+        .section-label{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin:1.5rem 0 0.75rem}
+        .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+        .kb-entry-body p{color:var(--text-secondary);font-size:0.92rem;margin-bottom:0.5rem}
+        .kb-entry-body ul,.kb-entry-body ol{padding-left:1.5rem;margin-bottom:0.75rem}
+        .kb-entry-body li{color:var(--text-secondary);font-size:0.9rem;margin-bottom:0.4rem}
+        .kb-entry-body li strong{color:var(--text-primary)}
+        pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;overflow-x:auto;margin:0.75rem 0;position:relative}
+        pre code{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:0.82rem;color:var(--accent-light);line-height:1.6}
+        code.inline{background:var(--code-bg);padding:0.15rem 0.45rem;border-radius:4px;font-size:0.85rem;color:var(--accent-light);font-family:'Cascadia Code','Fira Code','Consolas',monospace}
+        .copy-btn{position:absolute;top:0.5rem;right:0.5rem;padding:0.3rem 0.6rem;background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;cursor:pointer;font-size:0.7rem}
+        .copy-btn:hover{color:var(--accent-light);border-color:var(--accent)}
+        .alert{padding:0.85rem 1.1rem;border-radius:8px;margin:0.75rem 0;font-size:0.88rem;display:flex;align-items:flex-start;gap:0.6rem}
+        .alert-icon{flex-shrink:0;font-size:1.1rem;margin-top:0.1rem}
+        .alert-danger{background:rgba(248,81,73,0.06);border:1px solid rgba(248,81,73,0.2);color:var(--danger-light)}
+        .alert-warning{background:rgba(210,153,34,0.06);border:1px solid rgba(210,153,34,0.2);color:var(--warning-light)}
+        .alert-success{background:rgba(63,185,80,0.06);border:1px solid rgba(63,185,80,0.2);color:var(--success-light)}
+        .alert-info{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.2);color:var(--accent-light)}
+        .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin:0.75rem 0}
+        @media(max-width:768px){.two-col{grid-template-columns:1fr}}
+        .info-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:1rem 1.15rem}
+        .info-box-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem}
+        .info-box-title.red{color:var(--danger-light)}.info-box-title.green{color:var(--success-light)}.info-box-title.orange{color:var(--warning-light)}.info-box-title.blue{color:var(--accent-light)}
+        .steps{counter-reset:step;margin:0.75rem 0}.step{display:flex;gap:1rem;margin-bottom:1rem;align-items:flex-start}
+        .step-number{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,0.1);border:1px solid rgba(88,166,255,0.25);color:var(--accent-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}
+        .step-content{flex:1}.step-content p{margin-bottom:0.3rem}
+        .cross-ref{margin:1rem 0;padding:0.75rem 1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px}
+        .cross-ref-title{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:0.4rem}
+        .cross-ref a{display:inline-block;font-size:0.8rem;color:var(--accent-light);text-decoration:none;margin-right:1rem;padding:0.2rem 0}
+        .cross-ref a:hover{color:var(--accent)}
+        .footer{border-top:1px solid var(--border);margin-top:3rem;padding:2rem;color:var(--text-muted);font-size:0.78rem;text-align:center}
+        .footer a{color:var(--text-secondary);text-decoration:none}.footer a:hover{color:var(--accent)}
+        .phase-nav{max-width:1400px;margin:0 auto;padding:1.25rem 2rem 0;display:flex;gap:0.4rem;flex-wrap:wrap}
+        .phase-nav a{padding:0.4rem 0.9rem;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);text-decoration:none;font-size:0.78rem;font-weight:500}
+        .phase-nav a:hover{border-color:rgba(88,166,255,0.35);color:var(--text-primary)}
+        .phase-nav a.active{border-color:var(--accent);background:rgba(88,166,255,0.08);color:var(--accent-light)}
+        .phase-nav a.nav-dashboard{color:var(--text-primary);font-weight:600}
+    </style>
+</head>
+<body>
+<div class="scroll-progress" id="scrollProgress"></div>
+<header class="header"><div class="header-inner"><h1>VMware NSX-T <span>Knowledge Base</span></h1><div class="header-badges"><span class="badge badge-phase">Phase 2 — Day-2 Operations</span><span class="badge badge-break">&#9888; 1 Break</span><span class="badge badge-fix">&#10003; 9 Fix</span></div></div></header>
+
+<nav class="phase-nav">
+    <a href="index.html" class="nav-dashboard">&larr; Dashboard</a>
+    <a href="phase1.html">Phase 1</a>
+    <a href="phase2.html" class="active">Phase 2</a>
+    <a href="phase3.html">Phase 3</a>
+    <a href="phase4.html">Phase 4</a>
+    <a href="phase5.html">Phase 5</a>
+    <a href="phase6.html">Phase 6</a>
+    <a href="phase7.html">Phase 7</a>
+    <a href="phase8.html">Phase 8</a>
+</nav>
+
+<div class="search-bar"><input type="text" id="searchInput" placeholder="Search certificates, backup, N-VDS, LDAP, syslog, migration..." oninput="filterEntries()"></div>
+
+<div class="stats-bar">
+    <div class="stat-card"><div class="stat-value" style="color:var(--accent-light)">10</div><div class="stat-label">Total Issues</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger-light)">1</div><div class="stat-label">Break Scenarios</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success-light)">9</div><div class="stat-label">Fix Procedures</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning-light)">Phase 2</div><div class="stat-label">Current Phase</div></div>
+</div>
+
+<div class="nav-tabs">
+    <button class="nav-tab active" onclick="filterByType('all', this)">All Issues</button>
+    <button class="nav-tab" onclick="filterByType('break', this)">Break / Failure</button>
+    <button class="nav-tab" onclick="filterByType('fix', this)">Fix / Resolution</button>
+    <button class="nav-tab" onclick="filterByType('critical', this)">Critical</button>
+    <button class="nav-tab" onclick="filterByType('high', this)">High</button>
+</div>
+
+<div class="container" id="kbContainer">
+
+<!-- KB #11 -->
+<div class="kb-entry" id="kb-11" data-type="fix" data-severity="high" data-keywords="certificate rotation expiry TLS SSL renewal API trust chain node">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">11</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Certificate Rotation &amp; Expiry</div>
+            <div class="kb-entry-subtitle">NSX certificates approaching expiry — proactive rotation procedures for API, node, and cluster certificates</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Certificates</span><span class="tag">TLS</span><span class="tag tag-recovery">ERT: 30-60 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Expired certificates cause API failures, management plane disconnection, and inter-node communication breakdowns. Hosts may lose controller connectivity if cluster certificates expire.</span></div>
+        <div class="section-label">Symptoms &amp; Root Cause</div>
+        <div class="two-col">
+            <div class="info-box"><div class="info-box-title red">Symptoms</div><ul><li>NSX Manager UI shows <strong>certificate expiry warning</strong> banner</li><li>API calls fail with <strong>SSL/TLS handshake error</strong></li><li>Inter-node cluster communication breaks after cert expiry</li><li>Transport nodes report <strong>"Certificate validation failed"</strong></li><li>Alarms: <strong>"Certificate is about to expire"</strong></li></ul></div>
+            <div class="info-box"><div class="info-box-title orange">Root Causes</div><ul><li>Default self-signed certificates have 825-day validity (not renewed)</li><li>No certificate monitoring or alerting configured</li><li>CA-signed certificates not renewed before expiry date</li><li>Certificate rotation procedure not part of operational runbook</li></ul></div>
+        </div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Check certificate expiry dates</strong></p>
+                <pre><code># NSX Manager CLI:
+get certificate-chain
+
+# NSX API — List all certificates:
+GET https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates
+
+# Check specific certificate expiry:
+GET https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates/&lt;cert-id&gt;
+# Look for "not_after" field</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Generate new self-signed certificate</strong></p>
+                <pre><code># Generate CSR for NSX Manager API certificate:
+POST https://&lt;nsx-manager&gt;/api/v1/trust-management/csrs
+{
+  "subject": {
+    "attributes": [
+      {"key": "CN", "value": "nsx-manager.example.com"},
+      {"key": "O", "value": "MyOrg"},
+      {"key": "OU", "value": "NSX"}
+    ]
+  },
+  "key_size": "2048",
+  "algorithm": "RSA"
+}
+
+# Self-sign if no CA available:
+POST https://&lt;nsx-manager&gt;/api/v1/trust-management/csrs/&lt;csr-id&gt;?action=self_sign
+{
+  "days_valid": 825
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Apply new certificate to NSX Manager</strong></p>
+                <pre><code># Replace the API certificate:
+POST https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates/&lt;new-cert-id&gt;?action=apply_certificate
+{
+  "service_type": "API",
+  "node_id": "&lt;node-id&gt;"
+}
+
+# Verify the new certificate is active:
+GET https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates?type=API
+
+# Repeat for each manager node in the cluster</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="section-label">Verification</div>
+        <pre><code># Verify certificate validity:
+get certificate-chain
+# Should show new expiry date (825 days from now)
+
+# Test API connectivity:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/status
+# Should return 200 OK without TLS errors
+
+# Verify all nodes use new certificate:
+GET https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates?type=API</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-19">KB #19 — MP/CCP Cert Regen</a><a href="phase7.html#kb-68">KB #68 — Federation Cert Sync</a></div>
+    </div>
+</div>
+
+<!-- KB #12 -->
+<div class="kb-entry" id="kb-12" data-type="fix" data-severity="high" data-keywords="backup restore procedures SFTP inventory cluster configuration schedule">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">12</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Backup &amp; Restore Procedures</div>
+            <div class="kb-entry-subtitle">NSX Manager backup configuration, validation, and restore procedures for disaster recovery</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Backup</span><span class="tag">Restore</span><span class="tag">DR</span><span class="tag tag-recovery">ERT: 45-120 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Impact:</strong> Without valid backups, NSX configuration loss requires full rebuild. Restore allows recovery of DFW policies, routing config, and all manager state. Critical before any upgrade or maintenance.</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure backup target (SFTP server)</strong></p>
+                <pre><code># NSX API — Configure backup:
+PUT https://&lt;nsx-manager&gt;/api/v1/cluster/backups/config
+{
+  "backup_enabled": true,
+  "backup_schedule": {
+    "resource_type": "WeeklyBackupSchedule",
+    "days_of_week": ["MONDAY", "THURSDAY"],
+    "hour": 2,
+    "minute": 0
+  },
+  "remote_file_server": {
+    "server": "&lt;sftp-server-ip&gt;",
+    "port": 22,
+    "protocol": {"name": "sftp"},
+    "directory_path": "/nsx-backups",
+    "authentication_scheme": {
+      "scheme_name": "password",
+      "username": "backup-user",
+      "password": "&lt;password&gt;"
+    }
+  },
+  "passphrase": "&lt;encryption-passphrase&gt;"
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Trigger manual backup before maintenance</strong></p>
+                <pre><code># NSX API — Initiate backup now:
+POST https://&lt;nsx-manager&gt;/api/v1/cluster?action=backup_to_remote
+
+# Check backup status:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/backups/status
+
+# List available backups:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/backups/history</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Restore from backup (disaster recovery)</strong></p>
+                <pre><code># IMPORTANT: Restore requires a fresh NSX Manager deployment
+# 1. Deploy new NSX Manager appliance (same version as backup)
+# 2. During initial setup, choose "Restore from Backup"
+
+# Or via API on fresh manager:
+POST https://&lt;nsx-manager&gt;/api/v1/cluster/restore
+{
+  "remote_file_server": {
+    "server": "&lt;sftp-server-ip&gt;",
+    "port": 22,
+    "protocol": {"name": "sftp"},
+    "directory_path": "/nsx-backups",
+    "authentication_scheme": {
+      "scheme_name": "password",
+      "username": "backup-user",
+      "password": "&lt;password&gt;"
+    }
+  },
+  "passphrase": "&lt;encryption-passphrase&gt;",
+  "backup_id": "&lt;backup-id&gt;"
+}
+
+# Monitor restore progress:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/restore/status</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-6">KB #6 — Manager Split-Brain</a><a href="phase1.html#kb-10">KB #10 — Upgrade Coordinator</a></div>
+    </div>
+</div>
+
+<!-- KB #13 -->
+<div class="kb-entry" id="kb-13" data-type="fix" data-severity="critical" data-keywords="N-VDS VDS migration switch converge vSphere distributed host transport">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">13</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">N-VDS to VDS Migration</div>
+            <div class="kb-entry-subtitle">Migrate host switching from NSX-managed N-VDS to vSphere Distributed Switch (VDS 7.0+)</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">N-VDS</span><span class="tag">VDS</span><span class="tag">Migration</span><span class="tag tag-recovery">ERT: 2-4 hours</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Migration consolidates switching management under vCenter. Required for VCF 4.x+ deployments. Incorrect migration can disconnect hosts from overlay. Plan maintenance window.</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Pre-checks before migration</strong></p>
+                <pre><code># Verify VDS version supports NSX (7.0+):
+# vCenter → Networking → DVS → Summary → Version
+
+# Check current N-VDS configuration:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;
+# Note the N-VDS UUID, uplink mapping, and transport zone
+
+# Ensure host is on vSphere 7.0+ with VDS 7.0+
+# Ensure NSX-T 3.0+ (N-VDS to VDS migration support)
+
+# Verify no active DFW or routing issues on the host</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Perform the migration via NSX Manager</strong></p>
+                <pre><code># NSX Manager UI:
+# System → Fabric → Nodes → Host Transport Nodes
+# Select host → Actions → "Migrate to VDS"
+
+# API equivalent:
+POST https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;?action=migrate_to_vds
+{
+  "vds_name": "Production-VDS",
+  "vmware_distributed_switch_uuid": "&lt;vds-uuid&gt;"
+}
+
+# Monitor migration status:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/state</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Verify post-migration connectivity</strong></p>
+                <pre><code># On host — verify TEP is now on VDS:
+esxcli network vswitch dvs vmware list
+
+# Verify overlay connectivity:
+vmkping ++netstack=vxlan -d -s 1572 &lt;remote-tep-ip&gt;
+
+# Verify VMs are connected and communicating:
+nsxcli -c "get logical-switch &lt;ls-uuid&gt; vtep-table"
+
+# Check transport node status:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/state
+# Should show "success"</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-1">KB #1 — Transport Node Prep</a><a href="phase7.html#kb-63">KB #63 — VCF NSX Upgrade</a></div>
+    </div>
+</div>
+
+<!-- KB #14 -->
+<div class="kb-entry" id="kb-14" data-type="fix" data-severity="high" data-keywords="edge node replacement redeploy new VM maintenance swap cluster member">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">14</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Edge Node Replacement</div>
+            <div class="kb-entry-subtitle">Replace a failed or degraded Edge transport node with a new deployment</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Edge</span><span class="tag">Replacement</span><span class="tag tag-recovery">ERT: 30-60 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Impact:</strong> Replacing a failed Edge node restores cluster redundancy. During replacement, services failover to remaining members. Ensure at least one healthy Edge remains active.</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Remove failed Edge from cluster</strong></p>
+                <pre><code># Identify the failed Edge node:
+get edge-cluster status
+
+# Remove failed member from Edge cluster:
+POST https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;?action=replace_transport_node
+{
+  "transport_node_id": "&lt;failed-edge-tn-id&gt;",
+  "new_transport_node_id": "&lt;new-edge-tn-id&gt;"
+}
+
+# Or remove without immediate replacement:
+PUT https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;
+# Remove the failed member from the members array</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Deploy new Edge node</strong></p>
+                <pre><code># Deploy via NSX Manager UI:
+# System → Fabric → Nodes → Edge Transport Nodes → Add Edge VM
+# Configure: Name, Size (Large recommended for production),
+#   Management IP, Compute Manager, Cluster, Datastore
+#   Transport Zone assignments, Uplink profile, IP Pool
+
+# Wait for deployment to complete (~10-15 minutes)
+# Verify new Edge is "Success":
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;new-edge-tn-id&gt;/state</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Add new Edge to cluster and verify</strong></p>
+                <pre><code># Add to Edge cluster:
+PUT https://&lt;nsx-manager&gt;/api/v1/edge-clusters/&lt;cluster-id&gt;
+{
+  "members": [
+    {"transport_node_id": "&lt;existing-edge-tn-id&gt;"},
+    {"transport_node_id": "&lt;new-edge-tn-id&gt;"}
+  ]
+}
+
+# Verify cluster health:
+get edge-cluster status
+
+# Verify SR allocation rebalances:
+get logical-routers</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-3">KB #3 — Edge Failover</a><a href="phase5.html#kb-50">KB #50 — Edge Redeployment</a></div>
+    </div>
+</div>
+
+<!-- KB #15 -->
+<div class="kb-entry" id="kb-15" data-type="break" data-severity="high" data-keywords="transport zone configuration drift overlay VLAN inconsistency mismatch profile">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number break-num">15</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Transport Zone Configuration Drift</div>
+            <div class="kb-entry-subtitle">Transport zone membership or configuration becomes inconsistent across hosts — causes segment isolation</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Transport Zone</span><span class="tag">Drift</span><span class="tag tag-recovery">ERT: 15-30 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Hosts in different transport zones cannot exchange overlay traffic. VMs on mismatched hosts are isolated even on the same logical segment. Segment spans only hosts in the correct TZ.</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Audit transport zone membership</strong></p>
+                <pre><code># List all transport zones:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-zones
+
+# Check which hosts are in each TZ:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-zones/&lt;tz-id&gt;/transport-node-status
+
+# Identify hosts NOT in the expected transport zone:
+# Compare against expected list from design document</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Fix host transport zone assignment</strong></p>
+                <pre><code># Update transport node to include correct TZ:
+PUT https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;
+{
+  "transport_zone_endpoints": [
+    {"transport_zone_id": "&lt;overlay-tz-id&gt;"},
+    {"transport_zone_id": "&lt;vlan-tz-id&gt;"}
+  ]
+  // ... keep other config the same
+}
+
+# Verify state after update:
+GET https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;/state</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-1">KB #1 — Transport Node Prep</a><a href="phase7.html#kb-69">KB #69 — VCF TZ Mapping</a></div>
+    </div>
+</div>
+
+<!-- KB #16 -->
+<div class="kb-entry" id="kb-16" data-type="fix" data-severity="medium" data-keywords="LDAP AD identity source authentication login directory service bind">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">16</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">LDAP/AD Identity Source Issues</div>
+            <div class="kb-entry-subtitle">Configure and troubleshoot Active Directory / LDAP integration for NSX role-based access</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">LDAP</span><span class="tag">AD</span><span class="tag">Identity</span><span class="tag tag-recovery">ERT: 15-30 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-info"><span class="alert-icon">&#128712;</span><span><strong>Impact:</strong> AD/LDAP users cannot log into NSX Manager. Role-based access control (RBAC) non-functional. Only local admin account works.</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure LDAP identity source</strong></p>
+                <pre><code># NSX API — Add LDAP identity source:
+POST https://&lt;nsx-manager&gt;/api/v1/node/aaa/auth-policy
+# Check current auth policy first
+
+# Add LDAP via UI:
+# System → Settings → User Management → LDAP
+# Type: Active Directory over LDAP
+# Domain: example.com
+# Base DN: DC=example,DC=com
+# Bind DN: CN=nsx-bind,OU=Service Accounts,DC=example,DC=com
+# LDAP Server: ldaps://dc01.example.com:636
+
+# Test connectivity:
+POST https://&lt;nsx-manager&gt;/api/v1/aaa/ldap-identity-sources?action=probe</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Troubleshoot LDAP connectivity</strong></p>
+                <pre><code># From NSX Manager CLI — test LDAP reachability:
+ping &lt;ldap-server-ip&gt;
+
+# Test LDAPS port:
+# openssl s_client -connect &lt;ldap-server&gt;:636
+
+# Check NSX Manager logs for LDAP errors:
+tail -100 /var/log/proton/nsxapi.log | grep -i ldap
+
+# Common issues:
+# 1. CA certificate not imported (for LDAPS)
+# 2. Bind DN incorrect format
+# 3. Base DN too narrow (missing OUs)
+# 4. Firewall blocking port 636/389</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-11">KB #11 — Certificate Rotation</a><a href="phase3.html#kb-25">KB #25 — IDFW Issues</a></div>
+    </div>
+</div>
+
+<!-- KB #17 -->
+<div class="kb-entry" id="kb-17" data-type="fix" data-severity="medium" data-keywords="alarm event correlation syslog monitoring alert suppress threshold">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">17</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Alarm &amp; Event Correlation</div>
+            <div class="kb-entry-subtitle">Configure alarm thresholds, suppress false positives, and correlate events for effective monitoring</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Alarms</span><span class="tag">Monitoring</span><span class="tag tag-recovery">ERT: 15-30 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>View and manage NSX alarms</strong></p>
+                <pre><code># List all active alarms:
+GET https://&lt;nsx-manager&gt;/api/v1/alarms
+
+# Filter by severity:
+GET https://&lt;nsx-manager&gt;/api/v1/alarms?severity=CRITICAL
+
+# Suppress a specific alarm type:
+POST https://&lt;nsx-manager&gt;/api/v1/alarms?action=suppress_alarm
+{
+  "alarm_id": "&lt;alarm-id&gt;",
+  "suppress_duration": 3600
+}
+
+# Resolve an alarm:
+POST https://&lt;nsx-manager&gt;/api/v1/alarms/&lt;alarm-id&gt;?action=resolve</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Configure alarm thresholds</strong></p>
+                <pre><code># NSX Manager UI:
+# System → Settings → Alarm Definitions
+# Adjust thresholds for:
+#   - Edge CPU Utilization (default 80%, adjust to 90%)
+#   - Transport Node Tunnel Down
+#   - Certificate Expiry Warning (30 days before)
+
+# Example: Modify edge CPU alarm threshold via API
+# This prevents false alarms during legitimate traffic spikes</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-18">KB #18 — Syslog Configuration</a><a href="phase8.html#kb-80">KB #80 — Metrics &amp; Monitoring</a></div>
+    </div>
+</div>
+
+<!-- KB #18 -->
+<div class="kb-entry" id="kb-18" data-type="fix" data-severity="medium" data-keywords="syslog log collection configuration remote server facility level">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">18</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">Syslog &amp; Log Collection Configuration</div>
+            <div class="kb-entry-subtitle">Configure remote syslog forwarding for NSX Manager, Edge nodes, and host transport nodes</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-medium">Medium</span><span class="tag">Syslog</span><span class="tag">Logging</span><span class="tag tag-recovery">ERT: 10-20 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Configure syslog on NSX Manager</strong></p>
+                <pre><code># NSX Manager CLI:
+set logging-server &lt;syslog-ip&gt; proto udp level info facility local0
+
+# Verify:
+get logging-servers
+
+# API equivalent:
+POST https://&lt;nsx-manager&gt;/api/v1/node/services/syslog/exporters
+{
+  "server": "&lt;syslog-ip&gt;",
+  "port": 514,
+  "protocol": "UDP",
+  "level": "INFO",
+  "facilities": ["KERN", "USER", "LOCAL0"]
+}</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Configure syslog on Edge nodes</strong></p>
+                <pre><code># On Edge node CLI:
+set logging-server &lt;syslog-ip&gt; proto udp level info
+
+# For all edges via API:
+POST https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;edge-tn-id&gt;/node/services/syslog/exporters
+{
+  "server": "&lt;syslog-ip&gt;",
+  "port": 514,
+  "protocol": "UDP",
+  "level": "INFO"
+}
+
+# Verify on Edge:
+get logging-servers</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-17">KB #17 — Alarm Correlation</a><a href="phase8.html#kb-75">KB #75 — Support Bundle</a></div>
+    </div>
+</div>
+
+<!-- KB #19 -->
+<div class="kb-entry" id="kb-19" data-type="fix" data-severity="critical" data-keywords="MP CCP cluster certificate regeneration management plane control self-signed">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">19</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">MP/CCP Cluster Certificate Regeneration</div>
+            <div class="kb-entry-subtitle">Regenerate management plane and central control plane cluster certificates after expiry or corruption</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-critical">Critical</span><span class="tag">MP</span><span class="tag">CCP</span><span class="tag">Certificate</span><span class="tag tag-recovery">ERT: 30-60 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-danger"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Expired cluster certificates break inter-node communication. CCP certificates affect host-to-controller connectivity. All transport nodes may show "Controller Disconnected".</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Identify expired certificates</strong></p>
+                <pre><code># Check all certificate expiry:
+GET https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates
+
+# Check cluster certificate specifically:
+get certificate-chain cluster
+
+# Look for certificates with "not_after" in the past
+# Categories: API, CLUSTER, MP-CLUSTER, CCP</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Regenerate cluster certificates</strong></p>
+                <pre><code># Regenerate MP cluster certificate (self-signed):
+POST https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates?action=generate_self_signed
+{
+  "cert_type": "CLUSTER",
+  "key_size": "2048",
+  "algorithm": "RSA",
+  "subject": {
+    "attributes": [{"key":"CN","value":"NSX-MP-Cluster"}]
+  },
+  "days_valid": 825
+}
+
+# Apply the new cluster certificate:
+POST https://&lt;nsx-manager&gt;/api/v1/trust-management/certificates/&lt;new-cert-id&gt;?action=apply_certificate
+{
+  "service_type": "CLUSTER_CERTIFICATE"
+}
+
+# This will restart inter-node communication
+# Wait 2-3 minutes for cluster to stabilize</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Re-establish CCP trust with transport nodes</strong></p>
+                <pre><code># After cluster cert change, hosts need to re-trust the new cert
+# This usually happens automatically via nsx-proxy reconnection
+
+# If hosts remain disconnected:
+# On each ESXi host:
+/etc/init.d/nsx-proxy restart
+
+# Verify controller connectivity:
+nsxcli -c "get controllers"
+
+# Force certificate re-sync (if needed):
+POST https://&lt;nsx-manager&gt;/api/v1/transport-nodes/&lt;tn-id&gt;?action=resync</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="#kb-11">KB #11 — Certificate Rotation</a><a href="phase1.html#kb-9">KB #9 — Controller Connectivity</a></div>
+    </div>
+</div>
+
+<!-- KB #20 -->
+<div class="kb-entry" id="kb-20" data-type="fix" data-severity="high" data-keywords="NSX manager node decommission remove cluster shrink maintenance">
+    <div class="kb-entry-header" onclick="toggleEntry(this)">
+        <div class="kb-number fix-num">20</div>
+        <div class="kb-entry-title-block">
+            <div class="kb-entry-title">NSX Manager Node Decommission</div>
+            <div class="kb-entry-subtitle">Safely remove an NSX Manager node from the cluster for replacement or maintenance</div>
+            <div class="kb-entry-tags"><span class="tag tag-severity-high">High</span><span class="tag">Manager</span><span class="tag">Decommission</span><span class="tag tag-recovery">ERT: 20-40 min</span></div>
+        </div>
+        <svg class="kb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="kb-entry-body">
+        <div class="alert alert-warning"><span class="alert-icon">&#9888;</span><span><strong>Impact:</strong> Running on 2 nodes temporarily reduces cluster fault tolerance. If another node fails during this window, the cluster loses quorum. Complete the procedure promptly.</span></div>
+        <div class="section-label">Resolution</div>
+        <div class="steps">
+            <div class="step"><div class="step-number">1</div><div class="step-content"><p><strong>Verify cluster health before decommission</strong></p>
+                <pre><code># Ensure all 3 nodes are healthy:
+get cluster status
+# Must show STABLE with all nodes UP
+
+# Take a backup before proceeding:
+POST https://&lt;nsx-manager&gt;/api/v1/cluster?action=backup_to_remote
+
+# Identify the node to remove:
+GET https://&lt;nsx-manager&gt;/api/v1/cluster/nodes
+# Note the node UUID to decommission</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">2</div><div class="step-content"><p><strong>Detach the node from cluster</strong></p>
+                <pre><code># Gracefully remove the node:
+POST https://&lt;nsx-manager&gt;/api/v1/cluster/&lt;node-id&gt;?action=remove_node
+
+# Or from the node being removed:
+detach node &lt;self-node-id&gt;
+
+# Monitor cluster status (should become STABLE with 2 nodes):
+get cluster status
+
+# Wait for data rebalancing to complete (~5 minutes)</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+            <div class="step"><div class="step-number">3</div><div class="step-content"><p><strong>Deploy replacement and join cluster</strong></p>
+                <pre><code># Deploy new NSX Manager appliance (same version)
+# After deployment, join to existing cluster:
+
+# On the new node:
+join &lt;existing-manager-ip&gt; cluster-id &lt;cluster-id&gt; username admin password &lt;password&gt;
+
+# Verify 3-node cluster is restored:
+get cluster status
+# Should show STABLE with 3 nodes UP
+
+# Power off and delete the old manager VM from vCenter</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre></div></div>
+        </div>
+        <div class="cross-ref"><div class="cross-ref-title">Cross-References</div><a href="phase1.html#kb-6">KB #6 — Manager Split-Brain</a><a href="#kb-12">KB #12 — Backup &amp; Restore</a></div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<footer class="footer">
+    <p><a href="index.html">&larr; Back to NSX-T KB Dashboard</a> &nbsp;|&nbsp; <a href="../index.html">Portal Home</a></p>
+    <p style="margin-top:0.5rem">&copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base</p>
+</footer>
+
+<script>
+    function copyCode(btn){const code=btn.parentElement.querySelector('code').textContent;navigator.clipboard.writeText(code).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2000)})}
+    function toggleEntry(header){header.closest('.kb-entry').classList.toggle('open')}
+    function filterByType(type,btn){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.kb-entry').forEach(entry=>{const t=entry.dataset.type,s=entry.dataset.severity;if(type==='all')entry.style.display='';else if(type==='break'||type==='fix')entry.style.display=t===type?'':'none';else entry.style.display=s===type?'':'none'})}
+    function filterEntries(){const q=document.getElementById('searchInput').value.toLowerCase().trim();document.querySelectorAll('.kb-entry').forEach(entry=>{if(!q){entry.style.display='';return}entry.style.display=(entry.textContent.toLowerCase().includes(q)||(entry.dataset.keywords||'').includes(q))?'':'none'})}
+    document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput').focus()}if(e.key==='Escape'){document.getElementById('searchInput').value='';filterEntries()}});
+    window.addEventListener('scroll',()=>{const h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('scrollProgress').style.width=(h>0?(window.scrollY/h)*100:0)+'%'},{passive:true});
+    (function(){var hash=window.location.hash;if(hash&&hash.match(/^#kb-\d+$/)){var el=document.querySelector(hash);if(el){el.classList.add('open');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100)}}})();
+</script>
+</body>
+</html>
