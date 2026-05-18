@@ -255,6 +255,9 @@
         /* Section divider */
         .section-divider { width:100%; max-width:1400px; margin:0 auto; height:1px; background:var(--border); }
 
+        /* Decision tree card */
+        .phase-card.dt-special { border-color: rgba(210,153,34,0.3); }
+
         /* ── Footer ── */
         .footer {
             border-top: 1px solid var(--border); margin-top: 3rem;
@@ -294,23 +297,22 @@
         <a href="#stats">Stats</a>
         <a href="#phases">Phases</a>
         <a href="#kbindex">KB Index</a>
-        <a href="decision-tree.html" style="color:var(--warning-light)">⚙ Decision Tree</a>
-        <a href="../vsphere-kb/index.html">vSphere KB</a>
-        <a href="../vsan-kb/index.html">vSAN KB</a>
-        <a href="../index.html">↑ Portal</a>
+        <a href="decision-tree.html">Decision Tree</a>
+        <a href="https://mustafamalqadi.github.io/vmware-upgrade-path/" target="_blank" rel="noopener">Upgrade Planner</a>
+        <a href="https://mustafamalqadi.github.io/training-courses/" target="_blank" rel="noopener">Training</a>
+        <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">↑ Portal</a>
     </div>
 </div>
 
 <!-- ── Hero ── -->
 <section class="hero">
-    <h1>VMware NSX-T <span>Knowledge Base</span></h1>
-    <p class="subtitle">Professional NSX-T Data Center troubleshooting — Transport Nodes, DFW, Routing, Edge Services &amp; Federation</p>
+    <h1>VMware NSX-T Knowledge Base</h1>
+    <p class="subtitle">Comprehensive Fix &amp; Break Reference — Official VMware / Broadcom Procedures Only</p>
     <div class="hero-badges">
         <span class="badge badge-total">90 KB Entries</span>
-        <span class="badge badge-break">&#9888; 45 Break</span>
-        <span class="badge badge-fix">&#10003; 45 Fix</span>
         <span class="badge badge-phase">9 Phases</span>
-        <a href="decision-tree.html" class="badge" style="background:rgba(210,153,34,0.12);color:#e3b341;border:1px solid rgba(210,153,34,0.25);text-decoration:none">&#9878; Decision Tree</a>
+        <span class="badge badge-break">&#9888; Break Scenarios</span>
+        <span class="badge badge-fix">&#10003; Fix Procedures</span>
     </div>
 </section>
 
@@ -620,6 +622,30 @@
             </div>
         </a>
 
+        <!-- Decision Tree -->
+        <a href="decision-tree.html" class="phase-card dt-special" data-color="amber" style="border-color:rgba(210,153,34,0.35);background:linear-gradient(135deg,var(--bg-card),rgba(210,153,34,0.04));">
+            <div class="phase-card-bar" style="background:var(--warning)"></div>
+            <div class="phase-card-header">
+                <div class="phase-icon" style="background:rgba(210,153,34,0.12);border:1px solid rgba(210,153,34,0.25);color:var(--warning-light);font-size:1.3rem;">&#9881;</div>
+                <div>
+                    <div class="phase-card-title" style="color:var(--warning-light);">Interactive Decision Tree</div>
+                    <div class="phase-card-sub">Step-by-step symptom-based troubleshooting</div>
+                </div>
+            </div>
+            <div class="phase-card-body">
+                <ul>
+                    <li>Select symptoms to narrow down the root cause</li>
+                    <li>Covers all 90 KB entries across 9 categories</li>
+                    <li>Quick-path shortcuts for common scenarios</li>
+                    <li>Guided navigation with breadcrumb trail</li>
+                </ul>
+            </div>
+            <div class="phase-card-footer">
+                <span class="count" style="color:var(--warning-light);">All 90 KBs</span>
+                <span class="link-text">Open Decision Tree →</span>
+            </div>
+        </a>
+
     </div>
 </section>
 
@@ -647,31 +673,24 @@
                 <div class="logo-mark">NS</div>
                 <span>NSX-T Knowledge Base</span>
             </div>
-            <p>Professional NSX-T Data Center troubleshooting reference. Native CLI commands &amp; NSX API only — no third-party tools.</p>
+            <p>90 fix &amp; break entries across 9 phases. Official VMware / Broadcom tooling only — NSX CLI, nsxcli, central-cli, NSX Manager API, Edge CLI. Zero Python, PowerCLI, or third-party tools.</p>
         </div>
         <div class="footer-col">
-            <h4>Phases</h4>
+            <h4>Navigate</h4>
+            <a href="index.html">Dashboard</a>
+            <a href="decision-tree.html">Decision Tree</a>
             <a href="phase1.html">Phase 1 — Common Issues</a>
-            <a href="phase2.html">Phase 2 — Day-2 Operations</a>
-            <a href="phase3.html">Phase 3 — Distributed Firewall</a>
-            <a href="phase4.html">Phase 4 — Routing &amp; BGP</a>
-            <a href="phase5.html">Phase 5 — Edge Services</a>
-            <a href="phase6.html">Phase 6 — Segments &amp; Overlays</a>
-            <a href="phase7.html">Phase 7 — VCF &amp; Federation</a>
-            <a href="phase8.html">Phase 8 — Troubleshooting &amp; CLI</a>
             <a href="phase9.html">Phase 9 — Advanced Security</a>
         </div>
         <div class="footer-col">
-            <h4>Resources</h4>
-            <a href="../vsphere-kb/index.html">vSphere KB</a>
-            <a href="../vsan-kb/index.html">vSAN KB</a>
-            <a href="../index.html">Portal Home</a>
-            <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Main Portfolio</a>
+            <h4>Portal</h4>
+            <a href="https://mustafamalqadi.github.io/" target="_blank" rel="noopener">Personal Portal</a>
+            <a href="https://mustafamalqadi.github.io/vmware-kbs/" target="_blank" rel="noopener">VMware KB Hub</a>
+            <a href="https://mustafamalqadi.github.io/training-courses/" target="_blank" rel="noopener">Training Courses</a>
         </div>
     </div>
     <div class="footer-bottom">
-        &copy; 2024 Eng. Mustafa Al-Qadi — VMware NSX-T Knowledge Base. All troubleshooting content is original.
-        <br>Keyboard: <kbd>Ctrl+K</kbd> Search &middot; <kbd>T</kbd> Theme &middot; <kbd>↑</kbd> Scroll to Top
+        &copy; 2026 Eng. Mustafa Al-Qadi — All rights reserved
     </div>
 </footer>
 
