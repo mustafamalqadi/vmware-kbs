@@ -12,6 +12,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="https://mustafamalqadi.github.io/vmware-kbs/og-image.png">
     <meta name="theme-color" content="#0a0e1a">
+    <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0e1a'/%3E%3Cpath d='M16 4 L28 10 V18 C28 24 22 28 16 30 C10 28 4 24 4 18 V10 Z' fill='none' stroke='%236366f1' stroke-width='1.5'/%3E%3Cpath d='M10 16 L14 20 L22 12' stroke='%2310b981' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <!-- Enhancement #1: Google Font (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +52,11 @@
             --glass-border: rgba(59,130,246,0.1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        @view-transition{navigation:auto}
+        ::view-transition-old(root){animation:vt-out .2s ease}
+        ::view-transition-new(root){animation:vt-in .3s ease}
+        @keyframes vt-out{to{opacity:0;transform:scale(.98)}}
+        @keyframes vt-in{from{opacity:0;transform:scale(1.02)}}
         html { scroll-behavior: smooth; }
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -370,6 +376,16 @@
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
         }
+
+        /* Global Search */
+        .global-search-wrap{max-width:600px;margin:-2rem auto 2rem;padding:0 2rem;position:relative;z-index:5}
+        .global-search{display:flex;align-items:center;gap:.7rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.7rem 1.2rem;transition:all .25s}
+        .global-search:focus-within{border-color:var(--accent);box-shadow:0 0 20px rgba(99,102,241,.15)}
+        .global-search .search-icon{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
+        .global-search input{flex:1;background:none;border:none;outline:none;color:var(--text-primary);font-size:.9rem;font-family:inherit}
+        .global-search input::placeholder{color:var(--text-muted)}
+        .global-search kbd{font-size:.65rem;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-muted);pointer-events:none}
+        .product-card.search-hidden{display:none}
 
         /* Enhancement #3: Glassmorphism cards */
         /* Enhancement #4: Card hover glow */
@@ -911,6 +927,13 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
         }
+        @media print{
+            .site-strip,.topbar,.global-search-wrap,.scroll-progress,.kb-header-particles{display:none!important}
+            body{background:#fff;color:#000}
+            .product-card{break-inside:avoid;border:1px solid #ccc;box-shadow:none;margin-bottom:1rem}
+            a{color:#000;text-decoration:underline}
+            @page{margin:1.5cm}
+        }
     </style>
 </head>
 <body>
@@ -1046,6 +1069,15 @@
             </div>
             <span>Production Validated</span>
         </div>
+    </div>
+</div>
+
+<!-- ═══════════ GLOBAL SEARCH ═══════════ -->
+<div class="global-search-wrap">
+    <div class="global-search">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="globalSearch" placeholder="Search KBs... (vSAN, NSX, VCF, vSphere)" autocomplete="off" aria-label="Search knowledge bases">
+        <kbd>Ctrl+K</kbd>
     </div>
 </div>
 
@@ -1391,6 +1423,43 @@
         revealEls.forEach(function(el) { el.classList.add('visible'); });
     }
 })();
+</script>
+<script>
+/* Global Search */
+(function(){
+    var input = document.getElementById('globalSearch');
+    var cards = document.querySelectorAll('.product-card');
+    input.addEventListener('input', function(){
+        var q = this.value.toLowerCase().trim();
+        cards.forEach(function(card){
+            if(!q){ card.classList.remove('search-hidden'); return; }
+            var text = card.textContent.toLowerCase();
+            card.classList.toggle('search-hidden', text.indexOf(q) === -1);
+        });
+    });
+    document.addEventListener('keydown', function(e){
+        if((e.ctrlKey || e.metaKey) && e.key === 'k'){
+            e.preventDefault();
+            input.focus();
+            input.select();
+        }
+        if(e.key === 'Escape' && document.activeElement === input){
+            input.value = '';
+            input.dispatchEvent(new Event('input'));
+            input.blur();
+        }
+    });
+})();
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');</script>
+<script>if(document.startViewTransition){
+  document.querySelectorAll('.site-strip a:not(.current)').forEach(function(a){
+    a.addEventListener('click',function(e){
+      e.preventDefault();var url=a.href;
+      document.startViewTransition(function(){window.location.href=url;});
+    });
+  });
+}
 </script>
 
 </body>
