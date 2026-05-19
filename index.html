@@ -382,7 +382,7 @@
         }
 
         /* Global Search */
-        .global-search-wrap{max-width:600px;margin:-2rem auto 2rem;padding:0 2rem;position:relative;z-index:5}
+        .global-search-wrap{max-width:600px;margin:2rem auto 0;padding:0 2rem;position:relative;z-index:5}
         .global-search{display:flex;align-items:center;gap:.7rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.7rem 1.2rem;transition:all .25s}
         .global-search:focus-within{border-color:var(--accent);box-shadow:0 0 20px rgba(99,102,241,.15)}
         .global-search .search-icon{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
@@ -1051,6 +1051,15 @@
     </div>
 </header>
 
+<!-- ═══════════ GLOBAL SEARCH ═══════════ -->
+<div class="global-search-wrap">
+    <div class="global-search">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="globalSearch" placeholder="Search KBs... (vSAN, NSX, VCF, vSphere)" autocomplete="off" aria-label="Search knowledge bases">
+        <kbd>Ctrl+K</kbd>
+    </div>
+</div>
+
 <!-- Enhancement #15: Credential/Trust Strip -->
 <div class="trust-strip">
     <div class="trust-inner reveal">
@@ -1081,15 +1090,6 @@
             </div>
             <span>Production Validated</span>
         </div>
-    </div>
-</div>
-
-<!-- ═══════════ GLOBAL SEARCH ═══════════ -->
-<div class="global-search-wrap">
-    <div class="global-search">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="globalSearch" placeholder="Search KBs... (vSAN, NSX, VCF, vSphere)" autocomplete="off" aria-label="Search knowledge bases">
-        <kbd>Ctrl+K</kbd>
     </div>
 </div>
 
