@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VMware Knowledge Base — Eng. Mustafa Al-Qadi</title>
     <meta name="description" content="VMware Knowledge Base Portal — Professional troubleshooting references for vSAN, NSX-T, vSphere &amp; more by Eng. Mustafa Al-Qadi.">
@@ -13,6 +15,8 @@
     <meta name="twitter:image" content="https://mustafamalqadi.github.io/vmware-kbs/og-image.png">
     <meta name="theme-color" content="#0a0e1a">
     <link rel="manifest" href="manifest.json">
+    <link rel="canonical" href="https://mustafamalqadi.github.io/vmware-kbs/">
+    <link rel="alternate" type="application/rss+xml" title="VMware KBs Feed" href="feed.xml">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0e1a'/%3E%3Cpath d='M16 4 L28 10 V18 C28 24 22 28 16 30 C10 28 4 24 4 18 V10 Z' fill='none' stroke='%236366f1' stroke-width='1.5'/%3E%3Cpath d='M10 16 L14 20 L22 12' stroke='%2310b981' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <!-- Enhancement #1: Google Font (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -934,9 +938,17 @@
             a{color:#000;text-decoration:underline}
             @page{margin:1.5cm}
         }
+.back-top{position:fixed;bottom:2rem;right:2rem;width:40px;height:40px;border-radius:50%;background:var(--bg-card,#111827);border:1px solid var(--border);color:var(--text-secondary,#94a3b8);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .3s;pointer-events:none}
+.back-top.visible{opacity:1;transform:none;pointer-events:auto}
+.back-top:hover{border-color:var(--accent);color:var(--accent)}
+.offline-bar{position:fixed;top:0;left:0;right:0;background:#f59e0b;color:#000;text-align:center;padding:.4rem;font-size:.75rem;font-weight:600;z-index:10000;transform:translateY(-100%);transition:transform .3s}
+.offline-bar.show{transform:none}
     </style>
 </head>
 <body>
+
+<a href="#main-content" class="skip-link" style="position:absolute;top:-100px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:.5rem 1.5rem;border-radius:0 0 8px 8px;font-size:.8rem;font-weight:600;z-index:9999;transition:top .2s">Skip to content</a>
+<style>.skip-link:focus{top:0!important}</style>
 
 <!-- Enhancement #12: Page loader -->
 <div class="page-loader" id="pageLoader">
@@ -1451,6 +1463,10 @@
     });
 })();
 </script>
+<button class="back-top" id="backTop" title="Back to top">&#8593;</button>
+<script>(function(){var b=document.getElementById('backTop');window.addEventListener('scroll',function(){b.classList.toggle('visible',window.scrollY>300);},{passive:true});b.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});})();</script>
+<div class="offline-bar" id="offlineBar">You are offline — cached content is being shown</div>
+<script>(function(){var bar=document.getElementById('offlineBar');window.addEventListener('offline',function(){bar.classList.add('show');});window.addEventListener('online',function(){bar.classList.remove('show');});if(!navigator.onLine)bar.classList.add('show');})();</script>
 <script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');</script>
 <script>if(document.startViewTransition){
   document.querySelectorAll('.site-strip a:not(.current)').forEach(function(a){
