@@ -153,6 +153,10 @@
         .topbar-brand .name {
             font-size: 0.85rem; font-weight: 600; letter-spacing: -0.01em;
         }
+        .brand-text{display:flex;flex-direction:column}
+        .topbar-brand .subtitle{font-size:.65rem;color:var(--text-muted);font-weight:400}
+        .theme-toggle{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:.4rem .55rem;cursor:pointer;color:var(--text-secondary);font-size:1rem;line-height:1;transition:all .25s}
+        .theme-toggle:hover{color:var(--accent-light);border-color:rgba(59,130,246,.3);transform:rotate(15deg)}
         .topbar-links { display: flex; gap: 1.25rem; align-items: center; }
         .topbar-links a {
             color: var(--text-muted); text-decoration: none;
@@ -968,13 +972,17 @@
 <nav class="topbar" id="topbar">
     <a href="./" class="topbar-brand">
         <div class="initials">M.Q</div>
-        <span class="name">Eng. Mustafa Al-Qadi</span>
+        <div class="brand-text">
+            <span class="name">Eng. Mustafa Al-Qadi</span>
+            <span class="subtitle">VMware Knowledge Base Portal</span>
+        </div>
     </a>
     <!-- Enhancement #14: Hamburger -->
     <div class="hamburger" id="hamburger" role="button" aria-label="Toggle menu">
         <span></span><span></span><span></span>
     </div>
     <div class="topbar-links" id="navLinks">
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">&#127769;</button>
         <a href="vsan-kb/">vSAN KB</a>
         <a href="nsx-kb/">NSX KB</a>
         <a href="vsphere-kb/">vSphere KB</a>
@@ -1325,6 +1333,18 @@
 <script>
 (function() {
     'use strict';
+
+    /* Theme Toggle */
+    var themeBtn = document.getElementById('themeToggle');
+    var savedTheme = localStorage.getItem('kbs-theme');
+    if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); themeBtn.textContent = savedTheme === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+    themeBtn.addEventListener('click', function() {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('kbs-theme', next);
+        themeBtn.textContent = next === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+    });
 
     /* Enhancement #12: Page load entrance */
     window.addEventListener('load', function() {
