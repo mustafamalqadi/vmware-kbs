@@ -977,7 +977,7 @@
         <span></span><span></span><span></span>
     </div>
     <div class="topbar-links" id="navLinks">
-        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme">&#127769;</button>
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle dark mode" aria-pressed="true">&#127769;</button>
         <a href="vsan-kb/">vSAN KB</a>
         <a href="nsx-kb/">NSX KB</a>
         <a href="vsphere-kb/">vSphere KB</a>
@@ -1332,13 +1332,14 @@
     /* Theme Toggle */
     var themeBtn = document.getElementById('themeToggle');
     var savedTheme = localStorage.getItem('kbs-theme');
-    if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); themeBtn.textContent = savedTheme === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+    if (savedTheme) { document.documentElement.setAttribute('data-theme', savedTheme); themeBtn.textContent = savedTheme === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19'; themeBtn.setAttribute('aria-pressed', savedTheme === 'dark' ? 'true' : 'false'); }
     themeBtn.addEventListener('click', function() {
         var current = document.documentElement.getAttribute('data-theme');
         var next = current === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('kbs-theme', next);
         themeBtn.textContent = next === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19';
+        themeBtn.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
     });
 
     /* Enhancement #12: Page load entrance */
@@ -1429,7 +1430,8 @@
                     var nums = entry.target.querySelectorAll('.num[data-target]');
                     nums.forEach(function(num) {
                         var target = parseInt(num.getAttribute('data-target'), 10);
-                        num.textContent = '0';
+                        var current = parseInt(num.textContent, 10) || 0;
+                        if (current === target && target > 0) return;
                         var duration = 1200;
                         var start = performance.now();
                         function tick(now) {
