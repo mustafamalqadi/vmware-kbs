@@ -21,7 +21,7 @@
     <!-- Enhancement #1: Google Font (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebSite","name":"VMware Knowledge Bases Hub","description":"Curated VMware knowledge base articles, troubleshooting guides, and best practices by Eng. Mustafa Al-Qadi.","url":"https://mustafamalqadi.github.io/vmware-kbs/","author":{"@type":"Person","name":"Mustafa Al-Qadi","url":"https://mustafamalqadi.github.io"}}
     </script>
@@ -381,8 +381,8 @@
         /* ── Product Grid ── */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
         }
 
         /* Global Search */
@@ -395,64 +395,53 @@
         .global-search kbd{font-size:.65rem;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-muted);pointer-events:none}
         .product-card.search-hidden{display:none}
 
-        /* Enhancement #3: Glassmorphism cards */
-        /* Enhancement #4: Card hover glow */
+        /* Enhancement #3: Product Cards — Technical Blueprint */
         @property --card-angle {
             syntax: '<angle>';
             initial-value: 0deg;
             inherits: false;
         }
         .product-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: linear-gradient(145deg, rgba(15,23,42,0.95), rgba(10,14,26,0.98));
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: 16px;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.45s cubic-bezier(0.23, 1, 0.32, 1);
             display: flex;
             flex-direction: column;
             text-decoration: none;
             color: inherit;
             position: relative;
-            transform-style: preserve-3d;
             will-change: transform;
         }
         .product-card::before {
             content: '';
             position: absolute;
-            inset: -1px;
-            border-radius: 20px;
-            background: conic-gradient(from var(--card-angle, 180deg), transparent 0%, var(--accent) 10%, var(--purple) 20%, var(--cyan) 30%, transparent 40%);
-            opacity: 0;
-            transition: opacity 0.4s;
-            pointer-events: none;
-            z-index: -1;
+            top: 0; left: 0; bottom: 0;
+            width: 4px;
+            border-radius: 16px 0 0 16px;
+            opacity: 0.7;
+            transition: width 0.3s ease, opacity 0.3s ease;
         }
         .product-card:hover::before {
+            width: 5px;
             opacity: 1;
-            animation: card-border-spin 3s linear infinite;
         }
-        @keyframes card-border-spin { to { --card-angle: 540deg; } }
-        /* Shimmer sweep overlay (right-to-left) */
         .product-card::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; bottom: 0;
-            width: 100%;
-            background: linear-gradient(255deg, transparent 40%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 55%, transparent 60%);
-            transform: translateX(100%);
-            transition: transform 0.6s ease;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
             pointer-events: none;
-            z-index: 3;
-        }
-        .product-card:hover::after {
-            transform: translateX(-100%);
+            z-index: 0;
         }
         .product-card:hover {
-            transform: translateY(-8px);
-            border-color: transparent;
-            box-shadow: 0 30px 70px rgba(0,0,0,0.35), 0 0 0 1px rgba(59,130,246,0.08);
+            transform: translateY(-6px) scale(1.01);
+            border-color: rgba(255,255,255,0.08);
+            box-shadow:
+                0 25px 50px rgba(0,0,0,0.4),
+                0 0 80px rgba(99,102,241,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.04);
         }
 
         /* Mouse-following glow */
@@ -460,44 +449,26 @@
             position: absolute;
             top: -50%; left: -50%;
             width: 200%; height: 200%;
-            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(59,130,246,0.07) 0%, transparent 50%);
-            border-radius: 20px;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(59,130,246,0.05) 0%, transparent 45%);
+            border-radius: 16px;
             pointer-events: none;
             z-index: 0;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.4s;
         }
         .product-card:hover .card-spotlight { opacity: 1; }
 
-        /* Per-theme hover glow */
-        .product-card.vsan:hover { box-shadow: 0 30px 70px rgba(59,130,246,0.12), 0 0 0 1px rgba(59,130,246,0.15); }
-        .product-card.nsx:hover { box-shadow: 0 30px 70px rgba(6,182,212,0.12), 0 0 0 1px rgba(6,182,212,0.15); }
-        .product-card.vsphere:hover { box-shadow: 0 30px 70px rgba(139,92,246,0.12), 0 0 0 1px rgba(139,92,246,0.15); }
-        .product-card.vcf:hover { box-shadow: 0 30px 70px rgba(245,158,11,0.12), 0 0 0 1px rgba(245,158,11,0.15); }
+        /* Per-theme hover */
+        .product-card.vsan:hover { box-shadow: 0 25px 60px rgba(59,130,246,0.1), 0 0 0 1px rgba(59,130,246,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
+        .product-card.nsx:hover { box-shadow: 0 25px 60px rgba(6,182,212,0.1), 0 0 0 1px rgba(6,182,212,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
+        .product-card.vsphere:hover { box-shadow: 0 25px 60px rgba(139,92,246,0.1), 0 0 0 1px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
+        .product-card.vcf:hover { box-shadow: 0 25px 60px rgba(245,158,11,0.1), 0 0 0 1px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.04); }
 
         .card-accent-bar {
-            height: 3px; width: 100%;
-            position: relative;
-            overflow: hidden;
-            transition: height 0.3s ease;
-        }
-        /* Animated shimmer on accent bar */
-        .card-accent-bar::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: none;
-        }
-        .product-card:hover .card-accent-bar::after {
-            animation: accent-shimmer 1.2s ease forwards;
-        }
-        @keyframes accent-shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
+            display: none;
         }
         .card-body {
-            padding: 2rem;
+            padding: 2rem 2rem 1.5rem 2.25rem;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -505,72 +476,84 @@
             z-index: 1;
         }
 
-        /* Enhancement #8: SVG product icons */
+        /* Icon treatment */
         .card-icon-wrap {
-            width: 56px; height: 56px; border-radius: 14px;
+            width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1.25rem;
-            transition: transform 0.3s;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s;
         }
-        .product-card:hover .card-icon-wrap { transform: scale(1.12) rotate(-5deg); }
+        .card-icon-wrap::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .product-card:hover .card-icon-wrap { transform: scale(1.1); }
+        .product-card:hover .card-icon-wrap::after { opacity: 1; }
         .product-card:hover .card-icon-wrap svg {
-            filter: drop-shadow(0 0 8px currentColor);
+            filter: drop-shadow(0 0 6px currentColor);
             transition: filter 0.4s;
         }
-        .card-icon-wrap svg { width: 28px; height: 28px; }
+        .card-icon-wrap svg { width: 26px; height: 26px; }
 
         .card-label {
-            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 1.5px; margin-bottom: 0.4rem;
+            font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; margin-bottom: 0.6rem;
+            opacity: 0.9;
         }
         .card-title {
-            font-size: 1.2rem; font-weight: 700; line-height: 1.4;
-            margin-bottom: 0.75rem; letter-spacing: -0.01em;
-            transition: letter-spacing 0.4s;
+            font-size: 1.35rem; font-weight: 800; line-height: 1.3;
+            margin-bottom: 1rem; letter-spacing: -0.02em;
+            color: var(--text-primary);
         }
-        .product-card:hover .card-title {
-            letter-spacing: 0.01em;
-        }
+        .product-card:hover .card-title { color: #fff; }
         .card-desc {
-            font-size: 0.84rem; color: var(--text-secondary); line-height: 1.7;
+            font-size: 0.82rem; color: var(--text-secondary); line-height: 1.75;
             flex: 1;
+            opacity: 0.85;
         }
         .card-stats {
-            display: flex; gap: 1.25rem; flex-wrap: wrap;
-            padding-top: 1.25rem; margin-top: 1.25rem;
-            border-top: 1px solid rgba(30,41,59,0.8);
+            display: flex; gap: 1.5rem; flex-wrap: wrap;
+            padding-top: 1.5rem; margin-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.04);
         }
         .card-stat {
-            font-size: 0.78rem; font-weight: 600;
-            display: flex; align-items: center; gap: 0.35rem;
+            font-size: 0.75rem; font-weight: 600;
+            display: flex; align-items: baseline; gap: 0.3rem;
         }
-        /* Enhancement #7: Stat counter animation */
         .card-stat .num {
-            font-weight: 800;
+            font-size: 1.4rem;
+            font-weight: 900;
             font-variant-numeric: tabular-nums;
+            line-height: 1;
         }
-        .card-stat .lbl { color: var(--text-muted); font-weight: 500; }
+        .card-stat .lbl { color: var(--text-muted); font-weight: 400; font-size: 0.68rem; }
         .card-footer {
-            padding: 1rem 2rem;
-            border-top: 1px solid rgba(30,41,59,0.6);
-            background: rgba(17,24,39,0.5);
+            padding: 0.85rem 2rem 0.85rem 2.25rem;
+            border-top: 1px solid rgba(255,255,255,0.03);
+            background: rgba(0,0,0,0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: relative; z-index: 1;
         }
-        .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .card-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
         .card-tag {
-            font-size: 0.66rem; padding: 0.18rem 0.55rem; border-radius: 6px;
+            font-size: 0.62rem; padding: 0.2rem 0.55rem; border-radius: 4px;
             font-weight: 500;
-            transition: transform 0.3s, box-shadow 0.3s;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            transition: transform 0.3s, background 0.3s;
         }
         .product-card:hover .card-tag {
             transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         .card-arrow {
-            font-size: 0.82rem; font-weight: 700;
+            font-size: 0.8rem; font-weight: 700;
             display: flex; align-items: center; gap: 0.3rem;
             transition: gap 0.3s;
             white-space: nowrap;
@@ -586,60 +569,54 @@
         }
 
         /* ── vSAN Theme ── */
-        .product-card.vsan .card-accent-bar { background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--cyan)); background-size: 200% 100%; }
-        .product-card.vsan:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
-        .product-card.vsan .card-icon-wrap { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); }
+        .product-card.vsan::before { background: linear-gradient(180deg, var(--accent), var(--accent-light), var(--cyan)); }
+        .product-card.vsan .card-icon-wrap { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.15); }
+        .product-card.vsan .card-icon-wrap::after { background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%); }
         .product-card.vsan .card-label { color: var(--accent-light); }
         .product-card.vsan .card-stat .num { color: var(--accent-light); }
-        .product-card.vsan .card-tag { background: rgba(99,102,241,0.08); color: var(--accent-light); border: 1px solid rgba(99,102,241,0.15); }
+        .product-card.vsan .card-tag { background: rgba(99,102,241,0.06); color: var(--accent-light); border: 1px solid rgba(99,102,241,0.12); }
         .product-card.vsan .card-arrow { color: var(--accent-light); }
 
         /* ── NSX-T Theme ── */
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        .product-card.nsx .card-accent-bar { background: linear-gradient(90deg, var(--cyan), var(--cyan-light)); background-size: 200% 100%; }
-        .product-card.nsx:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
-        .product-card.nsx .card-icon-wrap { background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2); }
+        .product-card.nsx::before { background: linear-gradient(180deg, var(--cyan), var(--cyan-light), #06b6d4); }
+        .product-card.nsx .card-icon-wrap { background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.15); }
+        .product-card.nsx .card-icon-wrap::after { background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%); }
         .product-card.nsx .card-label { color: var(--cyan-light); }
         .product-card.nsx .card-stat .num { color: var(--cyan-light); }
-        .product-card.nsx .card-tag { background: rgba(6,182,212,0.08); color: var(--cyan-light); border: 1px solid rgba(6,182,212,0.15); }
+        .product-card.nsx .card-tag { background: rgba(6,182,212,0.06); color: var(--cyan-light); border: 1px solid rgba(6,182,212,0.12); }
         .product-card.nsx .card-arrow { color: var(--cyan-light); }
 
         /* ── vSphere Theme ── */
-        .product-card.vsphere .card-accent-bar { background: linear-gradient(90deg, var(--purple), var(--purple-light)); background-size: 200% 100%; }
-        .product-card.vsphere:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
-        .product-card.vsphere .card-icon-wrap { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); }
+        .product-card.vsphere::before { background: linear-gradient(180deg, var(--purple), var(--purple-light), #a78bfa); }
+        .product-card.vsphere .card-icon-wrap { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.15); }
+        .product-card.vsphere .card-icon-wrap::after { background: radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%); }
         .product-card.vsphere .card-label { color: var(--purple-light); }
         .product-card.vsphere .card-stat .num { color: var(--purple-light); }
-        .product-card.vsphere .card-tag { background: rgba(167,139,250,0.08); color: var(--purple-light); border: 1px solid rgba(167,139,250,0.15); }
+        .product-card.vsphere .card-tag { background: rgba(167,139,250,0.06); color: var(--purple-light); border: 1px solid rgba(167,139,250,0.12); }
         .product-card.vsphere .card-arrow { color: var(--purple-light); }
 
         /* ── VCF Theme ── */
-        .product-card.vcf .card-accent-bar { background: linear-gradient(90deg, var(--warning), var(--warning-light)); background-size: 200% 100%; }
-        .product-card.vcf:hover .card-accent-bar { animation: gradient-shift 2s ease infinite; height: 4px; }
-        .product-card.vcf .card-icon-wrap { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); }
+        .product-card.vcf::before { background: linear-gradient(180deg, var(--warning), var(--warning-light), #f59e0b); }
+        .product-card.vcf .card-icon-wrap { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); }
+        .product-card.vcf .card-icon-wrap::after { background: radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%); }
         .product-card.vcf .card-label { color: var(--warning-light); }
         .product-card.vcf .card-stat .num { color: var(--warning-light); }
-        .product-card.vcf .card-tag { background: rgba(245,158,11,0.08); color: var(--warning-light); border: 1px solid rgba(245,158,11,0.15); }
+        .product-card.vcf .card-tag { background: rgba(245,158,11,0.06); color: var(--warning-light); border: 1px solid rgba(245,158,11,0.12); }
         .product-card.vcf .card-arrow { color: var(--warning-light); }
 
         /* ── Coming Soon ── */
         .product-card.coming-soon {
-            opacity: 0.5;
+            opacity: 0.45;
             cursor: default;
         }
         .product-card.coming-soon:hover {
             transform: none !important;
+            box-shadow: none !important;
         }
         .product-card.coming-soon:hover .card-tag {
             transform: none;
-            box-shadow: none;
         }
-        .product-card.coming-soon::after { display: none; }
-        .product-card.coming-soon:hover .card-accent-bar { height: 3px; animation: none; }
-        .product-card.coming-soon:hover::before { opacity: 0; }
+        .product-card.coming-soon:hover::before { width: 4px; opacity: 0.4; }
         .product-card.coming-soon:hover .card-icon-wrap { transform: none; }
 
         /* Tooltip on coming-soon hover */
@@ -699,17 +676,18 @@
         }
         .live-ribbon {
             position: absolute;
-            top: 16px; right: 16px;
+            top: 14px; right: 14px;
             z-index: 2;
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             font-weight: 600;
             letter-spacing: 0.5px;
             text-transform: capitalize;
             color: var(--success);
-            background: rgba(16,185,129,0.1);
-            border: 1px solid rgba(16,185,129,0.25);
-            padding: 0.25rem 0.65rem;
-            border-radius: 20px;
+            background: rgba(16,185,129,0.06);
+            border: 1px solid rgba(16,185,129,0.18);
+            padding: 0.22rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
         }
 
         /* ── CTA Section ── */
@@ -899,18 +877,19 @@
             align-items: center;
             gap: 0.35rem;
             position: absolute;
-            top: 16px; left: 16px;
+            top: 14px; left: 14px;
             z-index: 2;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
             color: var(--text-secondary);
-            background: rgba(10,14,26,0.7);
+            background: rgba(0,0,0,0.35);
             backdrop-filter: blur(8px);
-            padding: 0.25rem 0.7rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            padding: 0.22rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
         }
-        .entry-count svg { opacity: 0.7; }
+        .entry-count svg { opacity: 0.6; }
 
         /* Smooth focus outlines for accessibility */
         :focus-visible {
