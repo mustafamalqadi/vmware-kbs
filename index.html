@@ -1134,9 +1134,9 @@
                     Comprehensive reference covering 94 vSAN scenarios — from Disk Group failures and Network Partition to ESA Deep Dive and VCF Integration. Copy-ready esxcli commands with verification steps and recovery timelines.
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><span class="num" data-target="94">0</span>&nbsp;<span class="lbl">KB Entries</span></div>
-                    <div class="card-stat"><span class="num" data-target="7">0</span>&nbsp;<span class="lbl">Phases</span></div>
-                    <div class="card-stat"><span class="num" data-target="6">0</span>&nbsp;<span class="lbl">Enrichments</span></div>
+                    <div class="card-stat"><span class="num" data-target="94">94</span>&nbsp;<span class="lbl">KB Entries</span></div>
+                    <div class="card-stat"><span class="num" data-target="7">7</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num" data-target="6">6</span>&nbsp;<span class="lbl">Enrichments</span></div>
                 </div>
             </div>
             <div class="card-footer">
@@ -1173,9 +1173,9 @@
                     Comprehensive reference covering 90 NSX-T scenarios — Transport Nodes, Distributed Firewall, T0/T1 Gateways, Edge Services, BGP/OSPF, Segments, VCF Federation &amp; Advanced Security. Copy-ready nsxcli commands with verification steps.
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><span class="num" data-target="90">0</span>&nbsp;<span class="lbl">KB Entries</span></div>
-                    <div class="card-stat"><span class="num" data-target="9">0</span>&nbsp;<span class="lbl">Phases</span></div>
-                    <div class="card-stat"><span class="num" data-target="5">0</span>&nbsp;<span class="lbl">Enrichments</span></div>
+                    <div class="card-stat"><span class="num" data-target="90">90</span>&nbsp;<span class="lbl">KB Entries</span></div>
+                    <div class="card-stat"><span class="num" data-target="9">9</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num" data-target="5">5</span>&nbsp;<span class="lbl">Enrichments</span></div>
                 </div>
             </div>
             <div class="card-footer">
@@ -1214,9 +1214,9 @@
                     Comprehensive reference covering 80 vSphere cluster scenarios — HA, DRS, vMotion, vCenter, Storage, Networking, plus advanced topics: Tanzu, vSphere+, VM Encryption, vGPU, Replication, and Skyline.
                 </div>
                 <div class="card-stats">
-                    <div class="card-stat"><span class="num" data-target="80">0</span>&nbsp;<span class="lbl">KB Entries</span></div>
-                    <div class="card-stat"><span class="num" data-target="8">0</span>&nbsp;<span class="lbl">Phases</span></div>
-                    <div class="card-stat"><span class="num" data-target="6">0</span>&nbsp;<span class="lbl">Enrichments</span></div>
+                    <div class="card-stat"><span class="num" data-target="80">80</span>&nbsp;<span class="lbl">KB Entries</span></div>
+                    <div class="card-stat"><span class="num" data-target="8">8</span>&nbsp;<span class="lbl">Phases</span></div>
+                    <div class="card-stat"><span class="num" data-target="6">6</span>&nbsp;<span class="lbl">Enrichments</span></div>
                 </div>
             </div>
             <div class="card-footer">
@@ -1434,6 +1434,7 @@
                     var nums = entry.target.querySelectorAll('.num[data-target]');
                     nums.forEach(function(num) {
                         var target = parseInt(num.getAttribute('data-target'), 10);
+                        num.textContent = '0';
                         var duration = 1200;
                         var start = performance.now();
                         function tick(now) {
